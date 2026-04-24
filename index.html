@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spotlight Trilogy — English Textbooks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F7F4EE;
+    --cream-dark: #EDE8DD;
+    --slate: #1C1F26;
+    --slate-mid: #3D4351;
+    --slate-light: #6B7280;
+    --accent-1: #C8603A;   /* terracotta — Spotlight 1 */
+    --accent-2: #3A6B8A;   /* steel blue — Spotlight 2 */
+    --accent-3: #4A7C59;   /* forest — Spotlight 3 */
+    --serif: 'DM Serif Display', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 12px;
+    --radius-sm: 6px;
+    --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--slate);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(247, 244, 238, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(28, 31, 38, 0.08);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+  }
+  .nav-logo {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    color: var(--slate);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--accent-1); }
+  .nav-links { display: flex; gap: 2rem; }
+  .nav-links a {
+    font-size: 0.875rem;
+    color: var(--slate-light);
+    text-decoration: none;
+    font-weight: 400;
+    transition: color var(--transition);
+  }
+  .nav-links a:hover { color: var(--slate); }
+
+  /* HERO */
+  .hero {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 5rem 2rem 3rem;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--slate-light);
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--slate);
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent-1);
+  }
+  .hero p {
+    font-size: 1.05rem;
+    color: var(--slate-mid);
+    max-width: 520px;
+    margin: 0 auto 2.5rem;
+    font-weight: 300;
+    line-height: 1.75;
+  }
+
+  /* DIVIDER */
+  .divider {
+    width: 48px; height: 2px;
+    background: var(--cream-dark);
+    border: none;
+    margin: 0 auto 3rem;
+  }
+
+  /* BOOK CARDS */
+  .books-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem 6rem;
+  }
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slate-light);
+    margin-bottom: 1.5rem;
+  }
+
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .book-card {
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1px solid rgba(28, 31, 38, 0.08);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  }
+  .book-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(28, 31, 38, 0.10);
+    border-color: rgba(28, 31, 38, 0.13);
+  }
+
+  .book-card-banner {
+    height: 6px;
+  }
+  .book-card-1 .book-card-banner { background: var(--accent-1); }
+  .book-card-2 .book-card-banner { background: var(--accent-2); }
+  .book-card-3 .book-card-banner { background: var(--accent-3); }
+
+  .book-card-body {
+    padding: 1.75rem 1.75rem 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .book-number {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .book-card-1 .book-number { color: var(--accent-1); }
+  .book-card-2 .book-number { color: var(--accent-2); }
+  .book-card-3 .book-number { color: var(--accent-3); }
+
+  .book-title {
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    color: var(--slate);
+  }
+
+  .book-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .book-tag {
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 99px;
+    background: var(--cream);
+    color: var(--slate-mid);
+    border: 1px solid rgba(28,31,38,0.08);
+  }
+
+  .book-stats {
+    display: flex;
+    gap: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--cream-dark);
+    margin-top: auto;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    color: var(--slate);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--slate-light);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+
+  .book-cta {
+    padding: 1rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--slate-mid);
+    transition: color var(--transition);
+  }
+  .book-card:hover .cta-text { color: var(--slate); }
+  .cta-arrow {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(28,31,38,0.12);
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--transition), border-color var(--transition), transform var(--transition);
+  }
+  .book-card:hover .cta-arrow {
+    transform: translateX(3px);
+  }
+  .book-card-1:hover .cta-arrow { background: var(--accent-1); border-color: var(--accent-1); }
+  .book-card-2:hover .cta-arrow { background: var(--accent-2); border-color: var(--accent-2); }
+  .book-card-3:hover .cta-arrow { background: var(--accent-3); border-color: var(--accent-3); }
+  .book-card:hover .cta-arrow svg path { stroke: #fff; }
+  .cta-arrow svg { display: block; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid rgba(28,31,38,0.08);
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--slate-light);
+  }
+
+  /* FADE-IN ANIMATION */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero { animation: fadeUp 0.6s ease both; }
+  .book-card:nth-child(1) { animation: fadeUp 0.5s 0.15s ease both; }
+  .book-card:nth-child(2) { animation: fadeUp 0.5s 0.25s ease both; }
+  .book-card:nth-child(3) { animation: fadeUp 0.5s 0.35s ease both; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">Spotlight <span>Trilogy</span></a>
+  <div class="nav-links">
+    <a href="#books">Books</a>
+    <a href="https://github.com" target="_blank">GitHub</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <p class="hero-eyebrow">English Language Textbooks</p>
+  <h1>The <em>Spotlight</em><br>Trilogy</h1>
+  <p>A complete English language learning series. Browse each book's units and lessons, then download student books, teacher guides, and audio files.</p>
+  <hr class="divider">
+</section>
+
+<section class="books-section" id="books">
+  <p class="section-label">Choose a book</p>
+  <div class="books-grid" id="books-grid">
+    <!-- populated by JS -->
+  </div>
+</section>
+
+<footer>
+  Spotlight Trilogy &mdash; English Textbooks
+</footer>
+
+<script src="data.js"></script>
+<script>
+  const ACCENTS = ['#C8603A', '#3A6B8A', '#4A7C59'];
+  const LEVELS  = ['Beginner', 'Elementary', 'Pre-Intermediate'];
+
+  function countItems(book) {
+    let units = 0, lessons = 0, audios = 0;
+    for (const child of book.children) {
+      if (child.type === 'folder' && child.name.toLowerCase().startsWith('unit')) {
+        units++;
+        for (const lesson of (child.children || [])) {
+          if (lesson.type === 'folder') {
+            lessons++;
+            for (const f of (lesson.children || [])) {
+              if (f.type === 'mp3') audios++;
+            }
+          }
+        }
+      }
+    }
+    return { units, lessons, audios };
+  }
+
+  const grid = document.getElementById('books-grid');
+
+  SPOTLIGHT_DATA.forEach((book, i) => {
+    const { units, lessons, audios } = countItems(book);
+    const num = i + 1;
+    const slug = `spotlight-${num}`;
+
+    grid.innerHTML += `
+      <a class="book-card book-card-${num}" href="book.html?book=${num}">
+        <div class="book-card-banner"></div>
+        <div class="book-card-body">
+          <p class="book-number">Book ${num}</p>
+          <h2 class="book-title">${book.name}</h2>
+          <div class="book-meta">
+            <span class="book-tag">${LEVELS[i]}</span>
+            <span class="book-tag">Student Book</span>
+            <span class="book-tag">Teacher Guide</span>
+            <span class="book-tag">Audio Files</span>
+          </div>
+          <div class="book-stats">
+            <div class="stat">
+              <span class="stat-num">${units}</span>
+              <span class="stat-label">Units</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num">${lessons}</span>
+              <span class="stat-label">Lessons</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num">${audios}</span>
+              <span class="stat-label">Audio files</span>
+            </div>
+          </div>
+        </div>
+        <div class="book-cta">
+          <span class="cta-text">Browse lessons</span>
+          <span class="cta-arrow">
+            <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+              <path d="M3 7h8M7.5 3.5 11 7l-3.5 3.5" stroke="#1C1F26" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+      </a>
+    `;
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spotlight — Lessons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
+</script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #F7F4EE;
+    --cream-dark: #EDE8DD;
+    --slate: #1C1F26;
+    --slate-mid: #3D4351;
+    --slate-light: #6B7280;
+    --accent: #C8603A;
+    --serif: 'DM Serif Display', Georgia, serif;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 12px;
+    --radius-sm: 6px;
+    --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--cream);
+    color: var(--slate);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(247, 244, 238, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(28, 31, 38, 0.08);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 60px;
+  }
+  .nav-back {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.875rem;
+    color: var(--slate-light);
+    text-decoration: none;
+    transition: color var(--transition);
+  }
+  .nav-back:hover { color: var(--slate); }
+  .nav-back svg { display: block; }
+  .nav-divider {
+    width: 1px;
+    height: 16px;
+    background: rgba(28, 31, 38, 0.12);
+  }
+  .nav-title {
+    font-family: var(--serif);
+    font-size: 1rem;
+    color: var(--slate);
+    letter-spacing: -0.01em;
+  }
+  .nav-accent-bar {
+    height: 3px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  /* HEADER */
+  .book-header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3.5rem 2rem 2.5rem;
+  }
+  .book-header-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+  .book-header h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+  .book-header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  .meta-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+  .meta-stat strong {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    font-weight: 400;
+  }
+  .meta-stat span {
+    font-size: 0.8rem;
+    color: var(--slate-light);
+    font-weight: 400;
+  }
+
+  /* WHOLE-BOOK DOWNLOADS */
+  .book-downloads {
+    background: #fff;
+    border: 1px solid rgba(28, 31, 38, 0.08);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .book-downloads-title {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slate-light);
+    margin-bottom: 1rem;
+  }
+  .download-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* DOWNLOAD BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 7px 13px;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: var(--sans);
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    transition: all var(--transition);
+    white-space: nowrap;
+    background: transparent;
+    color: inherit;
+  }
+  .btn svg { display: block; flex-shrink: 0; }
+
+  .btn-sb {
+    background: rgba(200, 96, 58, 0.08);
+    color: var(--accent);
+    border-color: rgba(200, 96, 58, 0.2);
+  }
+  .btn-sb:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn-tg {
+    background: rgba(58, 107, 138, 0.08);
+    color: #3A6B8A;
+    border-color: rgba(58, 107, 138, 0.2);
+  }
+  .btn-tg:hover {
+    background: #3A6B8A;
+    color: #fff;
+    border-color: #3A6B8A;
+  }
+
+  .btn-audio {
+    background: rgba(74, 124, 89, 0.08);
+    color: #4A7C59;
+    border-color: rgba(74, 124, 89, 0.2);
+  }
+  .btn-audio:hover {
+    background: #4A7C59;
+    color: #fff;
+    border-color: #4A7C59;
+  }
+
+  .btn-bundle {
+    background: rgba(28, 31, 38, 0.05);
+    color: var(--slate-mid);
+    border-color: rgba(28, 31, 38, 0.12);
+  }
+  .btn-bundle:hover {
+    background: var(--slate);
+    color: #fff;
+    border-color: var(--slate);
+  }
+
+  .btn-all-audios {
+    background: rgba(74, 124, 89, 0.12);
+    color: #3D6B4A;
+    border-color: rgba(74, 124, 89, 0.3);
+    font-weight: 600;
+  }
+  .btn-all-audios:hover {
+    background: #4A7C59;
+    color: #fff;
+    border-color: #4A7C59;
+  }
+
+  .btn-share {
+    background: rgba(37, 150, 110, 0.08);
+    color: #25966E;
+    border-color: rgba(37, 150, 110, 0.2);
+    cursor: pointer;
+  }
+  .btn-share:hover {
+    background: #25966E;
+    color: #fff;
+    border-color: #25966E;
+  }
+
+  /* SEARCH */
+  .search-bar {
+    max-width: 900px;
+    margin: 0 auto 1.5rem;
+    padding: 0 2rem;
+  }
+  .search-input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(28, 31, 38, 0.12);
+    background: #fff;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    color: var(--slate);
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='4.5' stroke='%236B7280' stroke-width='1.3'/%3E%3Cpath d='m10.5 10.5 2.5 2.5' stroke='%236B7280' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+  }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200, 96, 58, 0.1);
+  }
+  .search-input::placeholder { color: var(--slate-light); }
+
+  /* UNITS */
+  .units-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 5rem;
+  }
+
+  .unit-block {
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid rgba(28, 31, 38, 0.08);
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .unit-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    gap: 1rem;
+    transition: background var(--transition);
+  }
+  .unit-header:hover { background: rgba(247, 244, 238, 0.5); }
+
+  .unit-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+  }
+  .unit-num-badge {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(200, 96, 58, 0.08);
+    border: 1px solid rgba(200, 96, 58, 0.15);
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .unit-name {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+    color: var(--slate);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .unit-lesson-count {
+    font-size: 0.75rem;
+    color: var(--slate-light);
+    white-space: nowrap;
+  }
+
+  .unit-chevron {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(28, 31, 38, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform var(--transition), background var(--transition);
+  }
+  .unit-block.open .unit-chevron {
+    transform: rotate(180deg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .unit-block.open .unit-chevron path { stroke: #fff; }
+
+  .unit-body {
+    display: none;
+    border-top: 1px solid rgba(28, 31, 38, 0.06);
+  }
+  .unit-block.open .unit-body { display: block; }
+
+  /* UNIT-LEVEL AUDIO */
+  .unit-audio-row {
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid rgba(28, 31, 38, 0.06);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(247, 244, 238, 0.4);
+    flex-wrap: wrap;
+  }
+  .unit-audio-label {
+    font-size: 0.75rem;
+    color: var(--slate-light);
+    flex: 1;
+    min-width: 120px;
+  }
+
+  /* LESSONS */
+  .lesson-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(28, 31, 38, 0.05);
+    transition: background var(--transition);
+  }
+  .lesson-row:last-child { border-bottom: none; }
+  .lesson-row:hover { background: rgba(247, 244, 238, 0.4); }
+
+  .lesson-num {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--slate-light);
+    padding-top: 2px;
+    min-width: 60px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .lesson-info { flex: 1; min-width: 0; }
+  .lesson-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--slate);
+    margin-bottom: 0.5rem;
+  }
+  .lesson-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  /* AUDIO LIST */
+  .audio-list {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .audio-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--slate-light);
+    text-decoration: none;
+    transition: color var(--transition);
+  }
+  .audio-item:hover { color: var(--slate); }
+  .audio-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #4A7C59;
+    flex-shrink: 0;
+  }
+
+  /* WELCOME SECTION */
+  .welcome-block {
+    background: rgba(247, 244, 238, 0.6);
+    border: 1px dashed rgba(28, 31, 38, 0.1);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .welcome-title {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slate-light);
+    margin-bottom: 0.75rem;
+  }
+
+  /* FILTER TABS */
+  .filter-tabs {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .filter-tab {
+    padding: 5px 12px;
+    border-radius: 99px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid rgba(28, 31, 38, 0.12);
+    background: transparent;
+    color: var(--slate-light);
+    font-family: var(--sans);
+    transition: all var(--transition);
+  }
+  .filter-tab:hover { border-color: rgba(28, 31, 38, 0.25);
+    color: var(--slate); }
+  .filter-tab.active {
+    background: var(--slate);
+    color: #fff;
+    border-color: var(--slate);
+  }
+
+  /* POPOVER */
+  .popover-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 180;
+    background: rgba(28, 31, 38, 0.35);
+    display: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .popover-backdrop.active { display: block; }
+
+  .file-popover {
+    position: fixed;
+    z-index: 190;
+    background: #fff;
+    border-radius: var(--radius);
+    border: 1px solid rgba(28, 31, 38, 0.1);
+    box-shadow: 0 16px 48px rgba(28, 31, 38, 0.2);
+    padding: 0.4rem;
+    min-width: 230px;
+    max-width: calc(100vw - 2rem);
+    display: none;
+  }
+  .file-popover.active {
+    display: block;
+    animation: popIn 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .popover-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.84rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    color: var(--slate);
+    font-family: var(--sans);
+    transition: background var(--transition), color var(--transition);
+    white-space: nowrap;
+  }
+  .popover-option:hover {
+    background: rgba(247, 244, 238, 0.8);
+    color: var(--slate);
+  }
+  .popover-option svg { flex-shrink: 0; }
+  .popover-option.option-zip { color: #3A6B8A; }
+  .popover-option.option-separate { color: var(--slate-mid); }
+  .popover-option.option-share { color: #25966E; }
+  .popover-divider {
+    height: 1px;
+    background: rgba(28, 31, 38, 0.08);
+    margin: 0.3rem 0.6rem;
+  }
+  .popover-header {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate-light);
+    padding: 0.4rem 0.9rem 0.2rem;
+  }
+
+  /* Mobile popover: bottom sheet */
+  @media (max-width: 600px) {
+    .file-popover {
+      bottom: 1rem;
+      left: 1rem;
+      right: 1rem;
+      top: auto;
+      border-radius: 16px;
+      min-width: unset;
+      max-width: unset;
+    }
+    .file-popover.active {
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(120%); }
+      to { transform: translateY(0); }
+    }
+    .popover-option {
+      padding: 0.85rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  footer {
+    border-top: 1px solid rgba(28, 31, 38, 0.08);
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--slate-light);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .book-header { animation: fadeUp 0.5s ease both; }
+  .unit-block { animation: fadeUp 0.4s ease both; }
+
+  /* ICON */
+  .icon { display: inline-block; width: 12px; height: 12px; }
+
+  @media (max-width: 600px) {
+    .lesson-row { flex-direction: column; gap: 0.5rem; }
+    .lesson-num { min-width: unset; }
+    nav { padding: 0 1rem; }
+    .book-header { padding: 2rem 1rem 1.5rem; }
+    .units-section { padding: 0 1rem 4rem; }
+    .search-bar { padding: 0 1rem; }
+    .unit-header { padding: 0.9rem 1rem; }
+    .lesson-row { padding: 0.75rem 1rem; }
+    .unit-audio-row { padding: 0.6rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-back" href="index.html">
+    <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
+      <path d="M9 3 5 7l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    All books
+  </a>
+  <div class="nav-divider"></div>
+  <span class="nav-title" id="nav-title">Loading…</span>
+  <div class="nav-accent-bar" id="nav-accent-bar"></div>
+</nav>
+
+<div class="book-header" id="book-header">
+  <!-- filled by JS -->
+</div>
+
+<div class="search-bar">
+  <input class="search-input" type="search" id="search" placeholder="Search units or lessons…">
+</div>
+
+<div class="units-section" id="units-section">
+  <!-- filled by JS -->
+</div>
+
+<!-- Popover backdrop -->
+<div class="popover-backdrop" id="popover-backdrop"></div>
+<!-- Popover -->
+<div class="file-popover" id="file-popover">
+  <div class="popover-header" id="popover-header-text">Options</div>
+  <button class="popover-option option-zip" id="popover-opt-zip">
+    <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h3l2 2v4a1 1 0 0 1-1 1H5V6Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 6V8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Download as ZIP
+  </button>
+  <button class="popover-option option-separate" id="popover-opt-separate">
+    <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><path d="M3 8h10M8 3v10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    Download all separately
+  </button>
+  <div class="popover-divider" id="popover-divider"></div>
+  <button class="popover-option option-share" id="popover-opt-share">
+    <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><circle cx="5" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 7.3 10 5m-3 3.7 3 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    Share via WhatsApp
+  </button>
+</div>
+
+<footer>
+  Spotlight Trilogy — <span id="footer-book">…</span>
+</footer>
+
+<script src="data.js"></script>
+<script>
+const ACCENTS = ['#C8603A', '#3A6B8A', '#4A7C59'];
+const LEVELS  = ['Beginner', 'Elementary', 'Pre-Intermediate'];
+const ACCENT_CSS_NAMES = ['accent-1', 'accent-2', 'accent-3'];
+
+// ---- HELPERS ----
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function isType(name, ext) {
+  return name.toLowerCase().endsWith('.' + ext);
+}
+
+function fileIsSB(name) {
+  return /sb/i.test(name) && name.endsWith('.pdf');
+}
+function fileIsTG(name) {
+  return /tg/i.test(name) && name.endsWith('.pdf');
+}
+function fileIsAudio(name) {
+  return name.endsWith('.mp3');
+}
+
+// Build a relative path from book root
+function buildPath(bookName, ...parts) {
+  return [bookName, ...parts].map(p => encodeURIComponent(p)).join('/');
+}
+
+function dlIcon() {
+  return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M6 2v6M3.5 5.5 6 8l2.5-2.5M2 10h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function audioIcon() {
+  return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><rect x="1.5" y="4" width="3" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5.5C6 5.5 8 5 8.5 3v6C8 7 6 6.5 4.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 4.5a2 2 0 0 1 0 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+}
+function zipIcon() {
+  return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 4.5h2.5l1.5 1.5v3a.75.75 0 0 1-.75.75H3.5V4.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 4.5V6h1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function shareIcon() {
+  return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><circle cx="3.5" cy="6" r="1.8" stroke="currentColor" stroke-width="1.2"/><circle cx="9" cy="3" r="1.4" stroke="currentColor" stroke-width="1.2"/><circle cx="9" cy="9" r="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M5 5.4 7.8 3.8m-2.8 2.4L7.8 8.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+}
+
+// ---- ESCAPE HTML ----
+function escHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ---- DOWNLOAD BUTTON BUILDERS ----
+function btnSB(href, label) {
+  label = label || 'Student Book';
+  return `<a class="btn btn-sb" href="${escHtml(href)}" download>${dlIcon()} ${escHtml(label)}</a>`;
+}
+function btnTG(href, label) {
+  label = label || 'Teacher Guide';
+  return `<a class="btn btn-tg" href="${escHtml(href)}" download>${dlIcon()} ${escHtml(label)}</a>`;
+}
+function btnBundle(hrefs, label) {
+  return `<a class="btn btn-bundle" href="${escHtml(hrefs[0])}" download title="Download: ${escHtml(hrefs.join(', '))}">${dlIcon()} ${escHtml(label)}</a>`;
+}
+
+// ---- LESSON RENDER ----
+function renderLesson(lesson, bookName, unitName, lessonIndex) {
+  const files = lesson.children || [];
+  const sbFile = files.find(f => fileIsSB(f.name));
+  const tgFile = files.find(f => fileIsTG(f.name));
+  const audioFiles = files.filter(f => fileIsAudio(f.name));
+
+  const sbPath  = sbFile  ? buildPath(bookName, unitName, lesson.name, sbFile.name)  : null;
+  const tgPath  = tgFile  ? buildPath(bookName, unitName, lesson.name, tgFile.name)  : null;
+
+  // Build audio file data for popover
+  const audioFileData = audioFiles.map(f => ({
+    name: f.name,
+    path: buildPath(bookName, unitName, lesson.name, f.name)
+  }));
+
+  let btns = '';
+  if (sbPath)  btns += btnSB(sbPath, 'SB');
+  if (tgPath)  btns += btnTG(tgPath, 'TG');
+
+  // All Audios button (replaces SB+Audio bundle)
+  if (audioFiles.length) {
+    const audioDataJson = JSON.stringify(audioFileData).replace(/'/g, "\\'");
+    btns += `<button class="btn btn-all-audios btn-popover-trigger" data-files='${audioDataJson}' data-label="All Audios (${audioFiles.length})" aria-label="All ${audioFiles.length} audio files">${audioIcon()} All Audios (${audioFiles.length})</button>`;
+  }
+
+  // SB+TG bundle (keeps direct download since it's just 2 PDFs)
+  if (sbPath && tgPath) {
+    btns += btnBundle([sbPath, tgPath], 'SB + TG');
+  }
+  // All files bundle (keeps direct download)
+  if ((sbPath || tgPath) && audioFiles.length) {
+    const all = [sbPath, tgPath, ...audioFiles.map(f => buildPath(bookName, unitName, lesson.name, f.name))].filter(Boolean);
+    btns += btnBundle(all, 'All files');
+  }
+
+  // Audio list with individual download links + share buttons
+  let audioList = '';
+  if (audioFiles.length) {
+    audioList = `<div class="audio-list">` +
+      audioFiles.map(f => {
+        const path = buildPath(bookName, unitName, lesson.name, f.name);
+        const singleData = JSON.stringify([{ name: f.name, path: path }]).replace(/'/g, "\\'");
+        return `<div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;">
+          <a class="audio-item" href="${escHtml(path)}" download style="flex:1;min-width:0;">
+            <span class="audio-dot"></span>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name)}</span>
+          </a>
+          <button class="btn btn-share btn-popover-trigger" data-files='${singleData}' data-label="${escHtml(f.name)}" style="font-size:0.65rem;padding:3px 7px;flex-shrink:0;" aria-label="Share ${escHtml(f.name)}">${shareIcon()}</button>
+        </div>`;
+      }).join('') +
+    `</div>`;
+  }
+
+  return `
+    <div class="lesson-row" data-lesson="${escHtml(lesson.name.toLowerCase())}">
+      <div class="lesson-num">Lesson ${lessonIndex}</div>
+      <div class="lesson-info">
+        <div class="lesson-name">${escHtml(lesson.name)}</div>
+        <div class="lesson-files">${btns || '<span style="font-size:0.75rem;color:var(--slate-light)">No downloadable files</span>'}</div>
+        ${audioList}
+      </div>
+    </div>
+  `;
+}
+
+// ---- UNIT RENDER ----
+function renderUnit(unit, bookName, unitIndex) {
+  const children = unit.children || [];
+  const lessons = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
+  const unitAudios = children.filter(c => c.type === 'mp3');
+  const unitFiles = children.filter(c => c.type === 'pdf');
+
+  let audioRow = '';
+  if (unitAudios.length) {
+    const unitAudioData = unitAudios.map(f => ({
+      name: f.name,
+      path: buildPath(bookName, unit.name, f.name)
+    }));
+    const unitAudioJson = JSON.stringify(unitAudioData).replace(/'/g, "\\'");
+    audioRow = `<div class="unit-audio-row">
+      <span class="unit-audio-label">${audioIcon()} Unit intro audio (${unitAudios.length})</span>
+      ${unitAudios.map(f => `<a class="btn btn-audio" href="${escHtml(buildPath(bookName, unit.name, f.name))}" download style="font-size:0.72rem;padding:4px 9px;">${escHtml(f.name)}</a>`).join('')}
+      <button class="btn btn-all-audios btn-popover-trigger" data-files='${unitAudioJson}' data-label="Unit ${unitIndex} Audios" style="font-size:0.72rem;padding:5px 10px;">${zipIcon()} All (ZIP)</button>
+    </div>`;
+  }
+
+  let unitFilesRow = '';
+  if (unitFiles.length) {
+    unitFilesRow = `<div class="unit-audio-row">
+      ${unitFiles.map(f => {
+        const cls = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
+        return `<a class="btn ${cls}" href="${escHtml(buildPath(bookName, unit.name, f.name))}" download style="font-size:0.72rem;">${dlIcon()} ${escHtml(f.name)}</a>`;
+      }).join('')}
+    </div>`;
+  }
+
+  const lessonRows = lessons.map((l, li) => renderLesson(l, bookName, unit.name, li + 1)).join('');
+
+  return `
+    <div class="unit-block" data-unit="${escHtml(unit.name.toLowerCase())}">
+      <div class="unit-header" onclick="toggleUnit(this)">
+        <div class="unit-header-left">
+          <span class="unit-num-badge">Unit ${unitIndex}</span>
+          <span class="unit-name">${escHtml(unit.name)}</span>
+          <span class="unit-lesson-count">${lessons.length} lessons</span>
+        </div>
+        <span class="unit-chevron">
+          <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+            <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <div class="unit-body">
+        ${audioRow}${unitFilesRow}${lessonRows}
+      </div>
+    </div>
+  `;
+}
+
+// ---- MAIN ----
+const bookNum = parseInt(getParam('book') || '1', 10);
+const bookIdx = bookNum - 1;
+const book = SPOTLIGHT_DATA[bookIdx] || SPOTLIGHT_DATA[0];
+const accent = ACCENTS[bookIdx] || ACCENTS[0];
+const level = LEVELS[bookIdx] || '';
+
+document.documentElement.style.setProperty('--accent', accent);
+
+// Nav
+document.getElementById('nav-title').textContent = book.name;
+document.getElementById('nav-accent-bar').style.background = accent;
+document.title = `${book.name} — Spotlight Trilogy`;
+document.getElementById('footer-book').textContent = book.name;
+
+// Count stats
+let unitCount = 0, lessonCount = 0, audioCount = 0;
+const units = [];
+const welcomeBlock = [];
+
+for (const child of book.children) {
+  if (child.type === 'folder' && /^unit/i.test(child.name)) {
+    units.push(child);
+    unitCount++;
+    for (const c of (child.children || [])) {
+      if (c.type === 'folder') {
+        lessonCount++;
+        for (const f of (c.children || [])) {
+          if (f.type === 'mp3') audioCount++;
+        }
+      }
+    }
+  } else if (child.type === 'folder' && /welcome/i.test(child.name)) {
+    welcomeBlock.push(child);
+  }
+}
+
+// Book-level files
+const bookSB = book.children.find(c => fileIsSB(c.name));
+const bookTG = book.children.find(c => fileIsTG(c.name));
+
+let rootBtns = '';
+if (bookSB) rootBtns += btnSB(buildPath(book.name, bookSB.name), 'Full Student Book');
+if (bookTG) rootBtns += btnTG(buildPath(book.name, bookTG.name), 'Full Teacher Guide');
+if (bookSB && bookTG) rootBtns += btnBundle([buildPath(book.name, bookSB.name), buildPath(book.name, bookTG.name)], 'SB + TG');
+
+// Header
+document.getElementById('book-header').innerHTML = `
+  <p class="book-header-eyebrow">Book ${bookNum} &mdash; ${level}</p>
+  <h1>${escHtml(book.name)}</h1>
+  <div class="book-header-meta">
+    <div class="meta-stat"><strong>${unitCount}</strong><span>units</span></div>
+    <div class="meta-stat"><strong>${lessonCount}</strong><span>lessons</span></div>
+    <div class="meta-stat"><strong>${audioCount}</strong><span>audio files</span></div>
+  </div>
+  ${rootBtns ? `<div class="book-downloads">
+    <p class="book-downloads-title">Full book downloads</p>
+    <div class="download-row">${rootBtns}</div>
+  </div>` : ''}
+`;
+
+// Units section
+const section = document.getElementById('units-section');
+
+// Welcome section
+if (welcomeBlock.length) {
+  const wb = welcomeBlock[0];
+  const wLessons = (wb.children || []).filter(c => c.type === 'folder');
+  const wFiles   = (wb.children || []).filter(c => c.type !== 'folder');
+  let wContent = wFiles.map(f => {
+    const cls = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-audio';
+    const icon = f.type === 'mp3' ? audioIcon() : dlIcon();
+    return `<a class="btn ${cls}" href="${escHtml(buildPath(book.name, wb.name, f.name))}" download>${icon} ${escHtml(f.name)}</a>`;
+  }).join('');
+  if (wLessons.length) {
+    wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
+  }
+  section.innerHTML = `<div class="welcome-block">
+    <p class="welcome-title">Welcome / Introduction</p>
+    <div class="download-row">${wContent}</div>
+  </div>`;
+}
+
+// Unit blocks
+units.forEach((unit, i) => {
+  section.innerHTML += renderUnit(unit, book.name, i + 1);
+});
+
+// Open first unit by default
+const firstUnit = section.querySelector('.unit-block');
+if (firstUnit) firstUnit.classList.add('open');
+
+// ---- TOGGLE ----
+function toggleUnit(header) {
+  const block = header.closest('.unit-block');
+  block.classList.toggle('open');
+}
+
+// ---- SEARCH ----
+document.getElementById('search').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  document.querySelectorAll('.unit-block').forEach(block => {
+    const unitMatch = block.dataset.unit.includes(q);
+    const lessonRows = block.querySelectorAll('.lesson-row');
+    let anyLesson = false;
+    lessonRows.forEach(row => {
+      const match = !q || unitMatch || row.dataset.lesson.includes(q);
+      row.style.display = match ? '' : 'none';
+      if (match) anyLesson = true;
+    });
+    const show = !q || unitMatch || anyLesson;
+    block.style.display = show ? '' : 'none';
+    if (q && show) block.classList.add('open');
+  });
+});
+
+// ---- POPOVER SYSTEM ----
+const popover = document.getElementById('file-popover');
+const popoverBackdrop = document.getElementById('popover-backdrop');
+const popoverHeader = document.getElementById('popover-header-text');
+const popoverOptZip = document.getElementById('popover-opt-zip');
+const popoverOptSeparate = document.getElementById('popover-opt-separate');
+const popoverOptShare = document.getElementById('popover-opt-share');
+const popoverDivider = document.getElementById('popover-divider');
+
+let currentFileData = [];
+let currentLabel = '';
+let activeTrigger = null;
+
+function hidePopover() {
+  popover.classList.remove('active');
+  popoverBackdrop.classList.remove('active');
+  currentFileData = [];
+  currentLabel = '';
+  activeTrigger = null;
+}
+
+function showPopover(btn, fileData, label) {
+  currentFileData = fileData;
+  currentLabel = label;
+  activeTrigger = btn;
+
+  const rect = btn.getBoundingClientRect();
+  const isMobile = window.innerWidth <= 600;
+
+  // Update popover header
+  popoverHeader.textContent = label || (fileData.length === 1 ? fileData[0].name : `${fileData.length} files`);
+
+  // Show/hide options based on file count
+  if (fileData.length === 1) {
+    // Single file: only show download and share
+    popoverOptZip.style.display = 'none';
+    popoverOptSeparate.style.display = 'none';
+    popoverDivider.style.display = 'none';
+    // Change download option to simple download
+    popoverOptZip.innerHTML = `<svg width="15" height="15" fill="none" viewBox="0 0 16 16"><path d="M8 3v7M5.5 8 8 10.5 10.5 8M3 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Download`;
+    popoverOptZip.style.display = 'flex';
+    popoverOptZip.classList.remove('option-zip');
+    popoverOptZip.classList.add('option-separate');
+    popoverOptSeparate.style.display = 'none';
+  } else {
+    // Multiple files: show all options
+    popoverOptZip.innerHTML = `<svg width="15" height="15" fill="none" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h3l2 2v4a1 1 0 0 1-1 1H5V6Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 6V8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Download as ZIP`;
+    popoverOptZip.style.display = 'flex';
+    popoverOptZip.classList.add('option-zip');
+    popoverOptZip.classList.remove('option-separate');
+    popoverOptSeparate.style.display = 'flex';
+    popoverDivider.style.display = 'block';
+  }
+
+  // Position popover
+  if (isMobile) {
+    popover.style.top = 'auto';
+    popover.style.bottom = '1rem';
+    popover.style.left = '1rem';
+    popover.style.right = '1rem';
+    popover.style.maxWidth = 'unset';
+  } else {
+    popover.style.bottom = 'auto';
+    popover.style.right = 'auto';
+    popover.style.maxWidth = '320px';
+
+    // Position below button, prefer right-aligned
+    let top = rect.bottom + 8;
+    let left = rect.right - 240;
+    if (left < 16) left = 16;
+    if (left + 240 > window.innerWidth - 16) left = window.innerWidth - 240 - 16;
+    if (top + 180 > window.innerHeight) {
+      top = rect.top - 190;
+      if (top < 16) top = 16;
+    }
+    popover.style.top = top + 'px';
+    popover.style.left = left + 'px';
+  }
+
+  popover.classList.add('active');
+  popoverBackdrop.classList.add('active');
+}
+
+// Event delegation for popover triggers
+document.getElementById('units-section').addEventListener('click', function(e) {
+  const trigger = e.target.closest('.btn-popover-trigger');
+  if (!trigger) return;
+  e.preventDefault();
+  e.stopPropagation();
+
+  try {
+    const fileData = JSON.parse(trigger.getAttribute('data-files') || '[]');
+    const label = trigger.getAttribute('data-label') || 'Files';
+    showPopover(trigger, fileData, label);
+  } catch (err) {
+    console.error('Failed to parse file data:', err);
+  }
+});
+
+// Popover option handlers
+popoverOptZip.addEventListener('click', async function() {
+  if (currentFileData.length === 1) {
+    // Single file: direct download
+    triggerDownload(currentFileData[0].path, currentFileData[0].name);
+  } else {
+    // Multiple files: download as ZIP
+    await downloadAsZip(currentFileData, currentLabel || 'files');
+  }
+  hidePopover();
+});
+
+popoverOptSeparate.addEventListener('click', function() {
+  downloadSeparately(currentFileData);
+  hidePopover();
+});
+
+popoverOptShare.addEventListener('click', async function() {
+  await shareFiles(currentFileData, currentLabel);
+  hidePopover();
+});
+
+// Close popover on backdrop click
+popoverBackdrop.addEventListener('click', hidePopover);
+
+// Close popover on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') hidePopover();
+});
+
+// Close popover on window resize (recalculate might be needed)
+window.addEventListener('resize', function() {
+  if (popover.classList.contains('active') && activeTrigger) {
+    // Re-position
+    const rect = activeTrigger.getBoundingClientRect();
+    const isMobile = window.innerWidth <= 600;
+    if (isMobile) {
+      popover.style.top = 'auto';
+      popover.style.bottom = '1rem';
+      popover.style.left = '1rem';
+      popover.style.right = '1rem';
+      popover.style.maxWidth = 'unset';
+    } else {
+      popover.style.bottom = 'auto';
+      popover.style.right = 'auto';
+      popover.style.maxWidth = '320px';
+      let top = rect.bottom + 8;
+      let left = rect.right - 240;
+      if (left < 16) left = 16;
+      if (left + 240 > window.innerWidth - 16) left = window.innerWidth - 240 - 16;
+      if (top + 180 > window.innerHeight) top = rect.top - 190;
+      if (top < 16) top = 16;
+      popover.style.top = top + 'px';
+      popover.style.left = left + 'px';
+    }
+  }
+});
+
+// ---- DOWNLOAD HELPERS ----
+function triggerDownload(url, filename) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function downloadSeparately(files) {
+  files.forEach((f, i) => {
+    setTimeout(() => {
+      triggerDownload(f.path, f.name);
+    }, i * 350);
+  });
+  // Show a subtle toast-like feedback
+  showToast(`Downloading ${files.length} file${files.length > 1 ? 's' : ''}…`);
+}
+
+async function downloadAsZip(files, zipName) {
+  if (typeof JSZip === 'undefined') {
+    // Fallback: download separately
+    showToast('ZIP library not loaded — downloading separately…');
+    downloadSeparately(files);
+    return;
+  }
+  try {
+    showToast('Creating ZIP file…');
+    const zip = new JSZip();
+    const fetchPromises = files.map(async (f) => {
+      try {
+        const response = await fetch(f.path);
+        if (!response.ok) throw new Error(`Failed to fetch ${f.name}`);
+        const blob = await response.blob();
+        zip.file(f.name, blob);
+      } catch (err) {
+        console.warn(`Could not add ${f.name} to ZIP:`, err);
+      }
+    });
+    await Promise.all(fetchPromises);
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(zipBlob);
+    const safeName = (zipName || 'files').replace(/[^a-zA-Z0-9 _-]/g, '_');
+    triggerDownload(url, `${safeName}.zip`);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    showToast('ZIP downloaded!');
+  } catch (err) {
+    console.error('ZIP creation failed:', err);
+    showToast('ZIP failed — downloading separately…');
+    downloadSeparately(files);
+  }
+}
+
+async function shareFiles(files, label) {
+  const fileObjects = [];
+  let canShareFiles = false;
+
+  if (navigator.share && navigator.canShare) {
+    try {
+      for (const f of files) {
+        const response = await fetch(f.path);
+        const blob = await response.blob();
+        const ext = f.name.split('.').pop() || 'mp3';
+        const mimeType = ext === 'mp3' ? 'audio/mpeg' : ext === 'pdf' ? 'application/pdf' : 'application/octet-stream';
+        fileObjects.push(new File([blob], f.name, { type: mimeType }));
+      }
+      if (navigator.canShare({ files: fileObjects })) {
+        canShareFiles = true;
+      }
+    } catch (e) {
+      // Fall through to URL sharing
+    }
+  }
+
+  if (canShareFiles && fileObjects.length) {
+    try {
+      await navigator.share({
+        files: fileObjects,
+        title: label || 'Spotlight Files',
+      });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      // Fall through
+    }
+  }
+
+  // Fallback: share via WhatsApp with URLs
+  const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
+  const text = (label || 'Spotlight files') + ':\n' + files.map(f => {
+    return `${f.name}: ${baseUrl}/${f.path}`;
+  }).join('\n');
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(waUrl, '_blank');
+}
+
+// ---- TOAST ----
+function showToast(message) {
+  let toast = document.getElementById('toast-msg');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast-msg';
+    toast.style.cssText = `
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--slate); color: #fff; padding: 10px 20px;
+      border-radius: 99px; font-size: 0.82rem; font-family: var(--sans);
+      z-index: 9999; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
+      opacity: 0; transform: translateX(-50%) translateY(10px);
+      white-space: nowrap; max-width: 90vw; text-align: center;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(10px)';
+  }, 2200);
+}
+</script>
+
+</body>
+</html>
