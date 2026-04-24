@@ -222,17 +222,7 @@
     border-color: #4A7C59;
   }
 
-  .btn-share {
-    background: rgba(28, 31, 38, 0.05);
-    color: var(--slate-mid);
-    border-color: rgba(28, 31, 38, 0.12);
-    cursor: pointer;
-  }
-  .btn-share:hover {
-    background: var(--slate);
-    color: #fff;
-    border-color: var(--slate);
-  }
+
 
   /* SEARCH */
   .search-bar {
@@ -551,7 +541,7 @@ fetch('file-list.json')
   });
 
 const ACCENTS = ['#C8603A', '#3A6B8A', '#4A7C59'];
-const LEVELS  = ['Beginner', 'Elementary', 'Pre-Intermediate'];
+const LEVELS  = ['7th Grade', '8th Grade', '9th Grade'];
 const ACCENT_CSS_NAMES = ['accent-1', 'accent-2', 'accent-3'];
 
 // ---- HELPERS ----
@@ -595,9 +585,7 @@ function audioIcon() {
 function zipIcon() {
   return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 4.5h2.5l1.5 1.5v3a.75.75 0 0 1-.75.75H3.5V4.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 4.5V6h1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
-function shareIcon() {
-  return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><circle cx="3.5" cy="6" r="1.8" stroke="currentColor" stroke-width="1.2"/><circle cx="9" cy="3" r="1.4" stroke="currentColor" stroke-width="1.2"/><circle cx="9" cy="9" r="1.4" stroke="currentColor" stroke-width="1.2"/><path d="M5 5.4 7.8 3.8m-2.8 2.4L7.8 8.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
-}
+
 
 // ---- ESCAPE HTML ----
 function escHtml(str) {
@@ -639,21 +627,16 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
 
   let btns = '';
   if (sbPath) {
-    const sbData = JSON.stringify([{ name: sbFile.name, path: sbPath }]).replace(/'/g, "\\'");
     btns += btnSB(sbPath, 'SB');
-    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${sbData}' data-label="${escHtml(sbFile.name)}" aria-label="Share SB">${shareIcon()}</button>`;
   }
   if (tgPath) {
-    const tgData = JSON.stringify([{ name: tgFile.name, path: tgPath }]).replace(/'/g, "\\'");
     btns += btnTG(tgPath, 'TG');
-    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${tgData}' data-label="${escHtml(tgFile.name)}" aria-label="Share TG">${shareIcon()}</button>`;
   }
 
-  // All Audios button (replaces SB+Audio bundle)
+  // All Audios button
   if (audioFiles.length) {
     const audioDataJson = JSON.stringify(audioFileData).replace(/'/g, "\\'");
     btns += `<button class="btn btn-all-audios btn-download-all" data-files='${audioDataJson}' data-label="All Audios (${audioFiles.length})" aria-label="All ${audioFiles.length} audio files">${audioIcon()} All Audios (${audioFiles.length})</button>`;
-    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${audioDataJson}' data-label="All Audios – ${escHtml(lesson.name)}" aria-label="Share all audios">${shareIcon()}</button>`;
   }
 
   // SB+TG bundle
@@ -662,9 +645,7 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
       { name: sbFile.name, path: sbPath },
       { name: tgFile.name, path: tgPath }
     ];
-    const bundleJson = JSON.stringify(bundleData).replace(/'/g, "\\'");
     btns += btnBundle(bundleData, 'SB + TG');
-    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${bundleJson}' data-label="SB + TG – ${escHtml(lesson.name)}" aria-label="Share SB+TG">${shareIcon()}</button>`;
   }
   // All files bundle
   if ((sbPath || tgPath) && audioFiles.length) {
@@ -673,25 +654,19 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
       ...(tgPath ? [{ name: tgFile.name, path: tgPath }] : []),
       ...audioFileData
     ];
-    const allJson = JSON.stringify(allData).replace(/'/g, "\\'");
     btns += btnBundle(allData, 'All files');
-    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${allJson}' data-label="All files – ${escHtml(lesson.name)}" aria-label="Share all files">${shareIcon()}</button>`;
   }
 
-  // Audio list with individual download links + share buttons
+  // Audio list with individual download links
   let audioList = '';
   if (audioFiles.length) {
     audioList = `<div class="audio-list">` +
       audioFiles.map(f => {
         const path = buildPath(bookName, unitName, lesson.name, f.name);
-        const singleData = JSON.stringify([{ name: f.name, path: path }]).replace(/'/g, "\\'");
-        return `<div style="display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;">
-          <a class="audio-item" href="${escHtml(path)}" download style="flex:1;min-width:0;">
+        return `<a class="audio-item" href="${escHtml(path)}" download>
             <span class="audio-dot"></span>
             <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name)}</span>
-          </a>
-          <button class="btn btn-share btn-popover-trigger" data-files='${singleData}' data-label="${escHtml(f.name)}" style="font-size:0.65rem;padding:3px 7px;flex-shrink:0;" aria-label="Share ${escHtml(f.name)}">${shareIcon()}</button>
-        </div>`;
+          </a>`;
       }).join('') +
     `</div>`;
   }
@@ -807,26 +782,19 @@ function initializePage() {
   let rootBtns = '';
   if (bookSB) {
     const sbPath2 = buildPath(book.name, bookSB.name);
-    const sbData2 = JSON.stringify([{ name: bookSB.name, path: sbPath2 }]).replace(/'/g, "\\'");
     rootBtns += btnSB(sbPath2, 'Full Student Book');
-    rootBtns += `<button class="btn btn-share btn-popover-trigger" data-files='${sbData2}' data-label="${escHtml(bookSB.name)}" aria-label="Share Student Book">${shareIcon()}</button>`;
   }
   if (bookTG) {
     const tgPath2 = buildPath(book.name, bookTG.name);
-    const tgData2 = JSON.stringify([{ name: bookTG.name, path: tgPath2 }]).replace(/'/g, "\\'");
     rootBtns += btnTG(tgPath2, 'Full Teacher Guide');
-    rootBtns += `<button class="btn btn-share btn-popover-trigger" data-files='${tgData2}' data-label="${escHtml(bookTG.name)}" aria-label="Share Teacher Guide">${shareIcon()}</button>`;
   }
   if (bookSB && bookTG) {
     const sbPath2 = buildPath(book.name, bookSB.name);
     const tgPath2 = buildPath(book.name, bookTG.name);
-    const bundleArr = [
+    rootBtns += btnBundle([
       { name: bookSB.name, path: sbPath2 },
       { name: bookTG.name, path: tgPath2 }
-    ];
-    const bundleJson2 = JSON.stringify(bundleArr).replace(/'/g, "\\'");
-    rootBtns += btnBundle(bundleArr, 'SB + TG');
-    rootBtns += `<button class="btn btn-share btn-popover-trigger" data-files='${bundleJson2}' data-label="SB + TG – ${escHtml(book.name)}" aria-label="Share SB+TG">${shareIcon()}</button>`;
+    ], 'SB + TG');
   }
 
   // Header
@@ -950,22 +918,7 @@ document.addEventListener('click', function(e) {
 // ---- SHARE POPOVER (btn-popover-trigger — share only) ----
 
 
-document.addEventListener('click', async function(e) {
-  const trigger = e.target.closest('.btn-popover-trigger');
-  if (!trigger) return;
-  e.preventDefault();
-  e.stopPropagation();
-  try {
-    const fileData = JSON.parse(trigger.getAttribute('data-files') || '[]');
-    const text = fileData.length === 1
-      ? fileData[0].path
-      : fileData.map(f => `${f.name}: ${f.path}`).join('\n');
-    await navigator.clipboard.writeText(text);
-    showToast('Link copied to clipboard!');
-  } catch {
-    showToast('Could not copy link.');
-  }
-});
+
 
 // ---- TOAST ----
 function showToast(message) {
