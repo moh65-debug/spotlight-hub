@@ -26,8 +26,8 @@
     --accent: #C8603A;
     --serif: 'DM Serif Display', Georgia, serif;
     --sans: 'DM Sans', system-ui, sans-serif;
-    --radius: 12px;
-    --radius-sm: 6px;
+    --radius: 14px;
+    --radius-sm: 8px;
     --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -41,546 +41,311 @@
     min-height: 100vh;
   }
 
+  /* ── NAV ── */
   nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(247, 244, 238, 0.88);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(28, 31, 38, 0.08);
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(247, 244, 238, 0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(28, 31, 38, 0.07);
     padding: 0 2rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+    display: flex; align-items: center; gap: 1rem;
     height: 60px;
   }
   .nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+
+  /* Library button */
   .btn-library {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    padding: 6px 12px; border-radius: 99px;
-    font-size: 0.78rem; font-weight: 500; font-family: var(--sans);
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 7px 13px; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 500; font-family: var(--sans);
     background: rgba(28,31,38,0.06); color: var(--slate-mid);
     border: 1px solid rgba(28,31,38,0.12); cursor: pointer;
     transition: all var(--transition); white-space: nowrap;
   }
   .btn-library:hover { background: var(--slate); color: #fff; border-color: var(--slate); }
-  .btn-library .lib-count {
+  .lib-count {
     background: var(--accent); color: #fff;
     border-radius: 99px; padding: 1px 6px;
-    font-size: 0.68rem; font-weight: 700;
-    display: none;
+    font-size: 0.65rem; font-weight: 700;
+    display: none; min-width: 18px; text-align: center;
   }
-  .btn-library .lib-count.visible { display: inline; }
+  .lib-count.visible { display: inline-block; }
+
   .nav-back {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.875rem;
-    color: var(--slate-light);
-    text-decoration: none;
-    transition: color var(--transition);
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.875rem; color: var(--slate-light);
+    text-decoration: none; transition: color var(--transition);
+    flex-shrink: 0;
   }
   .nav-back:hover { color: var(--slate); }
-  .nav-back svg { display: block; }
-  .nav-divider {
-    width: 1px;
-    height: 16px;
-    background: rgba(28, 31, 38, 0.12);
-  }
+  .nav-divider { width: 1px; height: 16px; background: rgba(28,31,38,0.12); flex-shrink: 0; }
   .nav-title {
-    font-family: var(--serif);
-    font-size: 1rem;
-    color: var(--slate);
-    letter-spacing: -0.01em;
+    font-family: var(--serif); font-size: 1rem;
+    color: var(--slate); letter-spacing: -0.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-width: 0;
   }
   .nav-accent-bar {
-    height: 3px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    height: 2px; position: absolute; bottom: 0; left: 0; right: 0;
   }
 
-  /* HEADER */
+  /* ── HEADER ── */
   .book-header {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 3.5rem 2rem 2.5rem;
+    max-width: 900px; margin: 0 auto; padding: 3.5rem 2rem 2rem;
   }
   .book-header-eyebrow {
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 0.75rem;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 0.6rem;
   }
   .book-header h1 {
     font-family: var(--serif);
-    font-size: clamp(2rem, 5vw, 3rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    margin-bottom: 1rem;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1rem;
   }
   .book-header-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    align-items: center;
-    margin-bottom: 2rem;
+    display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; margin-bottom: 2rem;
   }
-  .meta-stat {
-    display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
-  }
-  .meta-stat strong {
-    font-family: var(--serif);
-    font-size: 1.25rem;
-    font-weight: 400;
-  }
-  .meta-stat span {
-    font-size: 0.8rem;
-    color: var(--slate-light);
-    font-weight: 400;
-  }
+  .meta-stat { display: flex; align-items: baseline; gap: 0.35rem; }
+  .meta-stat strong { font-family: var(--serif); font-size: 1.2rem; font-weight: 400; }
+  .meta-stat span { font-size: 0.78rem; color: var(--slate-light); }
 
-  /* WHOLE-BOOK DOWNLOADS */
+  /* ── WHOLE-BOOK DOWNLOADS ── */
   .book-downloads {
-    background: #fff;
-    border: 1px solid rgba(28, 31, 38, 0.08);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    margin-bottom: 2.5rem;
+    background: #fff; border: 1px solid rgba(28,31,38,0.07);
+    border-radius: var(--radius); padding: 1.35rem 1.5rem; margin-bottom: 2rem;
   }
   .book-downloads-title {
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--slate-light);
-    margin-bottom: 1rem;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--slate-light); margin-bottom: 0.9rem;
   }
-  .download-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
+  .download-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 
-  /* DOWNLOAD BUTTONS */
+  /* ── BUTTONS ──
+     Principle: each file gets ONE primary action.
+     PDFs → Download   |   Audio → Play (+ Download secondary)
+     "Save Offline" is available on PDFs only via the long-press/secondary action
+     or the in-page save trigger; we don't clutter every row with 3 buttons.
+  */
   .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 7px 13px;
-    border-radius: var(--radius-sm);
-    font-size: 0.8rem;
-    font-weight: 500;
-    font-family: var(--sans);
-    cursor: pointer;
-    border: 1px solid transparent;
-    text-decoration: none;
-    transition: all var(--transition);
-    white-space: nowrap;
-    background: transparent;
-    color: inherit;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 6px 12px; border-radius: var(--radius-sm);
+    font-size: 0.78rem; font-weight: 500; font-family: var(--sans);
+    cursor: pointer; border: 1px solid transparent;
+    text-decoration: none; transition: all var(--transition);
+    white-space: nowrap; background: transparent; color: inherit;
   }
   .btn svg { display: block; flex-shrink: 0; }
 
+  /* Student Book */
   .btn-sb {
-    background: rgba(200, 96, 58, 0.08);
-    color: var(--accent);
-    border-color: rgba(200, 96, 58, 0.2);
+    background: rgba(200,96,58,0.08); color: var(--accent);
+    border-color: rgba(200,96,58,0.2);
   }
-  .btn-sb:hover {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
+  .btn-sb:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+  /* Teacher Guide */
   .btn-tg {
-    background: rgba(58, 107, 138, 0.08);
-    color: #3A6B8A;
-    border-color: rgba(58, 107, 138, 0.2);
+    background: rgba(58,107,138,0.08); color: #3A6B8A;
+    border-color: rgba(58,107,138,0.2);
   }
-  .btn-tg:hover {
-    background: #3A6B8A;
-    color: #fff;
-    border-color: #3A6B8A;
-  }
+  .btn-tg:hover { background: #3A6B8A; color: #fff; border-color: #3A6B8A; }
 
+  /* Audio play */
   .btn-audio {
-    background: rgba(74, 124, 89, 0.08);
-    color: #4A7C59;
-    border-color: rgba(74, 124, 89, 0.2);
+    background: rgba(74,124,89,0.08); color: #4A7C59;
+    border-color: rgba(74,124,89,0.18);
   }
-  .btn-audio:hover {
-    background: #4A7C59;
-    color: #fff;
-    border-color: #4A7C59;
-  }
+  .btn-audio:hover { background: #4A7C59; color: #fff; border-color: #4A7C59; }
 
+  /* Bundle / neutral */
   .btn-bundle {
-    background: rgba(28, 31, 38, 0.05);
-    color: var(--slate-mid);
-    border-color: rgba(28, 31, 38, 0.12);
+    background: rgba(28,31,38,0.05); color: var(--slate-mid);
+    border-color: rgba(28,31,38,0.12);
   }
-  .btn-bundle:hover {
-    background: var(--slate);
-    color: #fff;
-    border-color: var(--slate);
-  }
+  .btn-bundle:hover { background: var(--slate); color: #fff; border-color: var(--slate); }
 
-  .btn-all-audios {
-    background: rgba(74, 124, 89, 0.12);
-    color: #3D6B4A;
-    border-color: rgba(74, 124, 89, 0.3);
-    font-weight: 600;
+  /* Save offline — shown only in a clear context */
+  .btn-save {
+    background: transparent; color: var(--slate-light);
+    border-color: rgba(28,31,38,0.15);
+    font-size: 0.72rem; padding: 4px 9px;
   }
-  .btn-all-audios:hover {
-    background: #4A7C59;
-    color: #fff;
-    border-color: #4A7C59;
-  }
+  .btn-save:hover { background: rgba(74,124,89,0.1); color: #4A7C59; border-color: rgba(74,124,89,0.3); }
+  .btn-save.saving { opacity: 0.55; pointer-events: none; }
+  .btn-save.saved  { color: #4A7C59; border-color: rgba(74,124,89,0.4); pointer-events: none; }
 
-
-
-  /* SEARCH */
-  .search-bar {
-    max-width: 900px;
-    margin: 0 auto 1.5rem;
-    padding: 0 2rem;
-  }
+  /* ── SEARCH ── */
+  .search-bar { max-width: 900px; margin: 0 auto 1.5rem; padding: 0 2rem; }
   .search-input {
-    width: 100%;
-    padding: 10px 14px 10px 38px;
+    width: 100%; padding: 10px 14px 10px 38px;
     border-radius: var(--radius-sm);
-    border: 1px solid rgba(28, 31, 38, 0.12);
+    border: 1px solid rgba(28,31,38,0.12);
     background: #fff;
-    font-family: var(--sans);
-    font-size: 0.9rem;
-    color: var(--slate);
-    outline: none;
-    transition: border-color var(--transition), box-shadow var(--transition);
+    font-family: var(--sans); font-size: 0.9rem; color: var(--slate);
+    outline: none; transition: border-color var(--transition), box-shadow var(--transition);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 16 16'%3E%3Ccircle cx='7' cy='7' r='4.5' stroke='%236B7280' stroke-width='1.3'/%3E%3Cpath d='m10.5 10.5 2.5 2.5' stroke='%236B7280' stroke-width='1.3' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: 12px center;
+    background-repeat: no-repeat; background-position: 12px center;
   }
-  .search-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(200, 96, 58, 0.1);
-  }
+  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,96,58,0.1); }
   .search-input::placeholder { color: var(--slate-light); }
 
-  /* UNITS */
-  .units-section {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 2rem 5rem;
-  }
+  /* ── UNITS ── */
+  .units-section { max-width: 900px; margin: 0 auto; padding: 0 2rem 5rem; }
 
   .unit-block {
-    margin-bottom: 1rem;
-    border-radius: var(--radius);
-    border: 1px solid rgba(28, 31, 38, 0.08);
-    background: #fff;
-    overflow: hidden;
+    margin-bottom: 0.75rem; border-radius: var(--radius);
+    border: 1px solid rgba(28,31,38,0.07); background: #fff; overflow: hidden;
   }
-
   .unit-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.1rem 1.5rem;
-    cursor: pointer;
-    user-select: none;
-    gap: 1rem;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.5rem; cursor: pointer; user-select: none; gap: 1rem;
     transition: background var(--transition);
   }
-  .unit-header:hover { background: rgba(247, 244, 238, 0.5); }
-
-  .unit-header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex: 1;
-    min-width: 0;
-  }
+  .unit-header:hover { background: rgba(247,244,238,0.6); }
+  .unit-header-left { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; }
   .unit-num-badge {
-    font-size: 0.68rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent);
-    background: rgba(200, 96, 58, 0.08);
-    border: 1px solid rgba(200, 96, 58, 0.15);
-    padding: 3px 8px;
-    border-radius: 4px;
-    flex-shrink: 0;
+    font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); background: rgba(200,96,58,0.08); border: 1px solid rgba(200,96,58,0.15);
+    padding: 3px 8px; border-radius: 4px; flex-shrink: 0;
   }
   .unit-name {
-    font-family: var(--serif);
-    font-size: 1.1rem;
-    letter-spacing: -0.01em;
-    color: var(--slate);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-family: var(--serif); font-size: 1.05rem; letter-spacing: -0.01em;
+    color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .unit-lesson-count {
-    font-size: 0.75rem;
-    color: var(--slate-light);
-    white-space: nowrap;
-  }
-
+  .unit-lesson-count { font-size: 0.72rem; color: var(--slate-light); white-space: nowrap; }
   .unit-chevron {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 1px solid rgba(28, 31, 38, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 1px solid rgba(28,31,38,0.1);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     transition: transform var(--transition), background var(--transition);
   }
-  .unit-block.open .unit-chevron {
-    transform: rotate(180deg);
-    background: var(--accent);
-    border-color: var(--accent);
-  }
+  .unit-block.open .unit-chevron { transform: rotate(180deg); background: var(--accent); border-color: var(--accent); }
   .unit-block.open .unit-chevron path { stroke: #fff; }
 
-  .unit-body {
-    display: none;
-    border-top: 1px solid rgba(28, 31, 38, 0.06);
-  }
+  .unit-body { display: none; border-top: 1px solid rgba(28,31,38,0.06); }
   .unit-block.open .unit-body { display: block; }
 
-  /* UNIT-LEVEL AUDIO */
+  /* Unit-level audio row */
   .unit-audio-row {
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid rgba(28, 31, 38, 0.06);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: rgba(247, 244, 238, 0.4);
+    padding: 0.65rem 1.5rem; border-bottom: 1px solid rgba(28,31,38,0.05);
+    display: flex; align-items: center; gap: 0.4rem; background: rgba(247,244,238,0.4);
     flex-wrap: wrap;
   }
-  .unit-audio-label {
-    font-size: 0.75rem;
-    color: var(--slate-light);
-    flex: 1;
-    min-width: 120px;
-  }
+  .unit-audio-label { font-size: 0.72rem; color: var(--slate-light); flex: 1; min-width: 100px; }
 
-  /* LESSONS */
+  /* ── LESSONS ── */
   .lesson-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(28, 31, 38, 0.05);
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 1rem 1.5rem; border-bottom: 1px solid rgba(28,31,38,0.05);
     transition: background var(--transition);
   }
   .lesson-row:last-child { border-bottom: none; }
-  .lesson-row:hover { background: rgba(247, 244, 238, 0.4); }
-
+  .lesson-row:hover { background: rgba(247,244,238,0.5); }
   .lesson-num {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: var(--slate-light);
-    padding-top: 2px;
-    min-width: 60px;
-    flex-shrink: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: 0.68rem; font-weight: 500; color: var(--slate-light); padding-top: 3px;
+    min-width: 56px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.06em;
   }
-
   .lesson-info { flex: 1; min-width: 0; }
-  .lesson-name {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--slate);
-    margin-bottom: 0.5rem;
-  }
-  .lesson-files {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    align-items: center;
+  .lesson-name { font-size: 0.88rem; font-weight: 500; color: var(--slate); margin-bottom: 0.55rem; }
+
+  /* Action group: primary buttons always visible, secondary (Save Offline) revealed on hover */
+  .lesson-actions {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
   }
 
-  /* AUDIO LIST */
-  .audio-list {
-    margin-top: 0.6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
+  /* ── AUDIO LIST ── */
+  .audio-list { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 4px; }
+  .audio-row {
+    display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
   }
-  .audio-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    color: var(--slate-light);
-    text-decoration: none;
-    transition: color var(--transition);
+  .audio-name {
+    font-size: 0.73rem; color: var(--slate-light);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;
   }
-  .audio-item:hover { color: var(--slate); }
   .audio-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #4A7C59;
-    flex-shrink: 0;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #4A7C59; flex-shrink: 0;
   }
 
-  /* WELCOME SECTION */
+  /* ── WELCOME BLOCK ── */
   .welcome-block {
-    background: rgba(247, 244, 238, 0.6);
-    border: 1px dashed rgba(28, 31, 38, 0.1);
-    border-radius: var(--radius);
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
+    background: rgba(247,244,238,0.6); border: 1px dashed rgba(28,31,38,0.1);
+    border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 0.75rem;
   }
   .welcome-title {
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--slate-light);
-    margin-bottom: 0.75rem;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--slate-light); margin-bottom: 0.75rem;
   }
 
-  /* FILTER TABS */
-  .filter-tabs {
-    display: flex;
-    gap: 0.35rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-  }
-  .filter-tab {
-    padding: 5px 12px;
-    border-radius: 99px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid rgba(28, 31, 38, 0.12);
-    background: transparent;
-    color: var(--slate-light);
-    font-family: var(--sans);
-    transition: all var(--transition);
-  }
-  .filter-tab:hover { border-color: rgba(28, 31, 38, 0.25);
-    color: var(--slate); }
-  .filter-tab.active {
-    background: var(--slate);
-    color: #fff;
-    border-color: var(--slate);
+  /* ── IMPORT FILE (offline workaround) ── */
+  .import-hint {
+    font-size: 0.72rem; color: var(--slate-light);
+    display: flex; align-items: center; gap: 0.35rem; margin-top: 0.25rem;
   }
 
-  /* Mobile bottom sheet no longer needed */
-
+  /* ── FOOTER ── */
   footer {
-    border-top: 1px solid rgba(28, 31, 38, 0.08);
-    padding: 2rem;
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--slate-light);
+    border-top: 1px solid rgba(28,31,38,0.07); padding: 2rem;
+    text-align: center; font-size: 0.8rem; color: var(--slate-light);
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  .book-header { animation: fadeUp 0.5s ease both; }
-  .unit-block { animation: fadeUp 0.4s ease both; }
-
-  /* ICON */
-  .icon { display: inline-block; width: 12px; height: 12px; }
+  .book-header { animation: fadeUp 0.45s ease both; }
+  .unit-block  { animation: fadeUp 0.35s ease both; }
 
   @media (max-width: 600px) {
-    .lesson-row { flex-direction: column; gap: 0.5rem; }
-    .lesson-num { min-width: unset; }
     nav { padding: 0 1rem; }
-    .book-header { padding: 2rem 1rem 1.5rem; }
+    .nav-title { max-width: 120px; font-size: 0.9rem; }
+    .book-header { padding: 2.5rem 1rem 1.5rem; }
     .units-section { padding: 0 1rem 4rem; }
     .search-bar { padding: 0 1rem; }
-    .unit-header { padding: 0.9rem 1rem; }
-    .lesson-row { padding: 0.75rem 1rem; }
-    .unit-audio-row { padding: 0.6rem 1rem; }
+    .unit-header { padding: 0.85rem 1rem; }
+    .lesson-row { flex-direction: column; gap: 0.35rem; padding: 0.75rem 1rem; }
+    .lesson-num { min-width: unset; }
+    .unit-audio-row { padding: 0.5rem 1rem; }
+    .book-downloads { padding: 1rem; }
   }
 
-  /* ---- SAVE OFFLINE BUTTON ---- */
-  .btn-save {
-    background: rgba(74, 124, 89, 0.08);
-    color: #4A7C59;
-    border-color: rgba(74, 124, 89, 0.2);
-    position: relative;
-  }
-  .btn-save:hover { background: #4A7C59; color: #fff; border-color: #4A7C59; }
-  .btn-save.saving { opacity: 0.6; pointer-events: none; }
-  .btn-save.saved {
-    background: #4A7C59; color: #fff; border-color: #4A7C59;
-  }
-  .btn-save.saved::after {
-    content: '✓'; margin-left: 2px;
-  }
-  .offline-badge {
-    display: inline-block; font-size: 0.6rem; font-weight: 700;
-    background: #4A7C59; color: #fff; border-radius: 3px;
-    padding: 1px 4px; vertical-align: middle; margin-left: 4px;
-    text-transform: uppercase; letter-spacing: 0.04em;
-  }
-
-  /* ---- LIBRARY PANEL ---- */
+  /* ── LIBRARY PANEL ── */
   .library-overlay {
     position: fixed; inset: 0; z-index: 300;
-    background: rgba(28,31,38,0.5);
-    display: none;
+    background: rgba(28,31,38,0.45);
+    display: none; backdrop-filter: blur(2px);
   }
   .library-overlay.active { display: flex; align-items: flex-end; }
   @media (min-width: 601px) {
     .library-overlay.active { align-items: center; justify-content: flex-end; }
   }
   .library-panel {
-    background: #fff;
-    width: 100%; max-height: 85vh;
-    border-radius: 20px 20px 0 0;
-    display: flex; flex-direction: column;
-    overflow: hidden;
-    animation: slideUpPanel 0.3s cubic-bezier(0.4,0,0.2,1) both;
+    background: #fff; width: 100%; max-height: 85vh;
+    border-radius: 20px 20px 0 0; display: flex; flex-direction: column;
+    overflow: hidden; animation: slideUpPanel 0.28s cubic-bezier(0.4,0,0.2,1) both;
   }
   @media (min-width: 601px) {
     .library-panel {
-      width: 380px; max-height: 90vh;
-      border-radius: var(--radius);
-      margin-right: 1rem;
-      animation: popInPanel 0.25s cubic-bezier(0.4,0,0.2,1) both;
+      width: 380px; max-height: 90vh; border-radius: var(--radius);
+      margin-right: 1rem; animation: popInPanel 0.22s cubic-bezier(0.4,0,0.2,1) both;
     }
   }
   @keyframes slideUpPanel { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  @keyframes popInPanel { from { opacity:0; transform: scale(0.95) translateY(8px); } to { opacity:1; transform: none; } }
+  @keyframes popInPanel { from { opacity:0; transform: scale(0.96) translateY(10px); } to { opacity:1; transform: none; } }
 
   .library-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 1.1rem 1.25rem 0.75rem;
-    border-bottom: 1px solid var(--cream-dark);
-    flex-shrink: 0;
+    padding: 1.1rem 1.25rem 0.75rem; border-bottom: 1px solid var(--cream-dark); flex-shrink: 0;
   }
   .library-title { font-family: var(--serif); font-size: 1.1rem; color: var(--slate); }
   .library-close {
     width: 28px; height: 28px; border-radius: 50%;
-    border: 1px solid rgba(28,31,38,0.12);
-    background: none; cursor: pointer;
+    border: 1px solid rgba(28,31,38,0.12); background: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    color: var(--slate-light); font-size: 1rem; line-height: 1;
-    transition: all var(--transition);
+    color: var(--slate-light); font-size: 1rem; transition: all var(--transition);
   }
   .library-close:hover { background: var(--slate); color: #fff; border-color: var(--slate); }
-
   .library-body { overflow-y: auto; flex: 1; padding: 0.75rem; }
   .library-empty {
     text-align: center; padding: 3rem 1rem;
@@ -588,14 +353,27 @@
   }
   .library-empty svg { margin: 0 auto 0.75rem; display: block; opacity: 0.3; }
 
+  /* Import via file picker — for getting Drive files offline */
+  .library-import-tip {
+    background: rgba(74,124,89,0.06); border: 1px solid rgba(74,124,89,0.18);
+    border-radius: var(--radius-sm); padding: 0.75rem 0.9rem; margin-bottom: 0.75rem;
+    font-size: 0.75rem; color: var(--slate-mid); line-height: 1.55;
+  }
+  .library-import-tip strong { color: #4A7C59; }
+  .btn-import-file {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    margin-top: 0.5rem; padding: 5px 11px; border-radius: 99px;
+    font-size: 0.72rem; font-weight: 500; font-family: var(--sans);
+    background: #4A7C59; color: #fff; border: none; cursor: pointer;
+    transition: opacity var(--transition);
+  }
+  .btn-import-file:hover { opacity: 0.85; }
+
   .lib-item {
     display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.65rem 0.75rem;
-    border-radius: var(--radius-sm);
-    border: 1px solid rgba(28,31,38,0.07);
-    margin-bottom: 0.4rem;
-    background: var(--cream);
-    transition: background var(--transition);
+    padding: 0.65rem 0.75rem; border-radius: var(--radius-sm);
+    border: 1px solid rgba(28,31,38,0.07); margin-bottom: 0.4rem;
+    background: var(--cream); transition: background var(--transition);
   }
   .lib-item:hover { background: var(--cream-dark); }
   .lib-icon {
@@ -606,10 +384,7 @@
   .lib-icon.pdf { background: rgba(200,96,58,0.1); }
   .lib-icon.mp3 { background: rgba(74,124,89,0.1); }
   .lib-info { flex: 1; min-width: 0; }
-  .lib-name {
-    font-size: 0.82rem; font-weight: 500; color: var(--slate);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
+  .lib-name { font-size: 0.82rem; font-weight: 500; color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lib-meta { font-size: 0.7rem; color: var(--slate-light); margin-top: 1px; }
   .lib-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
   .lib-btn {
@@ -620,9 +395,9 @@
   .lib-btn-open { background: var(--accent); color: #fff; }
   .lib-btn-open:hover { opacity: 0.85; }
   .lib-btn-delete { background: rgba(28,31,38,0.07); color: var(--slate-light); }
-  .lib-btn-delete:hover { background: #e74c3c; color: #fff; }
+  .lib-btn-delete:hover { background: #e53e3e; color: #fff; }
 
-  /* ---- PDF VIEWER MODAL ---- */
+  /* ── PDF VIEWER ── */
   .viewer-overlay {
     position: fixed; inset: 0; z-index: 400;
     background: rgba(10,10,15,0.92);
@@ -631,7 +406,7 @@
   .viewer-overlay.active { display: flex; }
   .viewer-topbar {
     display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.6rem 1rem; background: rgba(28,31,38,0.9);
+    padding: 0.6rem 1rem; background: rgba(28,31,38,0.95);
     flex-shrink: 0; min-height: 50px;
   }
   .viewer-close {
@@ -642,44 +417,29 @@
     transition: background var(--transition);
   }
   .viewer-close:hover { background: rgba(255,255,255,0.15); }
-  .viewer-filename {
-    font-size: 0.85rem; color: rgba(255,255,255,0.8);
-    flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .viewer-pages { font-size: 0.75rem; color: rgba(255,255,255,0.45); white-space: nowrap; }
+  .viewer-filename { font-size: 0.85rem; color: rgba(255,255,255,0.8); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .viewer-pages { font-size: 0.75rem; color: rgba(255,255,255,0.4); white-space: nowrap; }
   .viewer-body {
     flex: 1; overflow-y: auto; overflow-x: hidden;
     display: flex; flex-direction: column; align-items: center;
-    padding: 1rem 0.5rem;
-    gap: 8px;
-    background: #2a2a30;
+    padding: 1rem 0.5rem; gap: 8px; background: #2a2a30;
   }
   .viewer-body canvas {
     max-width: 100%; height: auto;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    border-radius: 2px;
-    display: block;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5); border-radius: 2px; display: block;
   }
-  .viewer-loading {
-    color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: auto;
-    text-align: center; padding: 3rem;
-  }
+  .viewer-loading { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: auto; text-align: center; padding: 3rem; }
 
-  /* ---- AUDIO PLAYER ---- */
+  /* ── AUDIO PLAYER ── */
   .audio-player-bar {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 350;
-    background: var(--slate);
-    color: #fff;
+    background: var(--slate); color: #fff;
     padding: 0.6rem 1rem;
-    display: none;
-    flex-direction: column;
-    gap: 0.4rem;
+    display: none; flex-direction: column; gap: 0.4rem;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
   }
   .audio-player-bar.active { display: flex; }
-  .audio-player-top {
-    display: flex; align-items: center; gap: 0.75rem;
-  }
+  .audio-player-top { display: flex; align-items: center; gap: 0.75rem; }
   .audio-track-name {
     flex: 1; font-size: 0.82rem; font-weight: 500;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -690,34 +450,32 @@
     border: none; background: rgba(255,255,255,0.12);
     color: #fff; cursor: pointer; font-size: 1rem;
     display: flex; align-items: center; justify-content: center;
-    transition: background var(--transition);
-    flex-shrink: 0;
+    transition: background var(--transition); flex-shrink: 0;
   }
   .audio-ctrl:hover { background: rgba(255,255,255,0.22); }
   .audio-ctrl.play-pause { background: var(--accent); width: 38px; height: 38px; font-size: 1.1rem; }
   .audio-ctrl.play-pause:hover { opacity: 0.85; }
-  .audio-close-ctrl {
-    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5);
-  }
-  .audio-progress-row {
-    display: flex; align-items: center; gap: 0.5rem;
-  }
-  .audio-time { font-size: 0.68rem; color: rgba(255,255,255,0.45); min-width: 36px; }
+  .audio-close-ctrl { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+  .audio-progress-row { display: flex; align-items: center; gap: 0.5rem; }
+  .audio-time { font-size: 0.68rem; color: rgba(255,255,255,0.4); min-width: 36px; }
   .audio-time.right { text-align: right; }
-  input[type=range].audio-seek {
-    flex: 1; height: 3px; cursor: pointer;
-    accent-color: var(--accent);
-    border-radius: 99px;
+  input[type=range].audio-seek { flex: 1; height: 3px; cursor: pointer; accent-color: var(--accent); border-radius: 99px; }
+
+  /* ── TOAST ── */
+  #toast-msg {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: var(--slate); color: #fff; padding: 9px 18px;
+    border-radius: 99px; font-size: 0.82rem; font-family: var(--sans);
+    z-index: 9999; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
+    opacity: 0; white-space: nowrap; max-width: 90vw; text-align: center;
   }
-
-  /* Mark audio items that are saved offline */
-  .audio-item.offline-saved .audio-dot { background: #4A7C59; box-shadow: 0 0 0 2px rgba(74,124,89,0.3); }
-
+  #toast-msg.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<nav>
+<!-- ── NAV ── -->
+<nav style="position:relative;">
   <a class="nav-back" href="index.html">
     <svg width="14" height="14" fill="none" viewBox="0 0 14 14">
       <path d="M9 3 5 7l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -729,28 +487,25 @@
   <div class="nav-right">
     <button class="btn-library" id="btn-library" onclick="openLibrary()">
       <svg width="13" height="13" fill="none" viewBox="0 0 14 14"><rect x="1.5" y="2" width="3.5" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="6.5" y="2" width="3.5" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M11.5 2v10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-      Offline Library
+      Library
       <span class="lib-count" id="lib-count">0</span>
     </button>
   </div>
   <div class="nav-accent-bar" id="nav-accent-bar"></div>
 </nav>
 
-<div class="book-header" id="book-header">
-  <!-- filled by JS -->
-</div>
+<!-- ── BOOK HEADER ── -->
+<div class="book-header" id="book-header"></div>
 
+<!-- ── SEARCH ── -->
 <div class="search-bar">
-  <input class="search-input" type="search" id="search" placeholder="Search units or lessons…">
+  <input class="search-input" type="search" id="search" placeholder="Search units or lessons…" autocomplete="off">
 </div>
 
-<div class="units-section" id="units-section">
-  <!-- filled by JS -->
-</div>
+<!-- ── UNITS ── -->
+<div class="units-section" id="units-section"></div>
 
-
-
-<!-- ===== OFFLINE LIBRARY PANEL ===== -->
+<!-- ── OFFLINE LIBRARY PANEL ── -->
 <div class="library-overlay" id="library-overlay" onclick="closeLibraryOnBackdrop(event)">
   <div class="library-panel" id="library-panel">
     <div class="library-header">
@@ -761,13 +516,13 @@
       <div class="library-empty">
         <svg width="48" height="48" fill="none" viewBox="0 0 48 48"><rect x="8" y="10" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/><rect x="26" y="10" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/></svg>
         <p>No files saved yet.</p>
-        <p style="margin-top:0.4rem;font-size:0.78rem;">Tap <strong>Save Offline</strong> on any file to access it without internet.</p>
+        <p style="margin-top:0.4rem;font-size:0.78rem;">Download a file then import it here, or use the Save buttons.</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ===== PDF VIEWER MODAL ===== -->
+<!-- ── PDF VIEWER ── -->
 <div class="viewer-overlay" id="viewer-overlay">
   <div class="viewer-topbar">
     <button class="viewer-close" onclick="closePdfViewer()">✕</button>
@@ -775,11 +530,11 @@
     <span class="viewer-pages" id="viewer-pages"></span>
   </div>
   <div class="viewer-body" id="viewer-body">
-    <div class="viewer-loading" id="viewer-loading">Loading PDF…</div>
+    <div class="viewer-loading">Loading PDF…</div>
   </div>
 </div>
 
-<!-- ===== AUDIO PLAYER BAR ===== -->
+<!-- ── AUDIO PLAYER ── -->
 <div class="audio-player-bar" id="audio-player-bar">
   <div class="audio-player-top">
     <button class="audio-ctrl" id="audio-prev" onclick="audioSkip(-1)" title="Previous">
@@ -798,7 +553,9 @@
     <span class="audio-time right" id="audio-dur">0:00</span>
   </div>
 </div>
+
 <audio id="audio-el" preload="auto"></audio>
+<div id="toast-msg"></div>
 
 <footer>
   Spotlight Trilogy — <span id="footer-book">…</span>
@@ -806,148 +563,115 @@
 
 <script src="data.js"></script>
 <script>
+// ============================================================
+//  GLOBALS
+// ============================================================
 let fileMap = {};
-fetch('file-list.json')
-  .then(response => response.json())
-  .then(data => {
-    data.forEach(item => {
-      fileMap[item.path] = item.id;
-    });
-    initializePage(); // Call initialize after map is loaded
-  })
-  .catch(error => {
-    console.error('Error loading file-list.json:', error);
-    initializePage(); // Call initialize even if fetch fails
-  });
 
 const ACCENTS = ['#C8603A', '#3A6B8A', '#4A7C59'];
 const LEVELS  = ['7th Grade', '8th Grade', '9th Grade'];
-const ACCENT_CSS_NAMES = ['accent-1', 'accent-2', 'accent-3'];
 
-// ---- HELPERS ----
+// ============================================================
+//  BOOT — load file-list.json then render
+// ============================================================
+fetch('file-list.json')
+  .then(r => r.json())
+  .then(data => {
+    data.forEach(item => { fileMap[item.path] = item.id; });
+    initializePage();
+  })
+  .catch(() => { initializePage(); }); // render even without file-list
+
+// ============================================================
+//  HELPERS
+// ============================================================
 function getParam(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+function fileIsSB(n)    { return /sb/i.test(n) && n.endsWith('.pdf'); }
+function fileIsTG(n)    { return /tg/i.test(n) && n.endsWith('.pdf'); }
+function fileIsAudio(n) { return n.toLowerCase().endsWith('.mp3'); }
 
-function isType(name, ext) {
-  return name.toLowerCase().endsWith('.' + ext);
-}
-
-function fileIsSB(name) {
-  return /sb/i.test(name) && name.endsWith('.pdf');
-}
-function fileIsTG(name) {
-  return /tg/i.test(name) && name.endsWith('.pdf');
-}
-function fileIsAudio(name) {
-  return name.endsWith('.mp3');
-}
-
-// Build a Google Drive download URL or fallback to relative path
 function buildPath(bookName, ...parts) {
   const path = '/' + [bookName, ...parts].join('/');
-  const id = fileMap[path];
-  console.log('buildPath:', path, 'id:', id);
+  const id   = fileMap[path];
   if (id) {
     return `https://drive.usercontent.google.com/download?id=${id}&export=download&authuser=0`;
-  } else {
-    // Fallback to relative path if ID not found
-    return [bookName, ...parts].map(p => encodeURIComponent(p)).join('/');
   }
+  return [bookName, ...parts].map(p => encodeURIComponent(p)).join('/');
 }
 
-function dlIcon() {
-  return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M6 2v6M3.5 5.5 6 8l2.5-2.5M2 10h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-}
-function audioIcon() {
-  return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><rect x="1.5" y="4" width="3" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5.5C6 5.5 8 5 8.5 3v6C8 7 6 6.5 4.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M9.5 4.5a2 2 0 0 1 0 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
-}
-function zipIcon() {
-  return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 4.5h2.5l1.5 1.5v3a.75.75 0 0 1-.75.75H3.5V4.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 4.5V6h1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-}
+// ── SVG ICONS ──
+function dlIcon()    { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M6 2v6M3.5 5.5 6 8l2.5-2.5M2 10h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
+function playIcon()  { return `<svg width="10" height="11" fill="currentColor" viewBox="0 0 10 11"><path d="M1.5 1.5l7 4-7 4V1.5Z"/></svg>`; }
+function saveIcon()  { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M9.5 10h-7a1 1 0 0 1-1-1V3l2-2h5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><rect x="3.5" y="6.5" width="5" height="3.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/></svg>`; }
+function importIcon(){ return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M6 8V2M3.5 5.5 6 8l2.5-2.5M2 10h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
 
-
-// ---- ESCAPE HTML ----
-function escHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-// ---- DOWNLOAD BUTTON BUILDERS ----
+// ============================================================
+//  BUTTON BUILDERS
+//  Rule: ONE primary action per file type.
+//  PDF  → Download button  +  small "Save" button (offline)
+//  MP3  → Play button      +  small "↓" download link
+// ============================================================
 function btnSB(href, label) {
   label = label || 'Student Book';
-  return `<a class="btn btn-sb" href="${escHtml(href)}" download>${dlIcon()} ${escHtml(label)}</a>`;
+  return `<a class="btn btn-sb" href="${escHtml(href)}" download>${dlIcon()} ${escHtml(label)}</a>`
+       + btnSaveOffline(href, label, 'pdf');
 }
 function btnTG(href, label) {
   label = label || 'Teacher Guide';
-  return `<a class="btn btn-tg" href="${escHtml(href)}" download>${dlIcon()} ${escHtml(label)}</a>`;
-}
-function btnBundle(fileDataArr, label) {
-  // fileDataArr is [{name, path}, ...]
-  const json = JSON.stringify(fileDataArr).replace(/'/g, "\\'");
-  return `<button class="btn btn-bundle btn-download-all" data-files='${json}' data-label="${escHtml(label)}">${dlIcon()} ${escHtml(label)}</button>`;
+  return `<a class="btn btn-tg" href="${escHtml(href)}" download>${dlIcon()} ${escHtml(label)}</a>`
+       + btnSaveOffline(href, label, 'pdf');
 }
 
-// ---- LESSON RENDER ----
+// Save-offline button — small, secondary look
+function btnSaveOffline(url, name, type) {
+  return `<button class="btn btn-save btn-save-offline"
+    data-url="${escHtml(url)}" data-name="${escHtml(name)}" data-type="${escHtml(type)}"
+    onclick="handleSaveOffline(this)" title="Save for offline access">${saveIcon()} Save</button>`;
+}
+
+// Audio row: Play primary + tiny download anchor
+function buildAudioRow(url, name, queue) {
+  const queueAttr = escHtml(JSON.stringify(queue));
+  return `<div class="audio-row">
+    <span class="audio-dot"></span>
+    <span class="audio-name" title="${escHtml(name)}">${escHtml(name)}</span>
+    <button class="btn btn-audio" style="font-size:0.7rem;padding:3px 8px;"
+      onclick='playAudio(${JSON.stringify(url)},${JSON.stringify(name)},${JSON.stringify(queue)})'>${playIcon()} Play</button>
+    <a class="btn btn-save" href="${escHtml(url)}" download title="Download file" style="font-size:0.7rem;padding:3px 7px;">${dlIcon()}</a>
+    ${btnSaveOffline(url, name, 'mp3')}
+  </div>`;
+}
+
+// ── LESSON RENDER ──
 function renderLesson(lesson, bookName, unitName, lessonIndex) {
   const files = lesson.children || [];
-  const sbFile = files.find(f => fileIsSB(f.name));
-  const tgFile = files.find(f => fileIsTG(f.name));
+  const sbFile    = files.find(f => fileIsSB(f.name));
+  const tgFile    = files.find(f => fileIsTG(f.name));
   const audioFiles = files.filter(f => fileIsAudio(f.name));
 
-  const sbPath  = sbFile  ? buildPath(bookName, unitName, lesson.name, sbFile.name)  : null;
-  const tgPath  = tgFile  ? buildPath(bookName, unitName, lesson.name, tgFile.name)  : null;
-
-  // Build audio file data for popover
-  const audioFileData = audioFiles.map(f => ({
-    name: f.name,
-    path: buildPath(bookName, unitName, lesson.name, f.name)
-  }));
+  const sbPath = sbFile ? buildPath(bookName, unitName, lesson.name, sbFile.name) : null;
+  const tgPath = tgFile ? buildPath(bookName, unitName, lesson.name, tgFile.name) : null;
 
   let btns = '';
-  if (sbPath) {
-    btns += btnSB(sbPath, 'SB');
-  }
-  if (tgPath) {
-    btns += btnTG(tgPath, 'TG');
-  }
+  if (sbPath) btns += btnSB(sbPath, 'SB');
+  if (tgPath) btns += btnTG(tgPath, 'TG');
 
-  // All Audios button
-  if (audioFiles.length) {
-    const audioDataJson = JSON.stringify(audioFileData).replace(/'/g, "\\'");
-    btns += `<button class="btn btn-all-audios btn-download-all" data-files='${audioDataJson}' data-label="All Audios (${audioFiles.length})" aria-label="All ${audioFiles.length} audio files">${audioIcon()} All Audios (${audioFiles.length})</button>`;
-  }
-
-  // SB+TG bundle
-  if (sbPath && tgPath) {
-    const bundleData = [
-      { name: sbFile.name, path: sbPath },
-      { name: tgFile.name, path: tgPath }
-    ];
-    btns += btnBundle(bundleData, 'SB + TG');
-  }
-  // All files bundle
-  if ((sbPath || tgPath) && audioFiles.length) {
-    const allData = [
-      ...(sbPath ? [{ name: sbFile.name, path: sbPath }] : []),
-      ...(tgPath ? [{ name: tgFile.name, path: tgPath }] : []),
-      ...audioFileData
-    ];
-    btns += btnBundle(allData, 'All files');
-  }
-
-  // Audio list with individual download links
+  // Audio list with play + download + save
   let audioList = '';
   if (audioFiles.length) {
+    const queue = audioFiles.map(f => ({
+      url:  buildPath(bookName, unitName, lesson.name, f.name),
+      name: f.name
+    }));
     audioList = `<div class="audio-list">` +
-      audioFiles.map(f => {
-        const path = buildPath(bookName, unitName, lesson.name, f.name);
-        return `<a class="audio-item" href="${escHtml(path)}" download>
-            <span class="audio-dot"></span>
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name)}</span>
-          </a>`;
-      }).join('') +
+      audioFiles.map((f, fi) => buildAudioRow(queue[fi].url, f.name, queue)).join('') +
     `</div>`;
   }
 
@@ -956,40 +680,42 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
       <div class="lesson-num">Lesson ${lessonIndex}</div>
       <div class="lesson-info">
         <div class="lesson-name">${escHtml(lesson.name)}</div>
-        <div class="lesson-files">${btns || '<span style="font-size:0.75rem;color:var(--slate-light)">No downloadable files</span>'}</div>
+        <div class="lesson-actions">${btns || '<span style="font-size:0.73rem;color:var(--slate-light)">No files</span>'}</div>
         ${audioList}
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ---- UNIT RENDER ----
+// ── UNIT RENDER ──
 function renderUnit(unit, bookName, unitIndex) {
-  const children = unit.children || [];
-  const lessons = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
-  const unitAudios = children.filter(c => c.type === 'mp3');
-  const unitFiles = children.filter(c => c.type === 'pdf');
+  const children  = unit.children || [];
+  const lessons   = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
+  const unitAudios = children.filter(c => fileIsAudio(c.name));
+  const unitFiles = children.filter(c => fileIsSB(c.name) || fileIsTG(c.name));
 
+  // Unit-level audio row
   let audioRow = '';
   if (unitAudios.length) {
-    const unitAudioData = unitAudios.map(f => ({
-      name: f.name,
-      path: buildPath(bookName, unit.name, f.name)
-    }));
-    const unitAudioJson = JSON.stringify(unitAudioData).replace(/'/g, "\\'");
+    const queue = unitAudios.map(f => ({ url: buildPath(bookName, unit.name, f.name), name: f.name }));
     audioRow = `<div class="unit-audio-row">
-      <span class="unit-audio-label">${audioIcon()} Unit intro audio (${unitAudios.length})</span>
-      ${unitAudios.map(f => `<a class="btn btn-audio" href="${escHtml(buildPath(bookName, unit.name, f.name))}" download style="font-size:0.72rem;padding:4px 9px;">${escHtml(f.name)}</a>`).join('')}
-      <button class="btn btn-all-audios btn-download-all" data-files='${unitAudioJson}' data-label="Unit ${unitIndex} Audios" style="font-size:0.72rem;padding:5px 10px;">${audioIcon()} All</button>
+      <span class="unit-audio-label">Unit audio (${unitAudios.length})</span>
+      ${unitAudios.map((f, fi) => {
+        const url = queue[fi].url;
+        return `<button class="btn btn-audio" style="font-size:0.7rem;padding:3px 8px;"
+          onclick='playAudio(${JSON.stringify(url)},${JSON.stringify(f.name)},${JSON.stringify(queue)})'>${playIcon()} ${escHtml(f.name)}</button>`;
+      }).join('')}
     </div>`;
   }
 
+  // Unit-level PDF files
   let unitFilesRow = '';
   if (unitFiles.length) {
     unitFilesRow = `<div class="unit-audio-row">
       ${unitFiles.map(f => {
-        const cls = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
-        return `<a class="btn ${cls}" href="${escHtml(buildPath(bookName, unit.name, f.name))}" download style="font-size:0.72rem;">${dlIcon()} ${escHtml(f.name)}</a>`;
+        const path = buildPath(bookName, unit.name, f.name);
+        const cls  = fileIsSB(f.name) ? 'btn-sb' : 'btn-tg';
+        return `<a class="btn ${cls}" href="${escHtml(path)}" download style="font-size:0.72rem;">${dlIcon()} ${escHtml(f.name)}</a>`
+             + btnSaveOffline(path, f.name, 'pdf');
       }).join('')}
     </div>`;
   }
@@ -1002,7 +728,7 @@ function renderUnit(unit, bookName, unitIndex) {
         <div class="unit-header-left">
           <span class="unit-num-badge">Unit ${unitIndex}</span>
           <span class="unit-name">${escHtml(unit.name)}</span>
-          <span class="unit-lesson-count">${lessons.length} lessons</span>
+          <span class="unit-lesson-count">${lessons.length} lesson${lessons.length !== 1 ? 's' : ''}</span>
         </div>
         <span class="unit-chevron">
           <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
@@ -1010,24 +736,19 @@ function renderUnit(unit, bookName, unitIndex) {
           </svg>
         </span>
       </div>
-      <div class="unit-body">
-        ${audioRow}${unitFilesRow}${lessonRows}
-      </div>
-    </div>
-  `;
+      <div class="unit-body">${audioRow}${unitFilesRow}${lessonRows}</div>
+    </div>`;
 }
 
-// ---- MAIN ----
+// ── MAIN ──
 function initializePage() {
   const bookNum = parseInt(getParam('book') || '1', 10);
   const bookIdx = bookNum - 1;
-  const book = SPOTLIGHT_DATA[bookIdx] || SPOTLIGHT_DATA[0];
-  const accent = ACCENTS[bookIdx] || ACCENTS[0];
-  const level = LEVELS[bookIdx] || '';
+  const book    = SPOTLIGHT_DATA[bookIdx] || SPOTLIGHT_DATA[0];
+  const accent  = ACCENTS[bookIdx] || ACCENTS[0];
+  const level   = LEVELS[bookIdx] || '';
 
   document.documentElement.style.setProperty('--accent', accent);
-
-  // Nav
   document.getElementById('nav-title').textContent = book.name;
   document.getElementById('nav-accent-bar').style.background = accent;
   document.title = `${book.name} — Spotlight Trilogy`;
@@ -1035,8 +756,7 @@ function initializePage() {
 
   // Count stats
   let unitCount = 0, lessonCount = 0, audioCount = 0;
-  const units = [];
-  const welcomeBlock = [];
+  const units = [], welcomeBlocks = [];
 
   for (const child of book.children) {
     if (child.type === 'folder' && /^unit/i.test(child.name)) {
@@ -1045,39 +765,21 @@ function initializePage() {
       for (const c of (child.children || [])) {
         if (c.type === 'folder') {
           lessonCount++;
-          for (const f of (c.children || [])) {
-            if (f.type === 'mp3') audioCount++;
-          }
+          for (const f of (c.children || [])) { if (fileIsAudio(f.name)) audioCount++; }
         }
       }
     } else if (child.type === 'folder' && /welcome/i.test(child.name)) {
-      welcomeBlock.push(child);
+      welcomeBlocks.push(child);
     }
   }
 
   // Book-level files
   const bookSB = book.children.find(c => fileIsSB(c.name));
   const bookTG = book.children.find(c => fileIsTG(c.name));
-
   let rootBtns = '';
-  if (bookSB) {
-    const sbPath2 = buildPath(book.name, bookSB.name);
-    rootBtns += btnSB(sbPath2, 'Full Student Book');
-  }
-  if (bookTG) {
-    const tgPath2 = buildPath(book.name, bookTG.name);
-    rootBtns += btnTG(tgPath2, 'Full Teacher Guide');
-  }
-  if (bookSB && bookTG) {
-    const sbPath2 = buildPath(book.name, bookSB.name);
-    const tgPath2 = buildPath(book.name, bookTG.name);
-    rootBtns += btnBundle([
-      { name: bookSB.name, path: sbPath2 },
-      { name: bookTG.name, path: tgPath2 }
-    ], 'SB + TG');
-  }
+  if (bookSB) { const p = buildPath(book.name, bookSB.name); rootBtns += btnSB(p, 'Full Student Book'); }
+  if (bookTG) { const p = buildPath(book.name, bookTG.name); rootBtns += btnTG(p, 'Full Teacher Guide'); }
 
-  // Header
   document.getElementById('book-header').innerHTML = `
     <p class="book-header-eyebrow">Book ${bookNum} &mdash; ${level}</p>
     <h1>${escHtml(book.name)}</h1>
@@ -1089,56 +791,52 @@ function initializePage() {
     ${rootBtns ? `<div class="book-downloads">
       <p class="book-downloads-title">Full book downloads</p>
       <div class="download-row">${rootBtns}</div>
-    </div>` : ''}
-  `;
+    </div>` : ''}`;
 
-  // Units section
   const section = document.getElementById('units-section');
 
-  // Welcome section
-  if (welcomeBlock.length) {
-    const wb = welcomeBlock[0];
-    const wLessons = (wb.children || []).filter(c => c.type === 'folder');
+  // Welcome block
+  if (welcomeBlocks.length) {
+    const wb = welcomeBlocks[0];
     const wFiles   = (wb.children || []).filter(c => c.type !== 'folder');
+    const wLessons = (wb.children || []).filter(c => c.type === 'folder');
     let wContent = wFiles.map(f => {
-      const cls = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-audio';
-      const icon = f.type === 'mp3' ? audioIcon() : dlIcon();
-      return `<a class="btn ${cls}" href="${escHtml(buildPath(book.name, wb.name, f.name))}" download>${icon} ${escHtml(f.name)}</a>`;
+      const path = buildPath(book.name, wb.name, f.name);
+      const cls  = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-audio';
+      const icon = fileIsAudio(f.name) ? playIcon() : dlIcon();
+      return `<a class="btn ${cls}" href="${escHtml(path)}" download>${icon} ${escHtml(f.name)}</a>`;
     }).join('');
-    if (wLessons.length) {
-      wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
-    }
+    if (wLessons.length) wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
     section.innerHTML = `<div class="welcome-block">
       <p class="welcome-title">Welcome / Introduction</p>
       <div class="download-row">${wContent}</div>
     </div>`;
   }
 
-  // Unit blocks
-  units.forEach((unit, i) => {
-    section.innerHTML += renderUnit(unit, book.name, i + 1);
-  });
+  units.forEach((unit, i) => { section.innerHTML += renderUnit(unit, book.name, i + 1); });
 
-  // Open first unit by default
+  // Open first unit
   const firstUnit = section.querySelector('.unit-block');
   if (firstUnit) firstUnit.classList.add('open');
+
+  // Refresh offline states after render
+  setTimeout(refreshSavedStates, 80);
 }
 
-// ---- TOGGLE ----
+// ── TOGGLE ──
 function toggleUnit(header) {
-  const block = header.closest('.unit-block');
-  block.classList.toggle('open');
+  header.closest('.unit-block').classList.toggle('open');
 }
 
-// ---- SEARCH ----
+// ── SEARCH ──
 document.getElementById('search').addEventListener('input', function() {
   const q = this.value.toLowerCase().trim();
   document.querySelectorAll('.unit-block').forEach(block => {
-    const unitMatch = block.dataset.unit.includes(q);
-    const lessonRows = block.querySelectorAll('.lesson-row');
+    const unitMatch = block.dataset.unit && block.dataset.unit.includes(q);
+    const rows = block.querySelectorAll('.lesson-row');
     let anyLesson = false;
-    lessonRows.forEach(row => {
-      const match = !q || unitMatch || row.dataset.lesson.includes(q);
+    rows.forEach(row => {
+      const match = !q || unitMatch || (row.dataset.lesson && row.dataset.lesson.includes(q));
       row.style.display = match ? '' : 'none';
       if (match) anyLesson = true;
     });
@@ -1148,68 +846,29 @@ document.getElementById('search').addEventListener('input', function() {
   });
 });
 
-// ---- DOWNLOAD HELPERS ----
-function triggerDownload(url, filename) {
-  // For Google Drive direct download URLs use iframe (avoids popup blocker)
-  if (url.includes('drive.usercontent.google.com') || url.includes('drive.google.com')) {
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = url;
-    document.body.appendChild(iframe);
-    setTimeout(() => iframe.remove(), 30000);
-  } else {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }
-}
-
+// ── DOWNLOAD (multi-file via iframes) ──
 function downloadSeparately(files) {
-  // Use hidden iframes for multi-file downloads — much more reliable than
-  // programmatic anchor clicks which browsers throttle/block after the first.
   files.forEach((f, i) => {
     setTimeout(() => {
       const iframe = document.createElement('iframe');
       iframe.style.display = 'none';
-      iframe.src = f.path + (f.path.includes('?') ? '&' : '?') + 'dl=1';
+      iframe.src = f.path;
       document.body.appendChild(iframe);
       setTimeout(() => iframe.remove(), 30000);
-    }, i * 800);
+    }, i * 900);
   });
   showToast(`Downloading ${files.length} file${files.length > 1 ? 's' : ''}…`);
 }
 
-// ---- DIRECT DOWNLOAD (btn-download-all) ----
-document.addEventListener('click', function(e) {
-  const btn = e.target.closest('.btn-download-all');
-  if (!btn) return;
-  e.preventDefault();
-  try {
-    const files = JSON.parse(btn.getAttribute('data-files') || '[]');
-    downloadSeparately(files);
-  } catch (err) {
-    console.error('Download error:', err);
-  }
-});
-
-// ---- SHARE POPOVER (btn-popover-trigger — share only) ----
-
-
-
-
-
 // ============================================================
-//  PWA — SERVICE WORKER REGISTRATION
+//  SERVICE WORKER
 // ============================================================
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
 // ============================================================
-//  INDEXEDDB — offline file storage
+//  INDEXEDDB — offline storage
 // ============================================================
 const DB_NAME = 'spotlight-offline';
 const DB_VER  = 1;
@@ -1222,65 +881,75 @@ function openDB() {
     const req = indexedDB.open(DB_NAME, DB_VER);
     req.onupgradeneeded = e => {
       const d = e.target.result;
-      if (!d.objectStoreNames.contains(STORE)) {
-        d.createObjectStore(STORE, { keyPath: 'key' });
-      }
+      if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE, { keyPath: 'key' });
     };
     req.onsuccess = e => { db = e.target.result; resolve(db); };
-    req.onerror = () => reject(req.error);
+    req.onerror   = () => reject(req.error);
   });
 }
 
-async function dbPut(record)  { const d = await openDB(); return new Promise((res,rej)=>{ const t=d.transaction(STORE,'readwrite'); t.objectStore(STORE).put(record).onsuccess=()=>res(); t.onerror=()=>rej(t.error); }); }
-async function dbGet(key)     { const d = await openDB(); return new Promise((res,rej)=>{ const t=d.transaction(STORE,'readonly'); const r=t.objectStore(STORE).get(key); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-async function dbDelete(key)  { const d = await openDB(); return new Promise((res,rej)=>{ const t=d.transaction(STORE,'readwrite'); t.objectStore(STORE).delete(key).onsuccess=()=>res(); t.onerror=()=>rej(t.error); }); }
-async function dbAll()        { const d = await openDB(); return new Promise((res,rej)=>{ const t=d.transaction(STORE,'readonly'); const r=t.objectStore(STORE).getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+function dbOp(mode, fn) {
+  return openDB().then(d => new Promise((res, rej) => {
+    const t = d.transaction(STORE, mode);
+    t.onerror = () => rej(t.error);
+    fn(t.objectStore(STORE), res, rej);
+  }));
+}
+const dbPut    = r   => dbOp('readwrite', (s, res) => { s.put(r).onsuccess = res; });
+const dbGet    = key => dbOp('readonly',  (s, res) => { const q = s.get(key); q.onsuccess = () => res(q.result); });
+const dbDelete = key => dbOp('readwrite', (s, res) => { s.delete(key).onsuccess = res; });
+const dbAll    = ()  => dbOp('readonly',  (s, res) => { const q = s.getAll(); q.onsuccess = () => res(q.result); });
 
-// Key = stable identifier for a file (its Drive URL or relative path)
 function fileKey(url) {
-  // Use just the Drive ID if present, else the full URL
   const m = url.match(/[?&]id=([^&]+)/);
   return m ? 'drive_' + m[1] : url;
 }
 
 // ============================================================
-//  SAVE OFFLINE — fetch blob → IndexedDB
+//  SAVE OFFLINE
+//  Google Drive blocks CORS fetch for large files.
+//  Strategy:
+//    1. Try a CORS fetch (works for small files / same-origin).
+//    2. If that fails, show a clear message directing the user to:
+//       - Download the file normally (browser handles it)
+//       - Then use the "Import downloaded file" button in the Library
+//         to read it from disk into IndexedDB.
 // ============================================================
 async function saveOffline(btn, url, name, type) {
+  btn.disabled = true;
   btn.classList.add('saving');
-  btn.textContent = 'Saving…';
+  btn.innerHTML = `${saveIcon()} Saving…`;
+
   try {
     const resp = await fetch(url, { mode: 'cors' });
-    if (!resp.ok) throw new Error('Network response not ok');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const blob = await resp.blob();
-    const key = fileKey(url);
+    const key  = fileKey(url);
     const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
     await dbPut({ key, name, type, url, blob, sizeMB, savedAt: Date.now() });
     btn.classList.remove('saving');
     btn.classList.add('saved');
-    btn.textContent = 'Saved ✓';
-    btn.disabled = true;
+    btn.innerHTML = `${saveIcon()} Saved ✓`;
     updateLibraryCount();
     showToast(`"${name}" saved offline (${sizeMB} MB)`);
   } catch (err) {
+    // CORS blocked — guide user to manual import flow
     btn.classList.remove('saving');
-    btn.textContent = 'Save Offline';
     btn.disabled = false;
-    // Google Drive blocks CORS for large files — inform user
-    showToast('Could not fetch — use Download instead, then it will be cached.');
-    console.error('saveOffline error:', err);
+    btn.innerHTML = `${saveIcon()} Save`;
+    showToast('Auto-save blocked. Download the file, then import it via the Library panel.');
+    console.warn('saveOffline blocked (CORS):', err);
   }
 }
 
-// Check which files are already saved and update button states
 async function refreshSavedStates() {
   const all = await dbAll();
   const savedKeys = new Set(all.map(r => r.key));
   document.querySelectorAll('.btn-save-offline').forEach(btn => {
-    const key = fileKey(btn.dataset.url);
+    const key = fileKey(btn.dataset.url || '');
     if (savedKeys.has(key)) {
       btn.classList.add('saved');
-      btn.textContent = 'Saved ✓';
+      btn.innerHTML = `${saveIcon()} Saved ✓`;
       btn.disabled = true;
     }
   });
@@ -1289,40 +958,48 @@ async function refreshSavedStates() {
 
 async function updateLibraryCount() {
   const all = await dbAll();
-  const el = document.getElementById('lib-count');
-  if (all.length > 0) {
-    el.textContent = all.length;
-    el.classList.add('visible');
-  } else {
-    el.classList.remove('visible');
-  }
-}
-
-// ============================================================
-//  BUTTON BUILDERS — updated to include Save Offline
-// ============================================================
-function saveOfflineBtn(url, name, type) {
-  const key = JSON.stringify({ url, name, type }).replace(/"/g, '&quot;');
-  return `<button class="btn btn-save btn-save-offline" data-url="${escHtml(url)}" data-name="${escHtml(name)}" data-type="${type}" onclick="handleSaveOffline(this)">${dlIcon()} Save Offline</button>`;
+  const el  = document.getElementById('lib-count');
+  if (all.length > 0) { el.textContent = all.length; el.classList.add('visible'); }
+  else                { el.classList.remove('visible'); }
 }
 
 function handleSaveOffline(btn) {
-  const url  = btn.dataset.url;
-  const name = btn.dataset.name;
-  const type = btn.dataset.type;
-  saveOffline(btn, url, name, type);
+  saveOffline(btn, btn.dataset.url, btn.dataset.name, btn.dataset.type);
 }
 
-// Open file from IndexedDB
+// ============================================================
+//  IMPORT FILE FROM DISK → IndexedDB
+//  This is the recommended workaround for Google Drive CORS.
+//  User downloads the file via the browser, then imports it here.
+// ============================================================
+function importFileFromDisk() {
+  const input = document.createElement('input');
+  input.type  = 'file';
+  input.accept = '.pdf,.mp3';
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    const type    = file.name.endsWith('.mp3') ? 'mp3' : 'pdf';
+    const sizeMB  = (file.size / 1024 / 1024).toFixed(1);
+    const key     = 'local_' + file.name + '_' + file.size;
+    const blob    = file;
+    await dbPut({ key, name: file.name, type, url: '', blob, sizeMB, savedAt: Date.now() });
+    updateLibraryCount();
+    renderLibrary();
+    showToast(`"${file.name}" imported (${sizeMB} MB)`);
+  };
+  input.click();
+}
+
+// ============================================================
+//  OPEN SAVED FILE
+// ============================================================
 async function openSavedFile(key) {
   const record = await dbGet(key);
   if (!record) { showToast('File not found in library.'); return; }
   const objectUrl = URL.createObjectURL(record.blob);
-  if (record.type === 'pdf') {
-    openPdfViewer(objectUrl, record.name);
-  } else if (record.type === 'mp3') {
-    playAudioFromBlob(objectUrl, record.name);
-  }
+  if (record.type === 'pdf')      openPdfViewer(objectUrl, record.name);
+  else if (record.type === 'mp3') playAudioFromBlob(objectUrl, record.name);
 }
 
 // ============================================================
@@ -1341,29 +1018,35 @@ function closeLibraryOnBackdrop(e) {
 
 async function renderLibrary() {
   const body = document.getElementById('library-body');
-  const all = await dbAll();
+  const all  = await dbAll();
+
+  const importTip = `<div class="library-import-tip">
+    <strong>Can't auto-save Drive files?</strong><br>
+    Download the file normally via the Download button, then import it here to access it offline.
+    <br><button class="btn-import-file" onclick="importFileFromDisk()">${importIcon()} Import downloaded file</button>
+  </div>`;
+
   if (!all.length) {
-    body.innerHTML = `<div class="library-empty">
+    body.innerHTML = `${importTip}<div class="library-empty">
       <svg width="48" height="48" fill="none" viewBox="0 0 48 48"><rect x="8" y="10" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/><rect x="26" y="10" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/></svg>
       <p>No files saved yet.</p>
-      <p style="margin-top:0.4rem;font-size:0.78rem;">Tap <strong>Save Offline</strong> on any file.</p>
     </div>`;
     return;
   }
-  // Group by type
+
   const pdfs = all.filter(r => r.type === 'pdf');
   const mp3s = all.filter(r => r.type === 'mp3');
+  const totalMB = all.reduce((s, r) => s + parseFloat(r.sizeMB || 0), 0).toFixed(1);
 
-  let html = '';
-  const totalMB = all.reduce((s, r) => s + parseFloat(r.sizeMB||0), 0).toFixed(1);
-  html += `<div style="font-size:0.72rem;color:var(--slate-light);padding:0.25rem 0.4rem 0.6rem;">${all.length} file${all.length!==1?'s':''} · ${totalMB} MB used</div>`;
+  let html = importTip;
+  html += `<div style="font-size:0.72rem;color:var(--slate-light);padding:0.1rem 0.4rem 0.6rem;">${all.length} file${all.length !== 1 ? 's' : ''} &middot; ${totalMB} MB</div>`;
 
   if (pdfs.length) {
-    html += `<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate-light);padding:0.3rem 0.4rem 0.3rem;">PDFs</div>`;
+    html += `<div style="font-size:0.67rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--slate-light);padding:0.2rem 0.4rem 0.35rem;">PDFs</div>`;
     pdfs.forEach(r => { html += libItem(r); });
   }
   if (mp3s.length) {
-    html += `<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate-light);padding:0.5rem 0.4rem 0.3rem;">Audio</div>`;
+    html += `<div style="font-size:0.67rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--slate-light);padding:0.5rem 0.4rem 0.35rem;">Audio</div>`;
     mp3s.forEach(r => { html += libItem(r); });
   }
   body.innerHTML = html;
@@ -1376,11 +1059,11 @@ function libItem(r) {
     <div class="lib-icon ${r.type}">${icon}</div>
     <div class="lib-info">
       <div class="lib-name" title="${escHtml(r.name)}">${escHtml(r.name)}</div>
-      <div class="lib-meta">${r.sizeMB} MB · ${date}</div>
+      <div class="lib-meta">${r.sizeMB} MB &middot; ${date}</div>
     </div>
     <div class="lib-actions">
-      <button class="lib-btn lib-btn-open" onclick="openSavedFile('${escHtml(r.key)}');closeLibrary();">${r.type==='pdf'?'View':'Play'}</button>
-      <button class="lib-btn lib-btn-delete" onclick="deleteLibItem('${escHtml(r.key)}',this)">✕</button>
+      <button class="lib-btn lib-btn-open" onclick="openSavedFile(${JSON.stringify(r.key)});closeLibrary();">${r.type === 'pdf' ? 'View' : 'Play'}</button>
+      <button class="lib-btn lib-btn-delete" onclick="deleteLibItem(${JSON.stringify(r.key)},this)">✕</button>
     </div>
   </div>`;
 }
@@ -1389,71 +1072,66 @@ async function deleteLibItem(key, btn) {
   await dbDelete(key);
   btn.closest('.lib-item').remove();
   updateLibraryCount();
-  // Re-enable the matching save button on page
+  // Re-enable matching save button
   document.querySelectorAll('.btn-save-offline').forEach(b => {
-    if (fileKey(b.dataset.url) === key) {
+    if (fileKey(b.dataset.url || '') === key) {
       b.classList.remove('saved');
-      b.textContent = 'Save Offline';
-      b.disabled = false;
+      b.innerHTML = `${saveIcon()} Save`;
+      b.disabled  = false;
     }
   });
   renderLibrary();
 }
 
 // ============================================================
-//  PDF VIEWER  (uses pdf.js CDN)
+//  PDF VIEWER
 // ============================================================
 let pdfJsLoaded = false;
 function ensurePdfJs() {
   return new Promise(resolve => {
     if (pdfJsLoaded) return resolve();
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    script.onload = () => {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = () => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
       pdfJsLoaded = true;
       resolve();
     };
-    document.head.appendChild(script);
+    document.head.appendChild(s);
   });
 }
 
 async function openPdfViewer(url, name) {
   const overlay = document.getElementById('viewer-overlay');
   const body    = document.getElementById('viewer-body');
-  const loading = document.getElementById('viewer-loading');
   document.getElementById('viewer-filename').textContent = name;
-  document.getElementById('viewer-pages').textContent = '';
-  body.innerHTML = '<div class="viewer-loading" id="viewer-loading">Loading PDF…</div>';
+  document.getElementById('viewer-pages').textContent   = '';
+  body.innerHTML = '<div class="viewer-loading">Loading PDF…</div>';
   overlay.classList.add('active');
   document.body.style.overflow = 'hidden';
 
   await ensurePdfJs();
-
   try {
-    const pdf = await pdfjsLib.getDocument(url).promise;
-    const total = pdf.numPages;
-    document.getElementById('viewer-filename').textContent = name;
-    document.getElementById('viewer-pages').textContent = `${total} page${total!==1?'s':''}`;
+    const pdf    = await pdfjsLib.getDocument(url).promise;
+    const total  = pdf.numPages;
+    document.getElementById('viewer-pages').textContent = `${total} page${total !== 1 ? 's' : ''}`;
     body.innerHTML = '';
-
-    // Render all pages (lazy render visible ones for performance)
-    const devicePx = window.devicePixelRatio || 1;
-    const scale = Math.min(2, devicePx * (window.innerWidth < 600 ? 1.0 : 1.4));
-
+    const dpr   = window.devicePixelRatio || 1;
+    const scale = Math.min(2, dpr * (window.innerWidth < 600 ? 1.0 : 1.4));
     for (let p = 1; p <= total; p++) {
-      const page = await pdf.getPage(p);
-      const vp   = page.getViewport({ scale });
+      const page   = await pdf.getPage(p);
+      const vp     = page.getViewport({ scale });
       const canvas = document.createElement('canvas');
       canvas.width  = vp.width;
       canvas.height = vp.height;
-      canvas.style.width  = Math.floor(vp.width  / devicePx) + 'px';
-      canvas.style.height = Math.floor(vp.height / devicePx) + 'px';
+      canvas.style.width  = Math.floor(vp.width  / dpr) + 'px';
+      canvas.style.height = Math.floor(vp.height / dpr) + 'px';
       body.appendChild(canvas);
       await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
     }
   } catch (err) {
-    body.innerHTML = `<div class="viewer-loading">Could not render PDF.<br><small>${err.message}</small></div>`;
+    body.innerHTML = `<div class="viewer-loading">Could not render PDF.<br><small>${escHtml(err.message)}</small></div>`;
   }
 }
 
@@ -1461,18 +1139,6 @@ function closePdfViewer() {
   document.getElementById('viewer-overlay').classList.remove('active');
   document.body.style.overflow = '';
   document.getElementById('viewer-body').innerHTML = '';
-}
-
-// Add "View" button to saved PDFs inline
-async function openPdfByUrl(url, name) {
-  const key = fileKey(url);
-  const record = await dbGet(key);
-  if (record) {
-    openPdfViewer(URL.createObjectURL(record.blob), name);
-  } else {
-    // Not saved: try opening directly (online)
-    openPdfViewer(url, name);
-  }
 }
 
 // ============================================================
@@ -1486,23 +1152,19 @@ const seekEl    = document.getElementById('audio-seek');
 const curEl     = document.getElementById('audio-cur');
 const durEl     = document.getElementById('audio-dur');
 
-let audioQueue = [];   // [{url, name, blob?}, ...]
+let audioQueue = [];
 let audioIndex = 0;
 
 function fmtTime(s) {
   if (isNaN(s)) return '0:00';
-  const m = Math.floor(s/60), sec = Math.floor(s%60);
-  return `${m}:${sec.toString().padStart(2,'0')}`;
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 }
 
 audioEl.addEventListener('timeupdate', () => {
   curEl.textContent = fmtTime(audioEl.currentTime);
   if (audioEl.duration) seekEl.value = (audioEl.currentTime / audioEl.duration) * 100;
 });
-audioEl.addEventListener('loadedmetadata', () => {
-  durEl.textContent = fmtTime(audioEl.duration);
-  seekEl.max = 100;
-});
+audioEl.addEventListener('loadedmetadata', () => { durEl.textContent = fmtTime(audioEl.duration); });
 audioEl.addEventListener('ended', () => {
   if (audioIndex < audioQueue.length - 1) { audioIndex++; loadAudioTrack(); }
   else { playBtn.textContent = '▶'; }
@@ -1517,22 +1179,17 @@ async function loadAudioTrack() {
   const track = audioQueue[audioIndex];
   if (!track) return;
   trackName.textContent = track.name;
-  // Try to load from IndexedDB first
-  const key = fileKey(track.url);
+  // Try IndexedDB first, then direct URL
+  const key    = fileKey(track.url);
   const record = await dbGet(key);
-  if (record && record.blob) {
-    audioEl.src = URL.createObjectURL(record.blob);
-  } else {
-    audioEl.src = track.url;
-  }
+  audioEl.src  = (record && record.blob) ? URL.createObjectURL(record.blob) : track.url;
   audioEl.play();
   playerBar.classList.add('active');
-  // Adjust body padding so audio bar doesn't overlap content
   document.body.style.paddingBottom = '90px';
 }
 
 function playAudio(url, name, queue) {
-  audioQueue = queue || [{ url, name }];
+  audioQueue = Array.isArray(queue) ? queue : [{ url, name }];
   audioIndex = audioQueue.findIndex(t => t.url === url);
   if (audioIndex < 0) audioIndex = 0;
   loadAudioTrack();
@@ -1548,135 +1205,26 @@ function playAudioFromBlob(objectUrl, name) {
   document.body.style.paddingBottom = '90px';
 }
 
-function audioToggle() {
-  if (audioEl.paused) audioEl.play(); else audioEl.pause();
-}
+function audioToggle() { audioEl.paused ? audioEl.play() : audioEl.pause(); }
 function audioSkip(dir) {
   const next = audioIndex + dir;
   if (next >= 0 && next < audioQueue.length) { audioIndex = next; loadAudioTrack(); }
 }
 function audioClose() {
-  audioEl.pause();
-  audioEl.src = '';
+  audioEl.pause(); audioEl.src = '';
   playerBar.classList.remove('active');
   document.body.style.paddingBottom = '';
 }
 
 // ============================================================
-//  UPDATED RENDER HELPERS — inject Save Offline + Play buttons
+//  TOAST
 // ============================================================
-// Override btnSB / btnTG to add Save Offline buttons
-const _origBtnSB = btnSB;
-btnSB = function(href, label) {
-  return `${_origBtnSB(href, label)}${saveOfflineBtn(href, label||'Student Book', 'pdf')}`;
-};
-const _origBtnTG = btnTG;
-btnTG = function(href, label) {
-  return `${_origBtnTG(href, label)}${saveOfflineBtn(href, label||'Teacher Guide', 'pdf')}`;
-};
-
-// Override audio-item rendering to include Play button
-// (done inline in renderLesson — we patch the audio list section)
-const _origRenderLesson = renderLesson;
-renderLesson = function(lesson, bookName, unitName, lessonIndex) {
-  // We rebuild the audio list with Play buttons instead of download anchors
-  const files = lesson.children || [];
-  const audioFiles = files.filter(f => fileIsAudio(f.name));
-  if (!audioFiles.length) return _origRenderLesson(lesson, bookName, unitName, lessonIndex);
-
-  // Build the queue for this lesson's audios
-  const queue = audioFiles.map(f => ({
-    url: buildPath(bookName, unitName, lesson.name, f.name),
-    name: f.name
-  }));
-
-  // Get base HTML from original (which has download links)
-  let html = _origRenderLesson(lesson, bookName, unitName, lessonIndex);
-
-  // Replace each audio-item anchor with enhanced version (Play + Save)
-  // We do this by injecting a post-render marker; simpler to re-render audio-list
-  // Strip original audio-list and inject ours
-  const audioListStart = html.indexOf('<div class="audio-list">');
-  const audioListEnd   = html.indexOf('</div>', audioListStart) + 6;
-  if (audioListStart < 0) return html;
-
-  const queueJson = JSON.stringify(queue).replace(/'/g, "\\'").replace(/"/g, '&quot;');
-  const newAudioList = `<div class="audio-list">` +
-    audioFiles.map((f, fi) => {
-      const url = queue[fi].url;
-      return `<div style="display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;margin-bottom:2px;">
-        <button class="btn btn-audio" style="font-size:0.7rem;padding:3px 8px;flex-shrink:0;"
-          onclick="playAudio('${escHtml(url)}','${escHtml(f.name)}',JSON.parse(this.closest('[data-lesson]').dataset.audioQueue||'[]'))">
-          ${audioIcon()} Play
-        </button>
-        ${saveOfflineBtn(url, f.name, 'mp3')}
-        <span class="audio-dot" style="margin-left:2px;"></span>
-        <span style="font-size:0.75rem;color:var(--slate-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${escHtml(f.name)}</span>
-      </div>`;
-    }).join('') +
-  `</div>`;
-
-  return html.substring(0, audioListStart) + newAudioList + html.substring(audioListEnd);
-};
-
-// Store the audio queue on the lesson-row for easy access
-const _origRenderUnit = renderUnit;
-renderUnit = function(unit, bookName, unitIndex) {
-  let html = _origRenderUnit(unit, bookName, unitIndex);
-  // For each lesson row, attach audio queue as data attribute
-  // (We'll do it after DOM insertion via a separate pass)
-  return html;
-};
-
-// After page renders, attach audio queues to lesson rows
-function attachAudioQueues() {
-  document.querySelectorAll('.lesson-row').forEach(row => {
-    const playBtns = row.querySelectorAll('.btn-audio');
-    const queue = [];
-    playBtns.forEach(btn => {
-      const onclick = btn.getAttribute('onclick') || '';
-      const m = onclick.match(/playAudio\('([^']+)','([^']+)'/);
-      if (m) queue.push({ url: m[1], name: m[2] });
-    });
-    row.dataset.audioQueue = JSON.stringify(queue);
-  });
-}
-
-// ============================================================
-//  INIT — refresh saved states after page renders
-// ============================================================
-const _origInitPage = initializePage;
-initializePage = function() {
-  _origInitPage();
-  setTimeout(() => {
-    attachAudioQueues();
-    refreshSavedStates();
-  }, 100);
-};
-
 function showToast(message) {
-  let toast = document.getElementById('toast-msg');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'toast-msg';
-    toast.style.cssText = `
-      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-      background: var(--slate); color: #fff; padding: 10px 20px;
-      border-radius: 99px; font-size: 0.82rem; font-family: var(--sans);
-      z-index: 9999; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
-      opacity: 0; transform: translateX(-50%) translateY(10px);
-      white-space: nowrap; max-width: 90vw; text-align: center;
-    `;
-    document.body.appendChild(toast);
-  }
-  toast.textContent = message;
-  toast.style.opacity = '1';
-  toast.style.transform = 'translateX(-50%) translateY(0)';
-  clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(10px)';
-  }, 2200);
+  const el = document.getElementById('toast-msg');
+  el.textContent = message;
+  el.classList.add('visible');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('visible'), 2400);
 }
 </script>
 
