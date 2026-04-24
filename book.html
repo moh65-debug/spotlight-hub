@@ -7,8 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
-</script>
+
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -625,22 +624,37 @@
 
 <!-- Popover backdrop -->
 <div class="popover-backdrop" id="popover-backdrop"></div>
-<!-- Popover -->
+<!-- Share Popover -->
 <div class="file-popover" id="file-popover">
-  <div class="popover-header" id="popover-header-text">Options</div>
-  <button class="popover-option option-zip" id="popover-opt-zip">
-    <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h3l2 2v4a1 1 0 0 1-1 1H5V6Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 6V8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    Download as ZIP
-  </button>
-  <button class="popover-option option-separate" id="popover-opt-separate">
-    <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><path d="M3 8h10M8 3v10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-    Download all separately
-  </button>
-  <div class="popover-divider" id="popover-divider"></div>
-  <button class="popover-option option-share" id="popover-opt-share">
-    <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><circle cx="5" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 7.3 10 5m-3 3.7 3 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-    Share via WhatsApp
-  </button>
+  <!-- Default view: share button -->
+  <div id="popover-view-main">
+    <div class="popover-header" id="popover-header-text">Share</div>
+    <button class="popover-option option-share" id="popover-opt-share">
+      <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><circle cx="5" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 7.3 10 5m-3 3.7 3 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Send via WhatsApp
+    </button>
+  </div>
+  <!-- Step 2: shown on desktop after file downloads -->
+  <div id="popover-view-steps" style="display:none; padding:0.5rem 0.4rem;">
+    <div class="popover-header" style="color:var(--slate);">Almost there!</div>
+    <div style="padding:0.3rem 0.9rem 0.7rem; display:flex; flex-direction:column; gap:0.55rem;">
+      <div style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8rem;color:var(--slate-mid);">
+        <span style="background:#25966E;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>
+        File downloaded to your device
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8rem;color:var(--slate-mid);">
+        <span style="background:var(--accent);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;margin-top:1px;">2</span>
+        <span>In WhatsApp, tap the <strong style="color:var(--slate);">attachment (📎)</strong> button and select the file</span>
+      </div>
+    </div>
+    <button class="popover-option option-share" id="popover-step2-wa" style="margin-top:0.2rem;">
+      <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><circle cx="5" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 7.3 10 5m-3 3.7 3 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Open WhatsApp
+    </button>
+    <button class="popover-option" id="popover-step2-back" style="color:var(--slate-light);font-size:0.78rem;padding:0.4rem 0.9rem;">
+      ← Back
+    </button>
+  </div>
 </div>
 
 <footer>
@@ -649,6 +663,20 @@
 
 <script src="data.js"></script>
 <script>
+let fileMap = {};
+fetch('file-list.json')
+  .then(response => response.json())
+  .then(data => {
+    data.forEach(item => {
+      fileMap[item.path] = item.id;
+    });
+    initializePage(); // Call initialize after map is loaded
+  })
+  .catch(error => {
+    console.error('Error loading file-list.json:', error);
+    initializePage(); // Call initialize even if fetch fails
+  });
+
 const ACCENTS = ['#C8603A', '#3A6B8A', '#4A7C59'];
 const LEVELS  = ['Beginner', 'Elementary', 'Pre-Intermediate'];
 const ACCENT_CSS_NAMES = ['accent-1', 'accent-2', 'accent-3'];
@@ -672,9 +700,17 @@ function fileIsAudio(name) {
   return name.endsWith('.mp3');
 }
 
-// Build a relative path from book root
+// Build a Google Drive download URL or fallback to relative path
 function buildPath(bookName, ...parts) {
-  return [bookName, ...parts].map(p => encodeURIComponent(p)).join('/');
+  const path = '/' + [bookName, ...parts].join('/');
+  const id = fileMap[path];
+  console.log('buildPath:', path, 'id:', id);
+  if (id) {
+    return `https://drive.usercontent.google.com/download?id=${id}&export=download&authuser=0`;
+  } else {
+    // Fallback to relative path if ID not found
+    return [bookName, ...parts].map(p => encodeURIComponent(p)).join('/');
+  }
 }
 
 function dlIcon() {
@@ -706,8 +742,10 @@ function btnTG(href, label) {
   label = label || 'Teacher Guide';
   return `<a class="btn btn-tg" href="${escHtml(href)}" download>${dlIcon()} ${escHtml(label)}</a>`;
 }
-function btnBundle(hrefs, label) {
-  return `<a class="btn btn-bundle" href="${escHtml(hrefs[0])}" download title="Download: ${escHtml(hrefs.join(', '))}">${dlIcon()} ${escHtml(label)}</a>`;
+function btnBundle(fileDataArr, label) {
+  // fileDataArr is [{name, path}, ...]
+  const json = JSON.stringify(fileDataArr).replace(/'/g, "\\'");
+  return `<button class="btn btn-bundle btn-download-all" data-files='${json}' data-label="${escHtml(label)}">${dlIcon()} ${escHtml(label)}</button>`;
 }
 
 // ---- LESSON RENDER ----
@@ -733,17 +771,25 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
   // All Audios button (replaces SB+Audio bundle)
   if (audioFiles.length) {
     const audioDataJson = JSON.stringify(audioFileData).replace(/'/g, "\\'");
-    btns += `<button class="btn btn-all-audios btn-popover-trigger" data-files='${audioDataJson}' data-label="All Audios (${audioFiles.length})" aria-label="All ${audioFiles.length} audio files">${audioIcon()} All Audios (${audioFiles.length})</button>`;
+    btns += `<button class="btn btn-all-audios btn-download-all" data-files='${audioDataJson}' data-label="All Audios (${audioFiles.length})" aria-label="All ${audioFiles.length} audio files">${audioIcon()} All Audios (${audioFiles.length})</button>`;
   }
 
-  // SB+TG bundle (keeps direct download since it's just 2 PDFs)
+  // SB+TG bundle
   if (sbPath && tgPath) {
-    btns += btnBundle([sbPath, tgPath], 'SB + TG');
+    const bundleData = [
+      { name: sbFile.name, path: sbPath },
+      { name: tgFile.name, path: tgPath }
+    ];
+    btns += btnBundle(bundleData, 'SB + TG');
   }
-  // All files bundle (keeps direct download)
+  // All files bundle
   if ((sbPath || tgPath) && audioFiles.length) {
-    const all = [sbPath, tgPath, ...audioFiles.map(f => buildPath(bookName, unitName, lesson.name, f.name))].filter(Boolean);
-    btns += btnBundle(all, 'All files');
+    const allData = [
+      ...(sbPath ? [{ name: sbFile.name, path: sbPath }] : []),
+      ...(tgPath ? [{ name: tgFile.name, path: tgPath }] : []),
+      ...audioFileData
+    ];
+    btns += btnBundle(allData, 'All files');
   }
 
   // Audio list with individual download links + share buttons
@@ -793,7 +839,7 @@ function renderUnit(unit, bookName, unitIndex) {
     audioRow = `<div class="unit-audio-row">
       <span class="unit-audio-label">${audioIcon()} Unit intro audio (${unitAudios.length})</span>
       ${unitAudios.map(f => `<a class="btn btn-audio" href="${escHtml(buildPath(bookName, unit.name, f.name))}" download style="font-size:0.72rem;padding:4px 9px;">${escHtml(f.name)}</a>`).join('')}
-      <button class="btn btn-all-audios btn-popover-trigger" data-files='${unitAudioJson}' data-label="Unit ${unitIndex} Audios" style="font-size:0.72rem;padding:5px 10px;">${zipIcon()} All (ZIP)</button>
+      <button class="btn btn-all-audios btn-download-all" data-files='${unitAudioJson}' data-label="Unit ${unitIndex} Audios" style="font-size:0.72rem;padding:5px 10px;">${audioIcon()} All</button>
     </div>`;
   }
 
@@ -831,96 +877,101 @@ function renderUnit(unit, bookName, unitIndex) {
 }
 
 // ---- MAIN ----
-const bookNum = parseInt(getParam('book') || '1', 10);
-const bookIdx = bookNum - 1;
-const book = SPOTLIGHT_DATA[bookIdx] || SPOTLIGHT_DATA[0];
-const accent = ACCENTS[bookIdx] || ACCENTS[0];
-const level = LEVELS[bookIdx] || '';
+function initializePage() {
+  const bookNum = parseInt(getParam('book') || '1', 10);
+  const bookIdx = bookNum - 1;
+  const book = SPOTLIGHT_DATA[bookIdx] || SPOTLIGHT_DATA[0];
+  const accent = ACCENTS[bookIdx] || ACCENTS[0];
+  const level = LEVELS[bookIdx] || '';
 
-document.documentElement.style.setProperty('--accent', accent);
+  document.documentElement.style.setProperty('--accent', accent);
 
-// Nav
-document.getElementById('nav-title').textContent = book.name;
-document.getElementById('nav-accent-bar').style.background = accent;
-document.title = `${book.name} — Spotlight Trilogy`;
-document.getElementById('footer-book').textContent = book.name;
+  // Nav
+  document.getElementById('nav-title').textContent = book.name;
+  document.getElementById('nav-accent-bar').style.background = accent;
+  document.title = `${book.name} — Spotlight Trilogy`;
+  document.getElementById('footer-book').textContent = book.name;
 
-// Count stats
-let unitCount = 0, lessonCount = 0, audioCount = 0;
-const units = [];
-const welcomeBlock = [];
+  // Count stats
+  let unitCount = 0, lessonCount = 0, audioCount = 0;
+  const units = [];
+  const welcomeBlock = [];
 
-for (const child of book.children) {
-  if (child.type === 'folder' && /^unit/i.test(child.name)) {
-    units.push(child);
-    unitCount++;
-    for (const c of (child.children || [])) {
-      if (c.type === 'folder') {
-        lessonCount++;
-        for (const f of (c.children || [])) {
-          if (f.type === 'mp3') audioCount++;
+  for (const child of book.children) {
+    if (child.type === 'folder' && /^unit/i.test(child.name)) {
+      units.push(child);
+      unitCount++;
+      for (const c of (child.children || [])) {
+        if (c.type === 'folder') {
+          lessonCount++;
+          for (const f of (c.children || [])) {
+            if (f.type === 'mp3') audioCount++;
+          }
         }
       }
+    } else if (child.type === 'folder' && /welcome/i.test(child.name)) {
+      welcomeBlock.push(child);
     }
-  } else if (child.type === 'folder' && /welcome/i.test(child.name)) {
-    welcomeBlock.push(child);
   }
-}
 
-// Book-level files
-const bookSB = book.children.find(c => fileIsSB(c.name));
-const bookTG = book.children.find(c => fileIsTG(c.name));
+  // Book-level files
+  const bookSB = book.children.find(c => fileIsSB(c.name));
+  const bookTG = book.children.find(c => fileIsTG(c.name));
 
-let rootBtns = '';
-if (bookSB) rootBtns += btnSB(buildPath(book.name, bookSB.name), 'Full Student Book');
-if (bookTG) rootBtns += btnTG(buildPath(book.name, bookTG.name), 'Full Teacher Guide');
-if (bookSB && bookTG) rootBtns += btnBundle([buildPath(book.name, bookSB.name), buildPath(book.name, bookTG.name)], 'SB + TG');
+  let rootBtns = '';
+  if (bookSB) rootBtns += btnSB(buildPath(book.name, bookSB.name), 'Full Student Book');
+  if (bookTG) rootBtns += btnTG(buildPath(book.name, bookTG.name), 'Full Teacher Guide');
+  if (bookSB && bookTG) rootBtns += btnBundle([
+    { name: bookSB.name, path: buildPath(book.name, bookSB.name) },
+    { name: bookTG.name, path: buildPath(book.name, bookTG.name) }
+  ], 'SB + TG');
 
-// Header
-document.getElementById('book-header').innerHTML = `
-  <p class="book-header-eyebrow">Book ${bookNum} &mdash; ${level}</p>
-  <h1>${escHtml(book.name)}</h1>
-  <div class="book-header-meta">
-    <div class="meta-stat"><strong>${unitCount}</strong><span>units</span></div>
-    <div class="meta-stat"><strong>${lessonCount}</strong><span>lessons</span></div>
-    <div class="meta-stat"><strong>${audioCount}</strong><span>audio files</span></div>
-  </div>
-  ${rootBtns ? `<div class="book-downloads">
-    <p class="book-downloads-title">Full book downloads</p>
-    <div class="download-row">${rootBtns}</div>
-  </div>` : ''}
-`;
+  // Header
+  document.getElementById('book-header').innerHTML = `
+    <p class="book-header-eyebrow">Book ${bookNum} &mdash; ${level}</p>
+    <h1>${escHtml(book.name)}</h1>
+    <div class="book-header-meta">
+      <div class="meta-stat"><strong>${unitCount}</strong><span>units</span></div>
+      <div class="meta-stat"><strong>${lessonCount}</strong><span>lessons</span></div>
+      <div class="meta-stat"><strong>${audioCount}</strong><span>audio files</span></div>
+    </div>
+    ${rootBtns ? `<div class="book-downloads">
+      <p class="book-downloads-title">Full book downloads</p>
+      <div class="download-row">${rootBtns}</div>
+    </div>` : ''}
+  `;
 
-// Units section
-const section = document.getElementById('units-section');
+  // Units section
+  const section = document.getElementById('units-section');
 
-// Welcome section
-if (welcomeBlock.length) {
-  const wb = welcomeBlock[0];
-  const wLessons = (wb.children || []).filter(c => c.type === 'folder');
-  const wFiles   = (wb.children || []).filter(c => c.type !== 'folder');
-  let wContent = wFiles.map(f => {
-    const cls = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-audio';
-    const icon = f.type === 'mp3' ? audioIcon() : dlIcon();
-    return `<a class="btn ${cls}" href="${escHtml(buildPath(book.name, wb.name, f.name))}" download>${icon} ${escHtml(f.name)}</a>`;
-  }).join('');
-  if (wLessons.length) {
-    wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
+  // Welcome section
+  if (welcomeBlock.length) {
+    const wb = welcomeBlock[0];
+    const wLessons = (wb.children || []).filter(c => c.type === 'folder');
+    const wFiles   = (wb.children || []).filter(c => c.type !== 'folder');
+    let wContent = wFiles.map(f => {
+      const cls = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-audio';
+      const icon = f.type === 'mp3' ? audioIcon() : dlIcon();
+      return `<a class="btn ${cls}" href="${escHtml(buildPath(book.name, wb.name, f.name))}" download>${icon} ${escHtml(f.name)}</a>`;
+    }).join('');
+    if (wLessons.length) {
+      wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
+    }
+    section.innerHTML = `<div class="welcome-block">
+      <p class="welcome-title">Welcome / Introduction</p>
+      <div class="download-row">${wContent}</div>
+    </div>`;
   }
-  section.innerHTML = `<div class="welcome-block">
-    <p class="welcome-title">Welcome / Introduction</p>
-    <div class="download-row">${wContent}</div>
-  </div>`;
+
+  // Unit blocks
+  units.forEach((unit, i) => {
+    section.innerHTML += renderUnit(unit, book.name, i + 1);
+  });
+
+  // Open first unit by default
+  const firstUnit = section.querySelector('.unit-block');
+  if (firstUnit) firstUnit.classList.add('open');
 }
-
-// Unit blocks
-units.forEach((unit, i) => {
-  section.innerHTML += renderUnit(unit, book.name, i + 1);
-});
-
-// Open first unit by default
-const firstUnit = section.querySelector('.unit-block');
-if (firstUnit) firstUnit.classList.add('open');
 
 // ---- TOGGLE ----
 function toggleUnit(header) {
@@ -946,163 +997,6 @@ document.getElementById('search').addEventListener('input', function() {
   });
 });
 
-// ---- POPOVER SYSTEM ----
-const popover = document.getElementById('file-popover');
-const popoverBackdrop = document.getElementById('popover-backdrop');
-const popoverHeader = document.getElementById('popover-header-text');
-const popoverOptZip = document.getElementById('popover-opt-zip');
-const popoverOptSeparate = document.getElementById('popover-opt-separate');
-const popoverOptShare = document.getElementById('popover-opt-share');
-const popoverDivider = document.getElementById('popover-divider');
-
-let currentFileData = [];
-let currentLabel = '';
-let activeTrigger = null;
-
-function hidePopover() {
-  popover.classList.remove('active');
-  popoverBackdrop.classList.remove('active');
-  currentFileData = [];
-  currentLabel = '';
-  activeTrigger = null;
-}
-
-function showPopover(btn, fileData, label) {
-  currentFileData = fileData;
-  currentLabel = label;
-  activeTrigger = btn;
-
-  const rect = btn.getBoundingClientRect();
-  const isMobile = window.innerWidth <= 600;
-
-  // Update popover header
-  popoverHeader.textContent = label || (fileData.length === 1 ? fileData[0].name : `${fileData.length} files`);
-
-  // Show/hide options based on file count
-  if (fileData.length === 1) {
-    // Single file: only show download and share
-    popoverOptZip.style.display = 'none';
-    popoverOptSeparate.style.display = 'none';
-    popoverDivider.style.display = 'none';
-    // Change download option to simple download
-    popoverOptZip.innerHTML = `<svg width="15" height="15" fill="none" viewBox="0 0 16 16"><path d="M8 3v7M5.5 8 8 10.5 10.5 8M3 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Download`;
-    popoverOptZip.style.display = 'flex';
-    popoverOptZip.classList.remove('option-zip');
-    popoverOptZip.classList.add('option-separate');
-    popoverOptSeparate.style.display = 'none';
-  } else {
-    // Multiple files: show all options
-    popoverOptZip.innerHTML = `<svg width="15" height="15" fill="none" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h3l2 2v4a1 1 0 0 1-1 1H5V6Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 6V8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> Download as ZIP`;
-    popoverOptZip.style.display = 'flex';
-    popoverOptZip.classList.add('option-zip');
-    popoverOptZip.classList.remove('option-separate');
-    popoverOptSeparate.style.display = 'flex';
-    popoverDivider.style.display = 'block';
-  }
-
-  // Position popover
-  if (isMobile) {
-    popover.style.top = 'auto';
-    popover.style.bottom = '1rem';
-    popover.style.left = '1rem';
-    popover.style.right = '1rem';
-    popover.style.maxWidth = 'unset';
-  } else {
-    popover.style.bottom = 'auto';
-    popover.style.right = 'auto';
-    popover.style.maxWidth = '320px';
-
-    // Position below button, prefer right-aligned
-    let top = rect.bottom + 8;
-    let left = rect.right - 240;
-    if (left < 16) left = 16;
-    if (left + 240 > window.innerWidth - 16) left = window.innerWidth - 240 - 16;
-    if (top + 180 > window.innerHeight) {
-      top = rect.top - 190;
-      if (top < 16) top = 16;
-    }
-    popover.style.top = top + 'px';
-    popover.style.left = left + 'px';
-  }
-
-  popover.classList.add('active');
-  popoverBackdrop.classList.add('active');
-}
-
-// Event delegation for popover triggers
-document.getElementById('units-section').addEventListener('click', function(e) {
-  const trigger = e.target.closest('.btn-popover-trigger');
-  if (!trigger) return;
-  e.preventDefault();
-  e.stopPropagation();
-
-  try {
-    const fileData = JSON.parse(trigger.getAttribute('data-files') || '[]');
-    const label = trigger.getAttribute('data-label') || 'Files';
-    showPopover(trigger, fileData, label);
-  } catch (err) {
-    console.error('Failed to parse file data:', err);
-  }
-});
-
-// Popover option handlers
-popoverOptZip.addEventListener('click', async function() {
-  if (currentFileData.length === 1) {
-    // Single file: direct download
-    triggerDownload(currentFileData[0].path, currentFileData[0].name);
-  } else {
-    // Multiple files: download as ZIP
-    await downloadAsZip(currentFileData, currentLabel || 'files');
-  }
-  hidePopover();
-});
-
-popoverOptSeparate.addEventListener('click', function() {
-  downloadSeparately(currentFileData);
-  hidePopover();
-});
-
-popoverOptShare.addEventListener('click', async function() {
-  await shareFiles(currentFileData, currentLabel);
-  hidePopover();
-});
-
-// Close popover on backdrop click
-popoverBackdrop.addEventListener('click', hidePopover);
-
-// Close popover on Escape key
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') hidePopover();
-});
-
-// Close popover on window resize (recalculate might be needed)
-window.addEventListener('resize', function() {
-  if (popover.classList.contains('active') && activeTrigger) {
-    // Re-position
-    const rect = activeTrigger.getBoundingClientRect();
-    const isMobile = window.innerWidth <= 600;
-    if (isMobile) {
-      popover.style.top = 'auto';
-      popover.style.bottom = '1rem';
-      popover.style.left = '1rem';
-      popover.style.right = '1rem';
-      popover.style.maxWidth = 'unset';
-    } else {
-      popover.style.bottom = 'auto';
-      popover.style.right = 'auto';
-      popover.style.maxWidth = '320px';
-      let top = rect.bottom + 8;
-      let left = rect.right - 240;
-      if (left < 16) left = 16;
-      if (left + 240 > window.innerWidth - 16) left = window.innerWidth - 240 - 16;
-      if (top + 180 > window.innerHeight) top = rect.top - 190;
-      if (top < 16) top = 16;
-      popover.style.top = top + 'px';
-      popover.style.left = left + 'px';
-    }
-  }
-});
-
 // ---- DOWNLOAD HELPERS ----
 function triggerDownload(url, filename) {
   const a = document.createElement('a');
@@ -1115,89 +1009,152 @@ function triggerDownload(url, filename) {
 
 function downloadSeparately(files) {
   files.forEach((f, i) => {
-    setTimeout(() => {
-      triggerDownload(f.path, f.name);
-    }, i * 350);
+    setTimeout(() => triggerDownload(f.path, f.name), i * 400);
   });
-  // Show a subtle toast-like feedback
   showToast(`Downloading ${files.length} file${files.length > 1 ? 's' : ''}…`);
 }
 
-async function downloadAsZip(files, zipName) {
-  if (typeof JSZip === 'undefined') {
-    // Fallback: download separately
-    showToast('ZIP library not loaded — downloading separately…');
-    downloadSeparately(files);
-    return;
-  }
+// ---- DIRECT DOWNLOAD (btn-download-all) ----
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.btn-download-all');
+  if (!btn) return;
+  e.preventDefault();
   try {
-    showToast('Creating ZIP file…');
-    const zip = new JSZip();
-    const fetchPromises = files.map(async (f) => {
-      try {
-        const response = await fetch(f.path);
-        if (!response.ok) throw new Error(`Failed to fetch ${f.name}`);
-        const blob = await response.blob();
-        zip.file(f.name, blob);
-      } catch (err) {
-        console.warn(`Could not add ${f.name} to ZIP:`, err);
-      }
-    });
-    await Promise.all(fetchPromises);
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-    const url = URL.createObjectURL(zipBlob);
-    const safeName = (zipName || 'files').replace(/[^a-zA-Z0-9 _-]/g, '_');
-    triggerDownload(url, `${safeName}.zip`);
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
-    showToast('ZIP downloaded!');
-  } catch (err) {
-    console.error('ZIP creation failed:', err);
-    showToast('ZIP failed — downloading separately…');
+    const files = JSON.parse(btn.getAttribute('data-files') || '[]');
     downloadSeparately(files);
+  } catch (err) {
+    console.error('Download error:', err);
   }
+});
+
+// ---- SHARE POPOVER (btn-popover-trigger — share only) ----
+const popover = document.getElementById('file-popover');
+const popoverBackdrop = document.getElementById('popover-backdrop');
+const popoverHeader = document.getElementById('popover-header-text');
+const popoverOptShare = document.getElementById('popover-opt-share');
+
+let currentFileData = [];
+let currentLabel = '';
+let activeTrigger = null;
+
+function hidePopover() {
+  popover.classList.remove('active');
+  popoverBackdrop.classList.remove('active');
+  currentFileData = [];
+  currentLabel = '';
+  activeTrigger = null;
+  // Reset to main view for next open
+  const mainView  = document.getElementById('popover-view-main');
+  const stepsView = document.getElementById('popover-view-steps');
+  if (mainView)  mainView.style.display  = 'block';
+  if (stepsView) stepsView.style.display = 'none';
 }
 
-async function shareFiles(files, label) {
-  const fileObjects = [];
-  let canShareFiles = false;
+function showSharePopover(btn, fileData, label) {
+  currentFileData = fileData;
+  currentLabel = label;
+  activeTrigger = btn;
 
+  popoverHeader.textContent = label || (fileData.length === 1 ? fileData[0].name : `${fileData.length} files`);
+
+  const rect = btn.getBoundingClientRect();
+  const isMobile = window.innerWidth <= 600;
+
+  if (isMobile) {
+    popover.style.top = 'auto';
+    popover.style.bottom = '1rem';
+    popover.style.left = '1rem';
+    popover.style.right = '1rem';
+    popover.style.maxWidth = 'unset';
+  } else {
+    popover.style.bottom = 'auto';
+    popover.style.right = 'auto';
+    popover.style.maxWidth = '240px';
+    let top = rect.bottom + 8;
+    let left = rect.right - 220;
+    if (left < 16) left = 16;
+    if (left + 220 > window.innerWidth - 16) left = window.innerWidth - 220 - 16;
+    if (top + 100 > window.innerHeight) top = rect.top - 110;
+    if (top < 16) top = 16;
+    popover.style.top = top + 'px';
+    popover.style.left = left + 'px';
+  }
+
+  popover.classList.add('active');
+  popoverBackdrop.classList.add('active');
+}
+
+document.addEventListener('click', function(e) {
+  const trigger = e.target.closest('.btn-popover-trigger');
+  if (!trigger) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    const fileData = JSON.parse(trigger.getAttribute('data-files') || '[]');
+    const label = trigger.getAttribute('data-label') || 'Files';
+    showSharePopover(trigger, fileData, label);
+  } catch (err) {
+    console.error('Share popover error:', err);
+  }
+});
+
+popoverOptShare.addEventListener('click', async function() {
+  await shareFiles(currentFileData, currentLabel);
+  hidePopover();
+});
+
+popoverBackdrop.addEventListener('click', hidePopover);
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') hidePopover();
+});
+
+async function shareFiles(files, label) {
+  // ---- Mobile: use native Web Share API to hand files to WhatsApp directly ----
   if (navigator.share && navigator.canShare) {
     try {
+      showToast('Preparing file…');
+      const fileObjects = [];
       for (const f of files) {
         const response = await fetch(f.path);
         const blob = await response.blob();
-        const ext = f.name.split('.').pop() || 'mp3';
+        const ext = f.name.split('.').pop() || 'bin';
         const mimeType = ext === 'mp3' ? 'audio/mpeg' : ext === 'pdf' ? 'application/pdf' : 'application/octet-stream';
         fileObjects.push(new File([blob], f.name, { type: mimeType }));
       }
       if (navigator.canShare({ files: fileObjects })) {
-        canShareFiles = true;
+        await navigator.share({ files: fileObjects, title: label || 'Spotlight Files' });
+        return; // done — native share sheet handled it
       }
     } catch (e) {
-      // Fall through to URL sharing
+      if (e.name === 'AbortError') return; // user cancelled
+      // fall through to desktop path
     }
   }
 
-  if (canShareFiles && fileObjects.length) {
-    try {
-      await navigator.share({
-        files: fileObjects,
-        title: label || 'Spotlight Files',
-      });
-      return;
-    } catch (e) {
-      if (e.name === 'AbortError') return;
-      // Fall through
-    }
-  }
+  // ---- Desktop fallback: download the file, then guide user to attach in WhatsApp ----
+  // Step 1: trigger the download
+  files.forEach((f, i) => {
+    setTimeout(() => triggerDownload(f.path, f.name), i * 400);
+  });
 
-  // Fallback: share via WhatsApp with URLs
-  const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
-  const text = (label || 'Spotlight files') + ':\n' + files.map(f => {
-    return `${f.name}: ${baseUrl}/${f.path}`;
-  }).join('\n');
-  const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(waUrl, '_blank');
+  // Step 2: show the "now attach it in WhatsApp" panel inside the popover
+  const mainView  = document.getElementById('popover-view-main');
+  const stepsView = document.getElementById('popover-view-steps');
+  const waBtn     = document.getElementById('popover-step2-wa');
+  const backBtn   = document.getElementById('popover-step2-back');
+
+  mainView.style.display  = 'none';
+  stepsView.style.display = 'block';
+
+  // Wire WhatsApp open button (opens WhatsApp Web, user attaches from Downloads)
+  waBtn.onclick = () => {
+    window.open('https://web.whatsapp.com', '_blank');
+    hidePopover();
+  };
+  backBtn.onclick = () => {
+    stepsView.style.display = 'none';
+    mainView.style.display  = 'block';
+  };
 }
 
 // ---- TOAST ----
