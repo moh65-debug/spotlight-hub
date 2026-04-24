@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spotlight Trilogy — English Textbooks</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1C1F26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spotlight">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
@@ -279,6 +285,7 @@
   <a class="nav-logo" href="index.html">Spotlight <span>Trilogy</span></a>
   <div class="nav-links">
     <a href="#books">Books</a>
+    <a href="https://github.com" target="_blank">GitHub</a>
   </div>
 </nav>
 
@@ -370,5 +377,10 @@
   });
 </script>
 
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
 </body>
 </html>

@@ -1,0 +1,30 @@
+{
+  "name": "Spotlight Trilogy",
+  "short_name": "Spotlight",
+  "description": "English Language Textbooks — Spotlight 1, 2 & 3",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#F7F4EE",
+  "theme_color": "#1C1F26",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "books"],
+  "shortcuts": [
+    { "name": "Spotlight 1", "url": "/book.html?book=1", "description": "7th Grade" },
+    { "name": "Spotlight 2", "url": "/book.html?book=2", "description": "8th Grade" },
+    { "name": "Spotlight 3", "url": "/book.html?book=3", "description": "9th Grade" }
+  ]
+}

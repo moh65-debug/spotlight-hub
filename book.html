@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spotlight — Lessons</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1C1F26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spotlight">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
@@ -35,7 +41,6 @@
     min-height: 100vh;
   }
 
-  /* NAV */
   nav {
     position: sticky;
     top: 0;
@@ -50,6 +55,23 @@
     gap: 1rem;
     height: 60px;
   }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+  .btn-library {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 6px 12px; border-radius: 99px;
+    font-size: 0.78rem; font-weight: 500; font-family: var(--sans);
+    background: rgba(28,31,38,0.06); color: var(--slate-mid);
+    border: 1px solid rgba(28,31,38,0.12); cursor: pointer;
+    transition: all var(--transition); white-space: nowrap;
+  }
+  .btn-library:hover { background: var(--slate); color: #fff; border-color: var(--slate); }
+  .btn-library .lib-count {
+    background: var(--accent); color: #fff;
+    border-radius: 99px; padding: 1px 6px;
+    font-size: 0.68rem; font-weight: 700;
+    display: none;
+  }
+  .btn-library .lib-count.visible { display: inline; }
   .nav-back {
     display: flex;
     align-items: center;
@@ -490,6 +512,207 @@
     .lesson-row { padding: 0.75rem 1rem; }
     .unit-audio-row { padding: 0.6rem 1rem; }
   }
+
+  /* ---- SAVE OFFLINE BUTTON ---- */
+  .btn-save {
+    background: rgba(74, 124, 89, 0.08);
+    color: #4A7C59;
+    border-color: rgba(74, 124, 89, 0.2);
+    position: relative;
+  }
+  .btn-save:hover { background: #4A7C59; color: #fff; border-color: #4A7C59; }
+  .btn-save.saving { opacity: 0.6; pointer-events: none; }
+  .btn-save.saved {
+    background: #4A7C59; color: #fff; border-color: #4A7C59;
+  }
+  .btn-save.saved::after {
+    content: '✓'; margin-left: 2px;
+  }
+  .offline-badge {
+    display: inline-block; font-size: 0.6rem; font-weight: 700;
+    background: #4A7C59; color: #fff; border-radius: 3px;
+    padding: 1px 4px; vertical-align: middle; margin-left: 4px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  /* ---- LIBRARY PANEL ---- */
+  .library-overlay {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(28,31,38,0.5);
+    display: none;
+  }
+  .library-overlay.active { display: flex; align-items: flex-end; }
+  @media (min-width: 601px) {
+    .library-overlay.active { align-items: center; justify-content: flex-end; }
+  }
+  .library-panel {
+    background: #fff;
+    width: 100%; max-height: 85vh;
+    border-radius: 20px 20px 0 0;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    animation: slideUpPanel 0.3s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  @media (min-width: 601px) {
+    .library-panel {
+      width: 380px; max-height: 90vh;
+      border-radius: var(--radius);
+      margin-right: 1rem;
+      animation: popInPanel 0.25s cubic-bezier(0.4,0,0.2,1) both;
+    }
+  }
+  @keyframes slideUpPanel { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes popInPanel { from { opacity:0; transform: scale(0.95) translateY(8px); } to { opacity:1; transform: none; } }
+
+  .library-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--cream-dark);
+    flex-shrink: 0;
+  }
+  .library-title { font-family: var(--serif); font-size: 1.1rem; color: var(--slate); }
+  .library-close {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid rgba(28,31,38,0.12);
+    background: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--slate-light); font-size: 1rem; line-height: 1;
+    transition: all var(--transition);
+  }
+  .library-close:hover { background: var(--slate); color: #fff; border-color: var(--slate); }
+
+  .library-body { overflow-y: auto; flex: 1; padding: 0.75rem; }
+  .library-empty {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--slate-light); font-size: 0.875rem;
+  }
+  .library-empty svg { margin: 0 auto 0.75rem; display: block; opacity: 0.3; }
+
+  .lib-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(28,31,38,0.07);
+    margin-bottom: 0.4rem;
+    background: var(--cream);
+    transition: background var(--transition);
+  }
+  .lib-item:hover { background: var(--cream-dark); }
+  .lib-icon {
+    width: 34px; height: 34px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 1.1rem;
+  }
+  .lib-icon.pdf { background: rgba(200,96,58,0.1); }
+  .lib-icon.mp3 { background: rgba(74,124,89,0.1); }
+  .lib-info { flex: 1; min-width: 0; }
+  .lib-name {
+    font-size: 0.82rem; font-weight: 500; color: var(--slate);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .lib-meta { font-size: 0.7rem; color: var(--slate-light); margin-top: 1px; }
+  .lib-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
+  .lib-btn {
+    padding: 4px 9px; border-radius: 4px; border: none;
+    font-size: 0.72rem; font-weight: 500; font-family: var(--sans);
+    cursor: pointer; transition: all var(--transition);
+  }
+  .lib-btn-open { background: var(--accent); color: #fff; }
+  .lib-btn-open:hover { opacity: 0.85; }
+  .lib-btn-delete { background: rgba(28,31,38,0.07); color: var(--slate-light); }
+  .lib-btn-delete:hover { background: #e74c3c; color: #fff; }
+
+  /* ---- PDF VIEWER MODAL ---- */
+  .viewer-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: rgba(10,10,15,0.92);
+    display: none; flex-direction: column;
+  }
+  .viewer-overlay.active { display: flex; }
+  .viewer-topbar {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.6rem 1rem; background: rgba(28,31,38,0.9);
+    flex-shrink: 0; min-height: 50px;
+  }
+  .viewer-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: none; color: #fff; cursor: pointer; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--transition);
+  }
+  .viewer-close:hover { background: rgba(255,255,255,0.15); }
+  .viewer-filename {
+    font-size: 0.85rem; color: rgba(255,255,255,0.8);
+    flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .viewer-pages { font-size: 0.75rem; color: rgba(255,255,255,0.45); white-space: nowrap; }
+  .viewer-body {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 1rem 0.5rem;
+    gap: 8px;
+    background: #2a2a30;
+  }
+  .viewer-body canvas {
+    max-width: 100%; height: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border-radius: 2px;
+    display: block;
+  }
+  .viewer-loading {
+    color: rgba(255,255,255,0.5); font-size: 0.9rem; margin: auto;
+    text-align: center; padding: 3rem;
+  }
+
+  /* ---- AUDIO PLAYER ---- */
+  .audio-player-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 350;
+    background: var(--slate);
+    color: #fff;
+    padding: 0.6rem 1rem;
+    display: none;
+    flex-direction: column;
+    gap: 0.4rem;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+  }
+  .audio-player-bar.active { display: flex; }
+  .audio-player-top {
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .audio-track-name {
+    flex: 1; font-size: 0.82rem; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: rgba(255,255,255,0.9);
+  }
+  .audio-ctrl {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: none; background: rgba(255,255,255,0.12);
+    color: #fff; cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background var(--transition);
+    flex-shrink: 0;
+  }
+  .audio-ctrl:hover { background: rgba(255,255,255,0.22); }
+  .audio-ctrl.play-pause { background: var(--accent); width: 38px; height: 38px; font-size: 1.1rem; }
+  .audio-ctrl.play-pause:hover { opacity: 0.85; }
+  .audio-close-ctrl {
+    background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5);
+  }
+  .audio-progress-row {
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .audio-time { font-size: 0.68rem; color: rgba(255,255,255,0.45); min-width: 36px; }
+  .audio-time.right { text-align: right; }
+  input[type=range].audio-seek {
+    flex: 1; height: 3px; cursor: pointer;
+    accent-color: var(--accent);
+    border-radius: 99px;
+  }
+
+  /* Mark audio items that are saved offline */
+  .audio-item.offline-saved .audio-dot { background: #4A7C59; box-shadow: 0 0 0 2px rgba(74,124,89,0.3); }
+
 </style>
 </head>
 <body>
@@ -503,6 +726,13 @@
   </a>
   <div class="nav-divider"></div>
   <span class="nav-title" id="nav-title">Loading…</span>
+  <div class="nav-right">
+    <button class="btn-library" id="btn-library" onclick="openLibrary()">
+      <svg width="13" height="13" fill="none" viewBox="0 0 14 14"><rect x="1.5" y="2" width="3.5" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="6.5" y="2" width="3.5" height="10" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M11.5 2v10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Offline Library
+      <span class="lib-count" id="lib-count">0</span>
+    </button>
+  </div>
   <div class="nav-accent-bar" id="nav-accent-bar"></div>
 </nav>
 
@@ -519,6 +749,56 @@
 </div>
 
 
+
+<!-- ===== OFFLINE LIBRARY PANEL ===== -->
+<div class="library-overlay" id="library-overlay" onclick="closeLibraryOnBackdrop(event)">
+  <div class="library-panel" id="library-panel">
+    <div class="library-header">
+      <span class="library-title">Offline Library</span>
+      <button class="library-close" onclick="closeLibrary()">✕</button>
+    </div>
+    <div class="library-body" id="library-body">
+      <div class="library-empty">
+        <svg width="48" height="48" fill="none" viewBox="0 0 48 48"><rect x="8" y="10" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/><rect x="26" y="10" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/></svg>
+        <p>No files saved yet.</p>
+        <p style="margin-top:0.4rem;font-size:0.78rem;">Tap <strong>Save Offline</strong> on any file to access it without internet.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PDF VIEWER MODAL ===== -->
+<div class="viewer-overlay" id="viewer-overlay">
+  <div class="viewer-topbar">
+    <button class="viewer-close" onclick="closePdfViewer()">✕</button>
+    <span class="viewer-filename" id="viewer-filename">Document</span>
+    <span class="viewer-pages" id="viewer-pages"></span>
+  </div>
+  <div class="viewer-body" id="viewer-body">
+    <div class="viewer-loading" id="viewer-loading">Loading PDF…</div>
+  </div>
+</div>
+
+<!-- ===== AUDIO PLAYER BAR ===== -->
+<div class="audio-player-bar" id="audio-player-bar">
+  <div class="audio-player-top">
+    <button class="audio-ctrl" id="audio-prev" onclick="audioSkip(-1)" title="Previous">
+      <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M3 2v10M11 3 6 7l5 4V3Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="audio-ctrl play-pause" id="audio-play" onclick="audioToggle()">▶</button>
+    <button class="audio-ctrl" id="audio-next" onclick="audioSkip(1)" title="Next">
+      <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M11 2v10M3 3l5 4-5 4V3Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="audio-track-name" id="audio-track-name">—</span>
+    <button class="audio-ctrl audio-close-ctrl" onclick="audioClose()" title="Close">✕</button>
+  </div>
+  <div class="audio-progress-row">
+    <span class="audio-time" id="audio-cur">0:00</span>
+    <input type="range" class="audio-seek" id="audio-seek" value="0" min="0" step="0.1">
+    <span class="audio-time right" id="audio-dur">0:00</span>
+  </div>
+</div>
+<audio id="audio-el" preload="auto"></audio>
 
 <footer>
   Spotlight Trilogy — <span id="footer-book">…</span>
@@ -920,7 +1200,460 @@ document.addEventListener('click', function(e) {
 
 
 
-// ---- TOAST ----
+
+// ============================================================
+//  PWA — SERVICE WORKER REGISTRATION
+// ============================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ============================================================
+//  INDEXEDDB — offline file storage
+// ============================================================
+const DB_NAME = 'spotlight-offline';
+const DB_VER  = 1;
+const STORE   = 'files';
+let db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (db) return resolve(db);
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) {
+        d.createObjectStore(STORE, { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; resolve(db); };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function dbPut(record)  { const d = await openDB(); return new Promise((res,rej)=>{ const t=d.transaction(STORE,'readwrite'); t.objectStore(STORE).put(record).onsuccess=()=>res(); t.onerror=()=>rej(t.error); }); }
+async function dbGet(key)     { const d = await openDB(); return new Promise((res,rej)=>{ const t=d.transaction(STORE,'readonly'); const r=t.objectStore(STORE).get(key); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function dbDelete(key)  { const d = await openDB(); return new Promise((res,rej)=>{ const t=d.transaction(STORE,'readwrite'); t.objectStore(STORE).delete(key).onsuccess=()=>res(); t.onerror=()=>rej(t.error); }); }
+async function dbAll()        { const d = await openDB(); return new Promise((res,rej)=>{ const t=d.transaction(STORE,'readonly'); const r=t.objectStore(STORE).getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+
+// Key = stable identifier for a file (its Drive URL or relative path)
+function fileKey(url) {
+  // Use just the Drive ID if present, else the full URL
+  const m = url.match(/[?&]id=([^&]+)/);
+  return m ? 'drive_' + m[1] : url;
+}
+
+// ============================================================
+//  SAVE OFFLINE — fetch blob → IndexedDB
+// ============================================================
+async function saveOffline(btn, url, name, type) {
+  btn.classList.add('saving');
+  btn.textContent = 'Saving…';
+  try {
+    const resp = await fetch(url, { mode: 'cors' });
+    if (!resp.ok) throw new Error('Network response not ok');
+    const blob = await resp.blob();
+    const key = fileKey(url);
+    const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+    await dbPut({ key, name, type, url, blob, sizeMB, savedAt: Date.now() });
+    btn.classList.remove('saving');
+    btn.classList.add('saved');
+    btn.textContent = 'Saved ✓';
+    btn.disabled = true;
+    updateLibraryCount();
+    showToast(`"${name}" saved offline (${sizeMB} MB)`);
+  } catch (err) {
+    btn.classList.remove('saving');
+    btn.textContent = 'Save Offline';
+    btn.disabled = false;
+    // Google Drive blocks CORS for large files — inform user
+    showToast('Could not fetch — use Download instead, then it will be cached.');
+    console.error('saveOffline error:', err);
+  }
+}
+
+// Check which files are already saved and update button states
+async function refreshSavedStates() {
+  const all = await dbAll();
+  const savedKeys = new Set(all.map(r => r.key));
+  document.querySelectorAll('.btn-save-offline').forEach(btn => {
+    const key = fileKey(btn.dataset.url);
+    if (savedKeys.has(key)) {
+      btn.classList.add('saved');
+      btn.textContent = 'Saved ✓';
+      btn.disabled = true;
+    }
+  });
+  updateLibraryCount();
+}
+
+async function updateLibraryCount() {
+  const all = await dbAll();
+  const el = document.getElementById('lib-count');
+  if (all.length > 0) {
+    el.textContent = all.length;
+    el.classList.add('visible');
+  } else {
+    el.classList.remove('visible');
+  }
+}
+
+// ============================================================
+//  BUTTON BUILDERS — updated to include Save Offline
+// ============================================================
+function saveOfflineBtn(url, name, type) {
+  const key = JSON.stringify({ url, name, type }).replace(/"/g, '&quot;');
+  return `<button class="btn btn-save btn-save-offline" data-url="${escHtml(url)}" data-name="${escHtml(name)}" data-type="${type}" onclick="handleSaveOffline(this)">${dlIcon()} Save Offline</button>`;
+}
+
+function handleSaveOffline(btn) {
+  const url  = btn.dataset.url;
+  const name = btn.dataset.name;
+  const type = btn.dataset.type;
+  saveOffline(btn, url, name, type);
+}
+
+// Open file from IndexedDB
+async function openSavedFile(key) {
+  const record = await dbGet(key);
+  if (!record) { showToast('File not found in library.'); return; }
+  const objectUrl = URL.createObjectURL(record.blob);
+  if (record.type === 'pdf') {
+    openPdfViewer(objectUrl, record.name);
+  } else if (record.type === 'mp3') {
+    playAudioFromBlob(objectUrl, record.name);
+  }
+}
+
+// ============================================================
+//  LIBRARY PANEL
+// ============================================================
+function openLibrary() {
+  renderLibrary();
+  document.getElementById('library-overlay').classList.add('active');
+}
+function closeLibrary() {
+  document.getElementById('library-overlay').classList.remove('active');
+}
+function closeLibraryOnBackdrop(e) {
+  if (e.target === document.getElementById('library-overlay')) closeLibrary();
+}
+
+async function renderLibrary() {
+  const body = document.getElementById('library-body');
+  const all = await dbAll();
+  if (!all.length) {
+    body.innerHTML = `<div class="library-empty">
+      <svg width="48" height="48" fill="none" viewBox="0 0 48 48"><rect x="8" y="10" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/><rect x="26" y="10" width="14" height="28" rx="3" stroke="currentColor" stroke-width="2"/></svg>
+      <p>No files saved yet.</p>
+      <p style="margin-top:0.4rem;font-size:0.78rem;">Tap <strong>Save Offline</strong> on any file.</p>
+    </div>`;
+    return;
+  }
+  // Group by type
+  const pdfs = all.filter(r => r.type === 'pdf');
+  const mp3s = all.filter(r => r.type === 'mp3');
+
+  let html = '';
+  const totalMB = all.reduce((s, r) => s + parseFloat(r.sizeMB||0), 0).toFixed(1);
+  html += `<div style="font-size:0.72rem;color:var(--slate-light);padding:0.25rem 0.4rem 0.6rem;">${all.length} file${all.length!==1?'s':''} · ${totalMB} MB used</div>`;
+
+  if (pdfs.length) {
+    html += `<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate-light);padding:0.3rem 0.4rem 0.3rem;">PDFs</div>`;
+    pdfs.forEach(r => { html += libItem(r); });
+  }
+  if (mp3s.length) {
+    html += `<div style="font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate-light);padding:0.5rem 0.4rem 0.3rem;">Audio</div>`;
+    mp3s.forEach(r => { html += libItem(r); });
+  }
+  body.innerHTML = html;
+}
+
+function libItem(r) {
+  const icon = r.type === 'pdf' ? '📄' : '🎵';
+  const date = new Date(r.savedAt).toLocaleDateString();
+  return `<div class="lib-item">
+    <div class="lib-icon ${r.type}">${icon}</div>
+    <div class="lib-info">
+      <div class="lib-name" title="${escHtml(r.name)}">${escHtml(r.name)}</div>
+      <div class="lib-meta">${r.sizeMB} MB · ${date}</div>
+    </div>
+    <div class="lib-actions">
+      <button class="lib-btn lib-btn-open" onclick="openSavedFile('${escHtml(r.key)}');closeLibrary();">${r.type==='pdf'?'View':'Play'}</button>
+      <button class="lib-btn lib-btn-delete" onclick="deleteLibItem('${escHtml(r.key)}',this)">✕</button>
+    </div>
+  </div>`;
+}
+
+async function deleteLibItem(key, btn) {
+  await dbDelete(key);
+  btn.closest('.lib-item').remove();
+  updateLibraryCount();
+  // Re-enable the matching save button on page
+  document.querySelectorAll('.btn-save-offline').forEach(b => {
+    if (fileKey(b.dataset.url) === key) {
+      b.classList.remove('saved');
+      b.textContent = 'Save Offline';
+      b.disabled = false;
+    }
+  });
+  renderLibrary();
+}
+
+// ============================================================
+//  PDF VIEWER  (uses pdf.js CDN)
+// ============================================================
+let pdfJsLoaded = false;
+function ensurePdfJs() {
+  return new Promise(resolve => {
+    if (pdfJsLoaded) return resolve();
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    script.onload = () => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      pdfJsLoaded = true;
+      resolve();
+    };
+    document.head.appendChild(script);
+  });
+}
+
+async function openPdfViewer(url, name) {
+  const overlay = document.getElementById('viewer-overlay');
+  const body    = document.getElementById('viewer-body');
+  const loading = document.getElementById('viewer-loading');
+  document.getElementById('viewer-filename').textContent = name;
+  document.getElementById('viewer-pages').textContent = '';
+  body.innerHTML = '<div class="viewer-loading" id="viewer-loading">Loading PDF…</div>';
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  await ensurePdfJs();
+
+  try {
+    const pdf = await pdfjsLib.getDocument(url).promise;
+    const total = pdf.numPages;
+    document.getElementById('viewer-filename').textContent = name;
+    document.getElementById('viewer-pages').textContent = `${total} page${total!==1?'s':''}`;
+    body.innerHTML = '';
+
+    // Render all pages (lazy render visible ones for performance)
+    const devicePx = window.devicePixelRatio || 1;
+    const scale = Math.min(2, devicePx * (window.innerWidth < 600 ? 1.0 : 1.4));
+
+    for (let p = 1; p <= total; p++) {
+      const page = await pdf.getPage(p);
+      const vp   = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width  = vp.width;
+      canvas.height = vp.height;
+      canvas.style.width  = Math.floor(vp.width  / devicePx) + 'px';
+      canvas.style.height = Math.floor(vp.height / devicePx) + 'px';
+      body.appendChild(canvas);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    }
+  } catch (err) {
+    body.innerHTML = `<div class="viewer-loading">Could not render PDF.<br><small>${err.message}</small></div>`;
+  }
+}
+
+function closePdfViewer() {
+  document.getElementById('viewer-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  document.getElementById('viewer-body').innerHTML = '';
+}
+
+// Add "View" button to saved PDFs inline
+async function openPdfByUrl(url, name) {
+  const key = fileKey(url);
+  const record = await dbGet(key);
+  if (record) {
+    openPdfViewer(URL.createObjectURL(record.blob), name);
+  } else {
+    // Not saved: try opening directly (online)
+    openPdfViewer(url, name);
+  }
+}
+
+// ============================================================
+//  AUDIO PLAYER
+// ============================================================
+const audioEl   = document.getElementById('audio-el');
+const playerBar = document.getElementById('audio-player-bar');
+const trackName = document.getElementById('audio-track-name');
+const playBtn   = document.getElementById('audio-play');
+const seekEl    = document.getElementById('audio-seek');
+const curEl     = document.getElementById('audio-cur');
+const durEl     = document.getElementById('audio-dur');
+
+let audioQueue = [];   // [{url, name, blob?}, ...]
+let audioIndex = 0;
+
+function fmtTime(s) {
+  if (isNaN(s)) return '0:00';
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+audioEl.addEventListener('timeupdate', () => {
+  curEl.textContent = fmtTime(audioEl.currentTime);
+  if (audioEl.duration) seekEl.value = (audioEl.currentTime / audioEl.duration) * 100;
+});
+audioEl.addEventListener('loadedmetadata', () => {
+  durEl.textContent = fmtTime(audioEl.duration);
+  seekEl.max = 100;
+});
+audioEl.addEventListener('ended', () => {
+  if (audioIndex < audioQueue.length - 1) { audioIndex++; loadAudioTrack(); }
+  else { playBtn.textContent = '▶'; }
+});
+audioEl.addEventListener('play',  () => { playBtn.textContent = '⏸'; });
+audioEl.addEventListener('pause', () => { playBtn.textContent = '▶'; });
+seekEl.addEventListener('input', () => {
+  if (audioEl.duration) audioEl.currentTime = (seekEl.value / 100) * audioEl.duration;
+});
+
+async function loadAudioTrack() {
+  const track = audioQueue[audioIndex];
+  if (!track) return;
+  trackName.textContent = track.name;
+  // Try to load from IndexedDB first
+  const key = fileKey(track.url);
+  const record = await dbGet(key);
+  if (record && record.blob) {
+    audioEl.src = URL.createObjectURL(record.blob);
+  } else {
+    audioEl.src = track.url;
+  }
+  audioEl.play();
+  playerBar.classList.add('active');
+  // Adjust body padding so audio bar doesn't overlap content
+  document.body.style.paddingBottom = '90px';
+}
+
+function playAudio(url, name, queue) {
+  audioQueue = queue || [{ url, name }];
+  audioIndex = audioQueue.findIndex(t => t.url === url);
+  if (audioIndex < 0) audioIndex = 0;
+  loadAudioTrack();
+}
+
+function playAudioFromBlob(objectUrl, name) {
+  audioQueue = [{ url: objectUrl, name }];
+  audioIndex = 0;
+  audioEl.src = objectUrl;
+  trackName.textContent = name;
+  audioEl.play();
+  playerBar.classList.add('active');
+  document.body.style.paddingBottom = '90px';
+}
+
+function audioToggle() {
+  if (audioEl.paused) audioEl.play(); else audioEl.pause();
+}
+function audioSkip(dir) {
+  const next = audioIndex + dir;
+  if (next >= 0 && next < audioQueue.length) { audioIndex = next; loadAudioTrack(); }
+}
+function audioClose() {
+  audioEl.pause();
+  audioEl.src = '';
+  playerBar.classList.remove('active');
+  document.body.style.paddingBottom = '';
+}
+
+// ============================================================
+//  UPDATED RENDER HELPERS — inject Save Offline + Play buttons
+// ============================================================
+// Override btnSB / btnTG to add Save Offline buttons
+const _origBtnSB = btnSB;
+btnSB = function(href, label) {
+  return `${_origBtnSB(href, label)}${saveOfflineBtn(href, label||'Student Book', 'pdf')}`;
+};
+const _origBtnTG = btnTG;
+btnTG = function(href, label) {
+  return `${_origBtnTG(href, label)}${saveOfflineBtn(href, label||'Teacher Guide', 'pdf')}`;
+};
+
+// Override audio-item rendering to include Play button
+// (done inline in renderLesson — we patch the audio list section)
+const _origRenderLesson = renderLesson;
+renderLesson = function(lesson, bookName, unitName, lessonIndex) {
+  // We rebuild the audio list with Play buttons instead of download anchors
+  const files = lesson.children || [];
+  const audioFiles = files.filter(f => fileIsAudio(f.name));
+  if (!audioFiles.length) return _origRenderLesson(lesson, bookName, unitName, lessonIndex);
+
+  // Build the queue for this lesson's audios
+  const queue = audioFiles.map(f => ({
+    url: buildPath(bookName, unitName, lesson.name, f.name),
+    name: f.name
+  }));
+
+  // Get base HTML from original (which has download links)
+  let html = _origRenderLesson(lesson, bookName, unitName, lessonIndex);
+
+  // Replace each audio-item anchor with enhanced version (Play + Save)
+  // We do this by injecting a post-render marker; simpler to re-render audio-list
+  // Strip original audio-list and inject ours
+  const audioListStart = html.indexOf('<div class="audio-list">');
+  const audioListEnd   = html.indexOf('</div>', audioListStart) + 6;
+  if (audioListStart < 0) return html;
+
+  const queueJson = JSON.stringify(queue).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  const newAudioList = `<div class="audio-list">` +
+    audioFiles.map((f, fi) => {
+      const url = queue[fi].url;
+      return `<div style="display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;margin-bottom:2px;">
+        <button class="btn btn-audio" style="font-size:0.7rem;padding:3px 8px;flex-shrink:0;"
+          onclick="playAudio('${escHtml(url)}','${escHtml(f.name)}',JSON.parse(this.closest('[data-lesson]').dataset.audioQueue||'[]'))">
+          ${audioIcon()} Play
+        </button>
+        ${saveOfflineBtn(url, f.name, 'mp3')}
+        <span class="audio-dot" style="margin-left:2px;"></span>
+        <span style="font-size:0.75rem;color:var(--slate-light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${escHtml(f.name)}</span>
+      </div>`;
+    }).join('') +
+  `</div>`;
+
+  return html.substring(0, audioListStart) + newAudioList + html.substring(audioListEnd);
+};
+
+// Store the audio queue on the lesson-row for easy access
+const _origRenderUnit = renderUnit;
+renderUnit = function(unit, bookName, unitIndex) {
+  let html = _origRenderUnit(unit, bookName, unitIndex);
+  // For each lesson row, attach audio queue as data attribute
+  // (We'll do it after DOM insertion via a separate pass)
+  return html;
+};
+
+// After page renders, attach audio queues to lesson rows
+function attachAudioQueues() {
+  document.querySelectorAll('.lesson-row').forEach(row => {
+    const playBtns = row.querySelectorAll('.btn-audio');
+    const queue = [];
+    playBtns.forEach(btn => {
+      const onclick = btn.getAttribute('onclick') || '';
+      const m = onclick.match(/playAudio\('([^']+)','([^']+)'/);
+      if (m) queue.push({ url: m[1], name: m[2] });
+    });
+    row.dataset.audioQueue = JSON.stringify(queue);
+  });
+}
+
+// ============================================================
+//  INIT — refresh saved states after page renders
+// ============================================================
+const _origInitPage = initializePage;
+initializePage = function() {
+  _origInitPage();
+  setTimeout(() => {
+    attachAudioQueues();
+    refreshSavedStates();
+  }, 100);
+};
+
 function showToast(message) {
   let toast = document.getElementById('toast-msg');
   if (!toast) {
