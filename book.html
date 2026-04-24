@@ -223,15 +223,15 @@
   }
 
   .btn-share {
-    background: rgba(37, 150, 110, 0.08);
-    color: #25966E;
-    border-color: rgba(37, 150, 110, 0.2);
+    background: rgba(28, 31, 38, 0.05);
+    color: var(--slate-mid);
+    border-color: rgba(28, 31, 38, 0.12);
     cursor: pointer;
   }
   .btn-share:hover {
-    background: #25966E;
+    background: var(--slate);
     color: #fff;
-    border-color: #25966E;
+    border-color: var(--slate);
   }
 
   /* SEARCH */
@@ -469,101 +469,7 @@
     border-color: var(--slate);
   }
 
-  /* POPOVER */
-  .popover-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 180;
-    background: rgba(28, 31, 38, 0.35);
-    display: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .popover-backdrop.active { display: block; }
-
-  .file-popover {
-    position: fixed;
-    z-index: 190;
-    background: #fff;
-    border-radius: var(--radius);
-    border: 1px solid rgba(28, 31, 38, 0.1);
-    box-shadow: 0 16px 48px rgba(28, 31, 38, 0.2);
-    padding: 0.4rem;
-    min-width: 230px;
-    max-width: calc(100vw - 2rem);
-    display: none;
-  }
-  .file-popover.active {
-    display: block;
-    animation: popIn 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
-  }
-  @keyframes popIn {
-    from { opacity: 0; transform: translateY(8px) scale(0.96); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  .popover-option {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.7rem 0.9rem;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: 0.84rem;
-    font-weight: 500;
-    border: none;
-    background: transparent;
-    width: 100%;
-    text-align: left;
-    color: var(--slate);
-    font-family: var(--sans);
-    transition: background var(--transition), color var(--transition);
-    white-space: nowrap;
-  }
-  .popover-option:hover {
-    background: rgba(247, 244, 238, 0.8);
-    color: var(--slate);
-  }
-  .popover-option svg { flex-shrink: 0; }
-  .popover-option.option-zip { color: #3A6B8A; }
-  .popover-option.option-separate { color: var(--slate-mid); }
-  .popover-option.option-share { color: #25966E; }
-  .popover-divider {
-    height: 1px;
-    background: rgba(28, 31, 38, 0.08);
-    margin: 0.3rem 0.6rem;
-  }
-  .popover-header {
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--slate-light);
-    padding: 0.4rem 0.9rem 0.2rem;
-  }
-
-  /* Mobile popover: bottom sheet */
-  @media (max-width: 600px) {
-    .file-popover {
-      bottom: 1rem;
-      left: 1rem;
-      right: 1rem;
-      top: auto;
-      border-radius: 16px;
-      min-width: unset;
-      max-width: unset;
-    }
-    .file-popover.active {
-      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(120%); }
-      to { transform: translateY(0); }
-    }
-    .popover-option {
-      padding: 0.85rem 1rem;
-      font-size: 0.9rem;
-    }
-  }
+  /* Mobile bottom sheet no longer needed */
 
   footer {
     border-top: 1px solid rgba(28, 31, 38, 0.08);
@@ -622,40 +528,7 @@
   <!-- filled by JS -->
 </div>
 
-<!-- Popover backdrop -->
-<div class="popover-backdrop" id="popover-backdrop"></div>
-<!-- Share Popover -->
-<div class="file-popover" id="file-popover">
-  <!-- Default view: share button -->
-  <div id="popover-view-main">
-    <div class="popover-header" id="popover-header-text">Share</div>
-    <button class="popover-option option-share" id="popover-opt-share">
-      <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><circle cx="5" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 7.3 10 5m-3 3.7 3 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-      Send via WhatsApp
-    </button>
-  </div>
-  <!-- Step 2: shown on desktop after file downloads -->
-  <div id="popover-view-steps" style="display:none; padding:0.5rem 0.4rem;">
-    <div class="popover-header" style="color:var(--slate);">Almost there!</div>
-    <div style="padding:0.3rem 0.9rem 0.7rem; display:flex; flex-direction:column; gap:0.55rem;">
-      <div style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8rem;color:var(--slate-mid);">
-        <span style="background:#25966E;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;margin-top:1px;">✓</span>
-        File downloaded to your device
-      </div>
-      <div style="display:flex;align-items:flex-start;gap:0.5rem;font-size:0.8rem;color:var(--slate-mid);">
-        <span style="background:var(--accent);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;margin-top:1px;">2</span>
-        <span>In WhatsApp, tap the <strong style="color:var(--slate);">attachment (📎)</strong> button and select the file</span>
-      </div>
-    </div>
-    <button class="popover-option option-share" id="popover-step2-wa" style="margin-top:0.2rem;">
-      <svg width="15" height="15" fill="none" viewBox="0 0 16 16"><circle cx="5" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M7 7.3 10 5m-3 3.7 3 3.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-      Open WhatsApp
-    </button>
-    <button class="popover-option" id="popover-step2-back" style="color:var(--slate-light);font-size:0.78rem;padding:0.4rem 0.9rem;">
-      ← Back
-    </button>
-  </div>
-</div>
+
 
 <footer>
   Spotlight Trilogy — <span id="footer-book">…</span>
@@ -765,13 +638,22 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
   }));
 
   let btns = '';
-  if (sbPath)  btns += btnSB(sbPath, 'SB');
-  if (tgPath)  btns += btnTG(tgPath, 'TG');
+  if (sbPath) {
+    const sbData = JSON.stringify([{ name: sbFile.name, path: sbPath }]).replace(/'/g, "\\'");
+    btns += btnSB(sbPath, 'SB');
+    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${sbData}' data-label="${escHtml(sbFile.name)}" aria-label="Share SB">${shareIcon()}</button>`;
+  }
+  if (tgPath) {
+    const tgData = JSON.stringify([{ name: tgFile.name, path: tgPath }]).replace(/'/g, "\\'");
+    btns += btnTG(tgPath, 'TG');
+    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${tgData}' data-label="${escHtml(tgFile.name)}" aria-label="Share TG">${shareIcon()}</button>`;
+  }
 
   // All Audios button (replaces SB+Audio bundle)
   if (audioFiles.length) {
     const audioDataJson = JSON.stringify(audioFileData).replace(/'/g, "\\'");
     btns += `<button class="btn btn-all-audios btn-download-all" data-files='${audioDataJson}' data-label="All Audios (${audioFiles.length})" aria-label="All ${audioFiles.length} audio files">${audioIcon()} All Audios (${audioFiles.length})</button>`;
+    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${audioDataJson}' data-label="All Audios – ${escHtml(lesson.name)}" aria-label="Share all audios">${shareIcon()}</button>`;
   }
 
   // SB+TG bundle
@@ -780,7 +662,9 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
       { name: sbFile.name, path: sbPath },
       { name: tgFile.name, path: tgPath }
     ];
+    const bundleJson = JSON.stringify(bundleData).replace(/'/g, "\\'");
     btns += btnBundle(bundleData, 'SB + TG');
+    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${bundleJson}' data-label="SB + TG – ${escHtml(lesson.name)}" aria-label="Share SB+TG">${shareIcon()}</button>`;
   }
   // All files bundle
   if ((sbPath || tgPath) && audioFiles.length) {
@@ -789,7 +673,9 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
       ...(tgPath ? [{ name: tgFile.name, path: tgPath }] : []),
       ...audioFileData
     ];
+    const allJson = JSON.stringify(allData).replace(/'/g, "\\'");
     btns += btnBundle(allData, 'All files');
+    btns += `<button class="btn btn-share btn-popover-trigger" data-files='${allJson}' data-label="All files – ${escHtml(lesson.name)}" aria-label="Share all files">${shareIcon()}</button>`;
   }
 
   // Audio list with individual download links + share buttons
@@ -919,12 +805,29 @@ function initializePage() {
   const bookTG = book.children.find(c => fileIsTG(c.name));
 
   let rootBtns = '';
-  if (bookSB) rootBtns += btnSB(buildPath(book.name, bookSB.name), 'Full Student Book');
-  if (bookTG) rootBtns += btnTG(buildPath(book.name, bookTG.name), 'Full Teacher Guide');
-  if (bookSB && bookTG) rootBtns += btnBundle([
-    { name: bookSB.name, path: buildPath(book.name, bookSB.name) },
-    { name: bookTG.name, path: buildPath(book.name, bookTG.name) }
-  ], 'SB + TG');
+  if (bookSB) {
+    const sbPath2 = buildPath(book.name, bookSB.name);
+    const sbData2 = JSON.stringify([{ name: bookSB.name, path: sbPath2 }]).replace(/'/g, "\\'");
+    rootBtns += btnSB(sbPath2, 'Full Student Book');
+    rootBtns += `<button class="btn btn-share btn-popover-trigger" data-files='${sbData2}' data-label="${escHtml(bookSB.name)}" aria-label="Share Student Book">${shareIcon()}</button>`;
+  }
+  if (bookTG) {
+    const tgPath2 = buildPath(book.name, bookTG.name);
+    const tgData2 = JSON.stringify([{ name: bookTG.name, path: tgPath2 }]).replace(/'/g, "\\'");
+    rootBtns += btnTG(tgPath2, 'Full Teacher Guide');
+    rootBtns += `<button class="btn btn-share btn-popover-trigger" data-files='${tgData2}' data-label="${escHtml(bookTG.name)}" aria-label="Share Teacher Guide">${shareIcon()}</button>`;
+  }
+  if (bookSB && bookTG) {
+    const sbPath2 = buildPath(book.name, bookSB.name);
+    const tgPath2 = buildPath(book.name, bookTG.name);
+    const bundleArr = [
+      { name: bookSB.name, path: sbPath2 },
+      { name: bookTG.name, path: tgPath2 }
+    ];
+    const bundleJson2 = JSON.stringify(bundleArr).replace(/'/g, "\\'");
+    rootBtns += btnBundle(bundleArr, 'SB + TG');
+    rootBtns += `<button class="btn btn-share btn-popover-trigger" data-files='${bundleJson2}' data-label="SB + TG – ${escHtml(book.name)}" aria-label="Share SB+TG">${shareIcon()}</button>`;
+  }
 
   // Header
   document.getElementById('book-header').innerHTML = `
@@ -999,17 +902,34 @@ document.getElementById('search').addEventListener('input', function() {
 
 // ---- DOWNLOAD HELPERS ----
 function triggerDownload(url, filename) {
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  // For Google Drive direct download URLs use iframe (avoids popup blocker)
+  if (url.includes('drive.usercontent.google.com') || url.includes('drive.google.com')) {
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = url;
+    document.body.appendChild(iframe);
+    setTimeout(() => iframe.remove(), 30000);
+  } else {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
 function downloadSeparately(files) {
+  // Use hidden iframes for multi-file downloads — much more reliable than
+  // programmatic anchor clicks which browsers throttle/block after the first.
   files.forEach((f, i) => {
-    setTimeout(() => triggerDownload(f.path, f.name), i * 400);
+    setTimeout(() => {
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = f.path + (f.path.includes('?') ? '&' : '?') + 'dl=1';
+      document.body.appendChild(iframe);
+      setTimeout(() => iframe.remove(), 30000);
+    }, i * 800);
   });
   showToast(`Downloading ${files.length} file${files.length > 1 ? 's' : ''}…`);
 }
@@ -1028,134 +948,24 @@ document.addEventListener('click', function(e) {
 });
 
 // ---- SHARE POPOVER (btn-popover-trigger — share only) ----
-const popover = document.getElementById('file-popover');
-const popoverBackdrop = document.getElementById('popover-backdrop');
-const popoverHeader = document.getElementById('popover-header-text');
-const popoverOptShare = document.getElementById('popover-opt-share');
 
-let currentFileData = [];
-let currentLabel = '';
-let activeTrigger = null;
 
-function hidePopover() {
-  popover.classList.remove('active');
-  popoverBackdrop.classList.remove('active');
-  currentFileData = [];
-  currentLabel = '';
-  activeTrigger = null;
-  // Reset to main view for next open
-  const mainView  = document.getElementById('popover-view-main');
-  const stepsView = document.getElementById('popover-view-steps');
-  if (mainView)  mainView.style.display  = 'block';
-  if (stepsView) stepsView.style.display = 'none';
-}
-
-function showSharePopover(btn, fileData, label) {
-  currentFileData = fileData;
-  currentLabel = label;
-  activeTrigger = btn;
-
-  popoverHeader.textContent = label || (fileData.length === 1 ? fileData[0].name : `${fileData.length} files`);
-
-  const rect = btn.getBoundingClientRect();
-  const isMobile = window.innerWidth <= 600;
-
-  if (isMobile) {
-    popover.style.top = 'auto';
-    popover.style.bottom = '1rem';
-    popover.style.left = '1rem';
-    popover.style.right = '1rem';
-    popover.style.maxWidth = 'unset';
-  } else {
-    popover.style.bottom = 'auto';
-    popover.style.right = 'auto';
-    popover.style.maxWidth = '240px';
-    let top = rect.bottom + 8;
-    let left = rect.right - 220;
-    if (left < 16) left = 16;
-    if (left + 220 > window.innerWidth - 16) left = window.innerWidth - 220 - 16;
-    if (top + 100 > window.innerHeight) top = rect.top - 110;
-    if (top < 16) top = 16;
-    popover.style.top = top + 'px';
-    popover.style.left = left + 'px';
-  }
-
-  popover.classList.add('active');
-  popoverBackdrop.classList.add('active');
-}
-
-document.addEventListener('click', function(e) {
+document.addEventListener('click', async function(e) {
   const trigger = e.target.closest('.btn-popover-trigger');
   if (!trigger) return;
   e.preventDefault();
   e.stopPropagation();
   try {
     const fileData = JSON.parse(trigger.getAttribute('data-files') || '[]');
-    const label = trigger.getAttribute('data-label') || 'Files';
-    showSharePopover(trigger, fileData, label);
-  } catch (err) {
-    console.error('Share popover error:', err);
+    const text = fileData.length === 1
+      ? fileData[0].path
+      : fileData.map(f => `${f.name}: ${f.path}`).join('\n');
+    await navigator.clipboard.writeText(text);
+    showToast('Link copied to clipboard!');
+  } catch {
+    showToast('Could not copy link.');
   }
 });
-
-popoverOptShare.addEventListener('click', async function() {
-  await shareFiles(currentFileData, currentLabel);
-  hidePopover();
-});
-
-popoverBackdrop.addEventListener('click', hidePopover);
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') hidePopover();
-});
-
-async function shareFiles(files, label) {
-  // ---- Mobile: use native Web Share API to hand files to WhatsApp directly ----
-  if (navigator.share && navigator.canShare) {
-    try {
-      showToast('Preparing file…');
-      const fileObjects = [];
-      for (const f of files) {
-        const response = await fetch(f.path);
-        const blob = await response.blob();
-        const ext = f.name.split('.').pop() || 'bin';
-        const mimeType = ext === 'mp3' ? 'audio/mpeg' : ext === 'pdf' ? 'application/pdf' : 'application/octet-stream';
-        fileObjects.push(new File([blob], f.name, { type: mimeType }));
-      }
-      if (navigator.canShare({ files: fileObjects })) {
-        await navigator.share({ files: fileObjects, title: label || 'Spotlight Files' });
-        return; // done — native share sheet handled it
-      }
-    } catch (e) {
-      if (e.name === 'AbortError') return; // user cancelled
-      // fall through to desktop path
-    }
-  }
-
-  // ---- Desktop fallback: download the file, then guide user to attach in WhatsApp ----
-  // Step 1: trigger the download
-  files.forEach((f, i) => {
-    setTimeout(() => triggerDownload(f.path, f.name), i * 400);
-  });
-
-  // Step 2: show the "now attach it in WhatsApp" panel inside the popover
-  const mainView  = document.getElementById('popover-view-main');
-  const stepsView = document.getElementById('popover-view-steps');
-  const waBtn     = document.getElementById('popover-step2-wa');
-  const backBtn   = document.getElementById('popover-step2-back');
-
-  mainView.style.display  = 'none';
-  stepsView.style.display = 'block';
-
-  // Wire WhatsApp open button (opens WhatsApp Web, user attaches from Downloads)
-  waBtn.onclick = () => {
-    window.open('https://web.whatsapp.com', '_blank');
-    hidePopover();
-  };
-  backBtn.onclick = () => {
-    stepsView.style.display = 'none';
-    mainView.style.display  = 'block';
-  };
-}
 
 // ---- TOAST ----
 function showToast(message) {
