@@ -566,21 +566,16 @@
 // ============================================================
 //  GLOBALS
 // ============================================================
-let fileMap = {};
-
 const ACCENTS = ['#C8603A', '#3A6B8A', '#4A7C59'];
 const LEVELS  = ['7th Grade', '8th Grade', '9th Grade'];
 
+// Base URL for all files on archive.org
+const ARCHIVE_BASE = 'https://archive.org/download/spotlight-trilogy';
+
 // ============================================================
-//  BOOT — load file-list.json then render
+//  BOOT — render immediately; no file-list.json needed
 // ============================================================
-fetch('file-list.json')
-  .then(r => r.json())
-  .then(data => {
-    data.forEach(item => { fileMap[item.path] = item.id; });
-    initializePage();
-  })
-  .catch(() => { initializePage(); }); // render even without file-list
+initializePage();
 
 // ============================================================
 //  HELPERS
@@ -598,12 +593,10 @@ function fileIsTG(n)    { return /tg/i.test(n) && n.endsWith('.pdf'); }
 function fileIsAudio(n) { return n.toLowerCase().endsWith('.mp3'); }
 
 function buildPath(bookName, ...parts) {
-  const path = '/' + [bookName, ...parts].join('/');
-  const id   = fileMap[path];
-  if (id) {
-    return `https://drive.usercontent.google.com/download?id=${id}&export=download&authuser=0`;
-  }
-  return [bookName, ...parts].map(p => encodeURIComponent(p)).join('/');
+  // Build an archive.org URL: base/BookName/part1/part2/filename
+  // Each segment must be percent-encoded (spaces → %20, etc.)
+  const segments = [bookName, ...parts].map(p => encodeURIComponent(p));
+  return ARCHIVE_BASE + '/' + segments.join('/');
 }
 
 // ── SVG ICONS ──
@@ -890,7 +883,19 @@ function openDB() {
 
 function dbOp(mode, fn) {
   return openDB().then(d => new Promise((res, rej) => {
-    const t = d.transaction(STORE, mode);
+    let t;
+    try {
+      t = d.transaction(STORE, mode);
+    } catch (e) {
+      // Connection invalidated (e.g. tab backgrounded on mobile) — reset and retry once
+      db = null;
+      openDB().then(d2 => {
+        const t2 = d2.transaction(STORE, mode);
+        t2.onerror = () => rej(t2.error);
+        fn(t2.objectStore(STORE), res, rej);
+      }).catch(rej);
+      return;
+    }
     t.onerror = () => rej(t.error);
     fn(t.objectStore(STORE), res, rej);
   }));
@@ -901,19 +906,25 @@ const dbDelete = key => dbOp('readwrite', (s, res) => { s.delete(key).onsuccess 
 const dbAll    = ()  => dbOp('readonly',  (s, res) => { const q = s.getAll(); q.onsuccess = () => res(q.result); });
 
 function fileKey(url) {
-  const m = url.match(/[?&]id=([^&]+)/);
-  return m ? 'drive_' + m[1] : url;
+  // For archive.org URLs, use the path after the collection as the stable key.
+  // This means re-uploading to archive.org won't break saved files.
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'archive.org') {
+      return 'arc_' + u.pathname; // e.g. arc_/download/spotlight-trilogy/Spotlight 1/...
+    }
+  } catch (_) {}
+  return url;
 }
 
 // ============================================================
 //  SAVE OFFLINE
-//  Google Drive blocks CORS fetch for large files.
-//  Strategy:
-//    1. Try a CORS fetch (works for small files / same-origin).
-//    2. If that fails, show a clear message directing the user to:
-//       - Download the file normally (browser handles it)
-//       - Then use the "Import downloaded file" button in the Library
-//         to read it from disk into IndexedDB.
+//  Google Drive URLs don't support CORS, so a direct fetch()
+//  will always be blocked. Strategy:
+//    1. For same-origin URLs (relative paths): fetch + store in IDB.
+//    2. For Drive URLs: open Library panel and prompt the user to
+//       download the file then import it — this is the only reliable
+//       cross-browser path.
 // ============================================================
 async function saveOffline(btn, url, name, type) {
   btn.disabled = true;
@@ -921,10 +932,11 @@ async function saveOffline(btn, url, name, type) {
   btn.innerHTML = `${saveIcon()} Saving…`;
 
   try {
-    const resp = await fetch(url, { mode: 'cors' });
+    // archive.org supports CORS — fetch works directly in all browsers.
+    const resp = await fetch(url);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const blob = await resp.blob();
-    const key  = fileKey(url);
+    const blob   = await resp.blob();
+    const key    = fileKey(url);
     const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
     await dbPut({ key, name, type, url, blob, sizeMB, savedAt: Date.now() });
     btn.classList.remove('saving');
@@ -933,12 +945,12 @@ async function saveOffline(btn, url, name, type) {
     updateLibraryCount();
     showToast(`"${name}" saved offline (${sizeMB} MB)`);
   } catch (err) {
-    // CORS blocked — guide user to manual import flow
     btn.classList.remove('saving');
     btn.disabled = false;
     btn.innerHTML = `${saveIcon()} Save`;
-    showToast('Auto-save blocked. Download the file, then import it via the Library panel.');
-    console.warn('saveOffline blocked (CORS):', err);
+    // Offer manual import as a fallback (e.g. if user is already offline)
+    showToast('Could not auto-save. Download the file then use "Import" in the Library.');
+    console.warn('saveOffline error:', err);
   }
 }
 
@@ -1021,8 +1033,9 @@ async function renderLibrary() {
   const all  = await dbAll();
 
   const importTip = `<div class="library-import-tip">
-    <strong>Can't auto-save Drive files?</strong><br>
-    Download the file normally via the Download button, then import it here to access it offline.
+    <strong>How to save files offline:</strong><br>
+    1. Tap the <strong>Download</strong> button next to the file.<br>
+    2. Once downloaded, tap the button below to import it into your offline library.
     <br><button class="btn-import-file" onclick="importFileFromDisk()">${importIcon()} Import downloaded file</button>
   </div>`;
 
@@ -1103,6 +1116,8 @@ function ensurePdfJs() {
 }
 
 async function openPdfViewer(url, name) {
+  if (_pdfObjectUrl) { URL.revokeObjectURL(_pdfObjectUrl); _pdfObjectUrl = null; }
+  if (url.startsWith('blob:')) _pdfObjectUrl = url;
   const overlay = document.getElementById('viewer-overlay');
   const body    = document.getElementById('viewer-body');
   document.getElementById('viewer-filename').textContent = name;
@@ -1135,10 +1150,12 @@ async function openPdfViewer(url, name) {
   }
 }
 
+let _pdfObjectUrl = null;
 function closePdfViewer() {
   document.getElementById('viewer-overlay').classList.remove('active');
   document.body.style.overflow = '';
   document.getElementById('viewer-body').innerHTML = '';
+  if (_pdfObjectUrl) { URL.revokeObjectURL(_pdfObjectUrl); _pdfObjectUrl = null; }
 }
 
 // ============================================================
@@ -1182,10 +1199,10 @@ async function loadAudioTrack() {
   // Try IndexedDB first, then direct URL
   const key    = fileKey(track.url);
   const record = await dbGet(key);
-  audioEl.src  = (record && record.blob) ? URL.createObjectURL(record.blob) : track.url;
+  audioEl.src  = (record?.blob) ? URL.createObjectURL(record.blob) : track.url;
   audioEl.play();
   playerBar.classList.add('active');
-  document.body.style.paddingBottom = '90px';
+  document.body.style.paddingBottom = (playerBar.offsetHeight || 90) + 'px';
 }
 
 function playAudio(url, name, queue) {
@@ -1202,7 +1219,7 @@ function playAudioFromBlob(objectUrl, name) {
   trackName.textContent = name;
   audioEl.play();
   playerBar.classList.add('active');
-  document.body.style.paddingBottom = '90px';
+  document.body.style.paddingBottom = (playerBar.offsetHeight || 90) + 'px';
 }
 
 function audioToggle() { audioEl.paused ? audioEl.play() : audioEl.pause(); }
