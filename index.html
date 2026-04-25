@@ -140,6 +140,11 @@
     margin: 0 auto;
     padding: 0 2rem 7rem;
   }
+  .recent-section {
+    max-width: 1080px; margin: 0 auto; padding: 2rem 2rem 0;
+    display: none;
+  }
+  .recent-section.visible { display: block; }
   .section-label {
     font-size: 0.72rem;
     font-weight: 500;
@@ -299,6 +304,24 @@
     .book-card-body { padding: 1.5rem 1.5rem 1rem 1.75rem; }
     .book-cta { padding: 0.85rem 1.5rem 0.85rem 1.75rem; }
   }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --cream: #121212;
+      --cream-dark: #1E1E1E;
+      --slate: #E5E7EB;
+      --slate-mid: #9CA3AF;
+      --slate-light: #6B7280;
+    }
+    body { background: #0A0A0A; }
+    nav { background: rgba(18, 18, 18, 0.8); border-bottom-color: rgba(255,255,255,0.08); }
+    .hero-eyebrow { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+    .book-card { background: #181818; border-color: rgba(255,255,255,0.08); }
+    .book-card:hover { border-color: rgba(255,255,255,0.15); box-shadow: 0 16px 48px rgba(0,0,0,0.4); }
+    .stat-num { color: #fff; }
+    .cta-arrow { border-color: rgba(255,255,255,0.1); }
+    .cta-arrow svg path { stroke: #E5E7EB; }
+  }
 </style>
 </head>
 <body>
@@ -322,6 +345,11 @@
   <h1>The <em>Spotlight</em><br>Trilogy</h1>
   <p>A complete English language learning series for grades 7–9. Browse each book's units, then download student books, teacher guides, and audio files.</p>
   <hr class="divider">
+</section>
+
+<section class="recent-section" id="recent-section">
+  <p class="section-label">Recently viewed</p>
+  <div id="recent-grid" class="books-grid" style="grid-template-columns: 1fr; max-width: 400px;"></div>
 </section>
 
 <section class="books-section" id="books">
@@ -356,11 +384,10 @@
 
   const grid = document.getElementById('books-grid');
 
-  SPOTLIGHT_DATA.forEach((book, i) => {
+  function buildBookCard(book, i) {
     const { units, lessons, audios } = countItems(book);
     const num = i + 1;
-
-    grid.innerHTML += `
+    return `
       <a class="book-card book-card-${num}" href="book.html?book=${num}">
         <div class="book-card-body">
           <p class="book-number">Book ${num}</p>
@@ -391,7 +418,23 @@
         </div>
       </a>
     `;
+  }
+
+  SPOTLIGHT_DATA.forEach((book, i) => {
+    grid.innerHTML += buildBookCard(book, i);
   });
+
+  // Recently Viewed
+  const lastBook = localStorage.getItem('last_book');
+  if (lastBook) {
+    const idx = parseInt(lastBook) - 1;
+    if (SPOTLIGHT_DATA[idx]) {
+      const recentSection = document.getElementById('recent-section');
+      const recentGrid = document.getElementById('recent-grid');
+      recentGrid.innerHTML = buildBookCard(SPOTLIGHT_DATA[idx], idx);
+      recentSection.classList.add('visible');
+    }
+  }
 </script>
 
 <script>

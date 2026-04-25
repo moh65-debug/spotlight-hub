@@ -253,7 +253,9 @@
   .audio-list { margin-top: 0.6rem; display: flex; flex-direction: column; gap: 4px; }
   .audio-row {
     display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+    padding: 2px 6px; border-radius: 6px; transition: background 0.2s;
   }
+  .audio-row.playing { background: rgba(74, 124, 89, 0.1); }
   .audio-name {
     font-size: 0.73rem; color: var(--slate-light);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;
@@ -285,6 +287,20 @@
     border-radius: var(--radius-sm);
   }
 
+  /* ── BACK TO TOP ── */
+  .btn-top {
+    position: fixed; bottom: 30px; right: 30px; z-index: 300;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--slate); color: #fff; border: none;
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s, opacity 0.2s;
+  }
+  .btn-top:hover { transform: translateY(-3px); }
+  .btn-top.visible { display: flex; animation: fadeUp 0.3s ease both; }
+
+  mark { background: rgba(200,96,58,0.25); color: inherit; padding: 0 2px; border-radius: 2px; }
+
   /* ── FOOTER ── */
   footer {
     border-top: 1px solid rgba(28,31,38,0.07); padding: 2rem;
@@ -309,6 +325,27 @@
     .lesson-num { min-width: unset; }
     .unit-audio-row { padding: 0.5rem 1rem; }
     .book-downloads { padding: 1rem; }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --cream: #121212;
+      --cream-dark: #1E1E1E;
+      --slate: #E5E7EB;
+      --slate-mid: #9CA3AF;
+      --slate-light: #6B7280;
+    }
+    body { background: #0A0A0A; }
+    nav { background: rgba(18, 18, 18, 0.8); border-bottom-color: rgba(255,255,255,0.08); }
+    .book-downloads, .unit-block, .search-input { background: #181818; border-color: rgba(255,255,255,0.08); }
+    .unit-header:hover, .lesson-row:hover { background: rgba(255,255,255,0.03); }
+    .unit-body { border-top-color: rgba(255,255,255,0.05); }
+    .lesson-row, .unit-audio-row { border-bottom-color: rgba(255,255,255,0.05); }
+    .unit-audio-row { background: rgba(255,255,255,0.02); }
+    .welcome-block { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
+    .save-offline-note { background: rgba(255,255,255,0.02); }
+    .btn-top { background: #E5E7EB; color: #000; }
+    mark { background: rgba(200,96,58,0.4); color: #fff; }
   }
 
   /* ── PDF VIEWER ── */
@@ -359,6 +396,11 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     color: rgba(255,255,255,0.9);
   }
+  .audio-speed-select {
+    background: rgba(255,255,255,0.1); color: #fff; border: none;
+    font-size: 0.7rem; border-radius: 4px; padding: 2px 4px; cursor: pointer;
+  }
+  .audio-speed-select option { background: var(--slate); }
   .audio-ctrl {
     width: 34px; height: 34px; border-radius: 50%;
     border: none; background: rgba(255,255,255,0.12);
@@ -436,11 +478,24 @@
     <button class="audio-ctrl" id="audio-prev" onclick="audioSkip(-1)" title="Previous">
       <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M3 2v10M11 3 6 7l5 4V3Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
+    <button class="audio-ctrl" onclick="audioJump(-10)" title="Back 10s">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 14l-4-4 4-4"/><path d="M5 10h11a4 4 0 110 8h-1"/></svg>
+    </button>
     <button class="audio-ctrl play-pause" id="audio-play" onclick="audioToggle()">▶</button>
+    <button class="audio-ctrl" onclick="audioJump(10)" title="Forward 10s">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M15 10l4-4-4-4"/><path d="M19 10H8a4 4 0 100 8h1"/></svg>
+    </button>
     <button class="audio-ctrl" id="audio-next" onclick="audioSkip(1)" title="Next">
       <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M11 2v10M3 3l5 4-5 4V3Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <span class="audio-track-name" id="audio-track-name">—</span>
+    <select class="audio-speed-select" id="audio-speed" onchange="audioSetSpeed(this.value)">
+      <option value="0.75">0.75x</option>
+      <option value="1" selected>1x</option>
+      <option value="1.25">1.25x</option>
+      <option value="1.5">1.5x</option>
+      <option value="2">2x</option>
+    </select>
     <button class="audio-ctrl audio-close-ctrl" onclick="audioClose()" title="Close">✕</button>
   </div>
   <div class="audio-progress-row">
@@ -451,6 +506,9 @@
 </div>
 
 <audio id="audio-el" preload="auto"></audio>
+<button class="btn-top" id="btn-top" onclick="window.scrollTo(0,0)" title="Back to top">
+  <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 15l7-7 7 7"/></svg>
+</button>
 <div id="toast-msg"></div>
 <div id="offline-banner" style="display:none;position:fixed;top:60px;left:0;right:0;z-index:200;background:#3D4351;color:#fff;text-align:center;padding:7px 1rem;font-size:0.8rem;font-family:var(--sans);">📵 Offline — showing cached content. Save files while online to access them offline.</div>
 
@@ -530,8 +588,7 @@ function btnSaveOffline(url, name, type) {
 
 // Audio row: Play primary + tiny download anchor
 function buildAudioRow(url, name, queue) {
-  const queueAttr = escHtml(JSON.stringify(queue));
-  return `<div class="audio-row">
+  return `<div class="audio-row" data-audio-url="${escHtml(url)}">
     <span class="audio-dot"></span>
     <span class="audio-name" title="${escHtml(name)}">${escHtml(name)}</span>
     <button class="btn btn-audio" style="font-size:0.7rem;padding:3px 8px;"
@@ -543,10 +600,12 @@ function buildAudioRow(url, name, queue) {
 
 // ── LESSON RENDER ──
 function renderLesson(lesson, bookName, unitName, lessonIndex) {
-  const files = lesson.children || [];
-  const sbFile    = files.find(f => fileIsSB(f.name));
-  const tgFile    = files.find(f => fileIsTG(f.name));
-  const audioFiles = files.filter(f => fileIsAudio(f.name));
+  const children = lesson.children || [];
+  if (children.length === 0) return '';
+
+  const sbFile    = children.find(f => fileIsSB(f.name));
+  const tgFile    = children.find(f => fileIsTG(f.name));
+  const audioFiles = children.filter(f => fileIsAudio(f.name));
 
   const sbPath = sbFile ? buildPath(bookName, unitName, lesson.name, sbFile.name) : null;
   const tgPath = tgFile ? buildPath(bookName, unitName, lesson.name, tgFile.name) : null;
@@ -555,7 +614,6 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
   if (sbPath) btns += btnSB(sbPath, 'SB');
   if (tgPath) btns += btnTG(tgPath, 'TG');
 
-  // Audio list with play + download + save
   let audioList = '';
   if (audioFiles.length) {
     const queue = audioFiles.map(f => ({
@@ -592,11 +650,13 @@ function renderUnit(unit, bookName, unitIndex) {
     const queue = unitAudios.map(f => ({ url: buildPath(bookName, unit.name, f.name), name: f.name }));
     audioRow = `<div class="unit-audio-row">
       <span class="unit-audio-label">Unit audio (${unitAudios.length})</span>
-      ${unitAudios.map((f, fi) => {
-        const url = queue[fi].url;
-        return `<button class="btn btn-audio" style="font-size:0.7rem;padding:3px 8px;"
-          onclick='playAudio(${JSON.stringify(url)},${JSON.stringify(f.name)},${JSON.stringify(queue)})'>${playIcon()} ${escHtml(f.name)}</button>`;
-      }).join('')}
+      <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+        ${unitAudios.map((f, fi) => {
+          const url = queue[fi].url;
+          return `<button class="btn btn-audio" data-audio-url="${escHtml(url)}" style="font-size:0.7rem;padding:3px 8px;"
+            onclick='playAudio(${JSON.stringify(url)},${JSON.stringify(f.name)},${JSON.stringify(queue)})'>${playIcon()} ${escHtml(f.name)}</button>`;
+        }).join('')}
+      </div>
     </div>`;
   }
 
@@ -659,6 +719,9 @@ function initializePage() {
   document.title = `${book.name} — Spotlight Trilogy`;
   document.getElementById('footer-book').textContent = book.name;
 
+  // Track as recently viewed
+  localStorage.setItem('last_book', bookNum);
+
   // Count stats
   let unitCount = 0, lessonCount = 0, audioCount = 0;
   function walk(node, depth = 0) {
@@ -715,6 +778,7 @@ function initializePage() {
   // Welcome block
   if (welcomeBlocks.length) {
     const wb = welcomeBlocks[0];
+    if ((wb.children || []).length === 0) { /* skip */ } else {
     const wFiles   = (wb.children || []).filter(c => c.type !== 'folder');
     const wLessons = (wb.children || []).filter(c => c.type === 'folder');
     let wContent = wFiles.map(f => {
@@ -729,11 +793,15 @@ function initializePage() {
       return `<a class="btn ${cls}" href="${escHtml(path)}" target="_blank" rel="noopener">${dlIcon()} ${escHtml(f.name)}</a>`
            + btnSaveOffline(path, f.name, 'pdf');
     }).join('');
-    if (wLessons.length) wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
-    section.innerHTML = `<div class="welcome-block">
-      <p class="welcome-title">Welcome / Introduction</p>
-      <div class="download-row">${wContent}</div>
-    </div>`;
+    const lessonsHtml = wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
+    if (wContent || lessonsHtml) {
+      section.innerHTML = `<div class="welcome-block">
+        <p class="welcome-title">Welcome / Introduction</p>
+        <div class="download-row">${wContent}</div>
+        ${lessonsHtml}
+      </div>`;
+    }
+    }
   }
 
   units.forEach((unit, i) => { section.innerHTML += renderUnit(unit, book.name, i + 1); });
@@ -836,21 +904,43 @@ function toggleUnit(header) {
 }
 
 // ── SEARCH ──
+function highlightText(el, q) {
+  const original = el.getAttribute('data-original') || el.innerHTML;
+  if (!el.getAttribute('data-original')) el.setAttribute('data-original', original);
+  if (!q) { el.innerHTML = original; return; }
+  const regex = new RegExp(`(${q})`, 'gi');
+  el.innerHTML = original.replace(regex, '<mark>$1</mark>');
+}
+
 document.getElementById('search').addEventListener('input', function() {
   const q = this.value.toLowerCase().trim();
   document.querySelectorAll('.unit-block').forEach(block => {
+    const unitNameEl = block.querySelector('.unit-name');
+    highlightText(unitNameEl, q);
+
     const unitMatch = block.dataset.unit && block.dataset.unit.includes(q);
     const rows = block.querySelectorAll('.lesson-row');
     let anyLesson = false;
+
     rows.forEach(row => {
+      const lessonNameEl = row.querySelector('.lesson-name');
+      highlightText(lessonNameEl, q);
       const match = !q || unitMatch || (row.dataset.lesson && row.dataset.lesson.includes(q));
       row.style.display = match ? '' : 'none';
       if (match) anyLesson = true;
     });
+
     const show = !q || unitMatch || anyLesson;
     block.style.display = show ? '' : 'none';
     if (q && show) block.classList.add('open');
   });
+});
+
+// ── BACK TO TOP ──
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('btn-top');
+  if (window.scrollY > 400) btn.classList.add('visible');
+  else btn.classList.remove('visible');
 });
 
 
@@ -1136,9 +1226,15 @@ async function loadAudioTrack() {
   if (!track) return;
   trackName.textContent = track.name;
 
+  // Highlight active track in UI
+  document.querySelectorAll('[data-audio-url]').forEach(el => {
+    const isMatch = el.getAttribute('data-audio-url') === track.url;
+    el.classList.toggle('playing', isMatch);
+    if (el.tagName === 'BUTTON') el.style.boxShadow = isMatch ? '0 0 0 2px var(--accent)' : '';
+  });
+
   // Revoke previous blob URL to free memory
   if (_audioObjectUrl) {
-    // Small delay — some browsers need the element to fully stop before revoke
     const prev = _audioObjectUrl;
     setTimeout(() => URL.revokeObjectURL(prev), 3000);
     _audioObjectUrl = null;
@@ -1146,9 +1242,8 @@ async function loadAudioTrack() {
 
   audioEl.pause();
   audioEl.removeAttribute('src');
-  audioEl.load(); // reset the element before setting new src
+  audioEl.load();
 
-  // Try IndexedDB first (offline), then fall back to network URL
   try {
     const key    = fileKey(track.url);
     const record = await dbGet(key);
@@ -1163,16 +1258,21 @@ async function loadAudioTrack() {
     audioEl.src = track.url;
   }
 
+  // Restore speed
+  audioEl.playbackRate = parseFloat(document.getElementById('audio-speed').value || '1');
+
   try {
     await audioEl.play();
   } catch (err) {
-    // Autoplay blocked (requires user gesture on some browsers) — show play button
     playBtn.textContent = '▶';
     console.warn('Audio autoplay blocked:', err);
   }
   playerBar.classList.add('active');
   document.body.style.paddingBottom = (playerBar.offsetHeight || 90) + 'px';
 }
+
+function audioJump(secs) { audioEl.currentTime = Math.max(0, Math.min(audioEl.duration, audioEl.currentTime + secs)); }
+function audioSetSpeed(val) { if (audioEl) audioEl.playbackRate = parseFloat(val); }
 
 function playAudio(url, name, queue) {
   audioQueue = Array.isArray(queue) ? queue : [{ url, name }];
