@@ -655,19 +655,22 @@ function initializePage() {
 
   // Count stats
   let unitCount = 0, lessonCount = 0, audioCount = 0;
-  const units = [], welcomeBlocks = [], specialFolders = [], orphanLessons = [];
+  function walk(node, depth = 0) {
+    if (node.type === 'mp3') audioCount++;
+    if (node.type === 'folder') {
+      if (depth === 0 && /^unit/i.test(node.name)) unitCount++;
+      if (/^lesson/i.test(node.name)) lessonCount++;
+      if (node.children) node.children.forEach(c => walk(c, depth + 1));
+    }
+  }
+  book.children.forEach(c => walk(c, 0));
 
+  // Categorize top-level folders for rendering
+  const units = [], welcomeBlocks = [], specialFolders = [], orphanLessons = [];
   for (const child of book.children) {
     if (child.type === 'folder') {
       if (/^unit/i.test(child.name)) {
         units.push(child);
-        unitCount++;
-        for (const c of (child.children || [])) {
-          if (c.type === 'folder') {
-            lessonCount++;
-            for (const f of (c.children || [])) { if (fileIsAudio(f.name)) audioCount++; }
-          }
-        }
       } else if (/welcome/i.test(child.name)) {
         welcomeBlocks.push(child);
       } else if (/^lesson/i.test(child.name)) {
@@ -679,9 +682,9 @@ function initializePage() {
   }
 
   // Top-level loose files (not SB/TG — those go in the header)
-  const bookSB = book.children.find(c => fileIsSB(c.name));
-  const bookTG = book.children.find(c => fileIsTG(c.name));
-  const loosePdfs  = book.children.filter(c => c.type === 'pdf' && !fileIsSB(c.name) && !fileIsTG(c.name));
+  const bookSB = book.children.find(c => fileIsSB(c.name) && c.name.toLowerCase().includes(book.name.toLowerCase()));
+  const bookTG = book.children.find(c => fileIsTG(c.name) && c.name.toLowerCase().includes(book.name.toLowerCase()));
+  const loosePdfs  = book.children.filter(c => c.type === 'pdf' && c !== bookSB && c !== bookTG);
   const looseAudio = book.children.filter(c => c.type === 'mp3');
   let rootBtns = '';
   if (bookSB) { const p = buildPath(book.name, bookSB.name); rootBtns += btnSB(p, 'Full Student Book'); }
@@ -1312,62 +1315,6 @@ function updateOfflineBanner() {
 window.addEventListener('online',  updateOfflineBanner);
 window.addEventListener('offline', updateOfflineBanner);
 updateOfflineBanner(); // set initial state
-</script>
-<!-- Add this at the bottom of book.html -->
-<script>
-  // 1. The Download Function
-  async function downloadPDF(url, filename) {
-    try {
-      // Show a loading state (optional but recommended)
-      const statusMsg = document.getElementById('download-status');
-      if (statusMsg) statusMsg.innerText = 'Downloading...';
-
-      const response = await fetch(url, { mode: 'cors' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-
-      // Create temporary link and trigger download
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-
-      // Cleanup
-      setTimeout(() => {
-        a.remove();
-        URL.revokeObjectURL(blobUrl);
-        if (statusMsg) statusMsg.innerText = 'Download complete.';
-      }, 100);
-
-    } catch (err) {
-      console.error("❌ Download failed:", err);
-      alert("Download failed. Opening in new tab.");
-      window.open(url, '_blank');
-    }
-  }
-
-  // 2. Hook it up to your Download Button
-  // IMPORTANT: Replace '#my-download-btn' with your actual button's ID or Class
-  document.addEventListener('DOMContentLoaded', () => {
-    const downloadBtn = document.querySelector('#download-btn'); // <-- Check your HTML for the correct ID/Class
-    
-    if (downloadBtn) {
-      downloadBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Get the current PDF URL and name from your data variables
-        // Example: let currentUrl = document.querySelector('iframe').src;
-        // Example: let currentName = "Lesson-1-SB.pdf"; 
-        
-        // If your logic stores the current file in a variable, use it here:
-        // downloadPDF(currentFileUrl, currentFileName);
-        
-        console.log("Download button clicked! Add your URL logic here.");
-      });
-    }
-  });
 </script>
 </body>
 </html>
