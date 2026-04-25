@@ -71,6 +71,17 @@
     transition: color var(--transition);
   }
   .nav-links a:hover { color: var(--slate); }
+  .btn-install-nav {
+    display: none;
+    align-items: center; gap: 0.4rem;
+    padding: 6px 14px; border-radius: 99px;
+    font-size: 0.8rem; font-weight: 500; font-family: var(--sans);
+    background: var(--accent-1); color: #fff;
+    border: none; cursor: pointer;
+    transition: opacity 0.2s; white-space: nowrap;
+  }
+  .btn-install-nav.visible { display: inline-flex; }
+  .btn-install-nav:hover { opacity: 0.85; }
 
   /* HERO */
   .hero {
@@ -296,6 +307,10 @@
   <a class="nav-logo" href="index.html">Spotlight <span>Trilogy</span></a>
   <div class="nav-links">
     <a href="#books">Books</a>
+    <button class="btn-install-nav" id="btn-install" onclick="triggerInstall()">
+      <svg width="13" height="13" fill="none" viewBox="0 0 14 14"><path d="M7 2v7M4 6.5 7 10l3-3.5M2 12h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Install
+    </button>
   </div>
 </nav>
 
@@ -383,6 +398,26 @@
   });
 </script>
 
+<script>
+let _installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _installPrompt = e;
+  const btn = document.getElementById('btn-install');
+  if (btn) btn.classList.add('visible');
+});
+window.addEventListener('appinstalled', () => {
+  _installPrompt = null;
+  const btn = document.getElementById('btn-install');
+  if (btn) btn.classList.remove('visible');
+});
+async function triggerInstall() {
+  if (!_installPrompt) return;
+  _installPrompt.prompt();
+  const { outcome } = await _installPrompt.userChoice;
+  if (outcome === 'accepted') _installPrompt = null;
+}
+</script>
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
