@@ -90,7 +90,7 @@ self.addEventListener('fetch', e => {
  */
 function cacheFirst(request) {
   return caches.open(CACHE).then(cache =>
-    cache.match(request).then(cached => {
+    cache.match(request, { ignoreSearch: true }).then(cached => {
       if (cached) return cached;
       return fetch(request).then(resp => {
         if (resp.ok) cache.put(request, resp.clone());
@@ -107,7 +107,7 @@ function cacheFirst(request) {
  */
 function cacheFirstWithNetworkUpdate(request) {
   return caches.open(CACHE).then(cache =>
-    cache.match(request).then(cached => {
+    cache.match(request, { ignoreSearch: true }).then(cached => {
       const networkFetch = fetch(request).then(resp => {
         if (request.method === 'GET' && resp.ok) {
           cache.put(request, resp.clone());

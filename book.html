@@ -278,6 +278,12 @@
     font-size: 0.72rem; color: var(--slate-light);
     display: flex; align-items: center; gap: 0.35rem; margin-top: 0.25rem;
   }
+  .save-offline-note {
+    font-size: 0.7rem; color: var(--slate-light);
+    margin-top: 0.5rem; font-style: italic;
+    padding: 0.5rem 1rem; background: rgba(28,31,38,0.03);
+    border-radius: var(--radius-sm);
+  }
 
   /* ── FOOTER ── */
   footer {
@@ -506,12 +512,12 @@ function saveIcon()  { return `<svg width="11" height="11" fill="none" viewBox="
 // ============================================================
 function btnSB(href, label) {
   label = label || 'Student Book';
-  return `<button class="btn btn-sb" onclick="downloadFile(event,${JSON.stringify(href)},${JSON.stringify(label+'.pdf')})">${dlIcon()} ${escHtml(label)}</button>`
+  return `<a class="btn btn-sb" href="${escHtml(href)}" target="_blank" rel="noopener">${dlIcon()} ${escHtml(label)}</a>`
        + btnSaveOffline(href, label, 'pdf');
 }
 function btnTG(href, label) {
   label = label || 'Teacher Guide';
-  return `<button class="btn btn-tg" onclick="downloadFile(event,${JSON.stringify(href)},${JSON.stringify(label+'.pdf')})">${dlIcon()} ${escHtml(label)}</button>`
+  return `<a class="btn btn-tg" href="${escHtml(href)}" target="_blank" rel="noopener">${dlIcon()} ${escHtml(label)}</a>`
        + btnSaveOffline(href, label, 'pdf');
 }
 
@@ -601,7 +607,7 @@ function renderUnit(unit, bookName, unitIndex) {
       ${unitFiles.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
         const cls  = fileIsSB(f.name) ? 'btn-sb' : 'btn-tg';
-        return `<button class="btn ${cls}" style="font-size:0.72rem;" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+        return `<a class="btn ${cls}" style="font-size:0.72rem;" href="${escHtml(path)}" target="_blank" rel="noopener">${dlIcon()} ${escHtml(f.name)}</a>`
              + btnSaveOffline(path, f.name, 'pdf');
       }).join('')}
     </div>`;
@@ -613,7 +619,7 @@ function renderUnit(unit, bookName, unitIndex) {
     unitScriptsRow = `<div class="unit-audio-row">
       ${unitScripts.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
-        return `<button class="btn btn-bundle" style="font-size:0.72rem;" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+        return `<a class="btn btn-bundle" style="font-size:0.72rem;" href="${escHtml(path)}" target="_blank" rel="noopener">${dlIcon()} ${escHtml(f.name)}</a>`
              + btnSaveOffline(path, f.name, 'pdf');
       }).join('')}
     </div>`;
@@ -701,6 +707,7 @@ function initializePage() {
     ${rootBtns ? `<div class="book-downloads">
       <p class="book-downloads-title">Full book downloads</p>
       <div class="download-row">${rootBtns}</div>
+      <p class="save-offline-note">Note: "Save" stores files in your browser for offline access. Due to security restrictions on external files, this may not work in all browsers.</p>
     </div>` : ''}`;
 
   const section = document.getElementById('units-section');
@@ -719,7 +726,7 @@ function initializePage() {
         return `<button class="btn btn-audio" onclick='playAudio(${JSON.stringify(path)},${JSON.stringify(f.name)},${JSON.stringify(queue)})'>${playIcon()} ${escHtml(f.name)}</button>`;
       }
       const cls  = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
-      return `<button class="btn ${cls}" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+      return `<a class="btn ${cls}" href="${escHtml(path)}" target="_blank" rel="noopener">${dlIcon()} ${escHtml(f.name)}</a>`
            + btnSaveOffline(path, f.name, 'pdf');
     }).join('');
     if (wLessons.length) wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
@@ -768,7 +775,7 @@ function initializePage() {
         return `<button class="btn btn-audio" onclick='playAudio(${JSON.stringify(path)},${JSON.stringify(f.name)},${JSON.stringify(audioQueue)})'>${playIcon()} ${escHtml(f.name)}</button>`;
       }
       const cls = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
-      return `<button class="btn ${cls}" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+      return `<a class="btn ${cls}" href="${escHtml(path)}" target="_blank" rel="noopener">${dlIcon()} ${escHtml(f.name)}</a>`
            + btnSaveOffline(path, f.name, 'pdf');
     }).join('');
     const lessonHtml = fLessons.map((l, li) => renderLesson(l, book.name, folder.name, li + 1)).join('');
@@ -802,7 +809,7 @@ function initializePage() {
     }));
     let looseHtml = loosePdfs.map(f => {
       const path = buildPath(book.name, f.name);
-      return `<button class="btn btn-bundle" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+      return `<a class="btn btn-bundle" href="${escHtml(path)}" target="_blank" rel="noopener">${dlIcon()} ${escHtml(f.name)}</a>`
            + btnSaveOffline(path, f.name, 'pdf');
     }).join('') + looseAudio.map(f => {
       const path = buildPath(book.name, f.name);
@@ -846,63 +853,6 @@ document.getElementById('search').addEventListener('input', function() {
   });
 });
 
-// ── DOWNLOAD — fetch as blob so the browser triggers a real Save dialog ──
-// Cross-origin <a download> is blocked by browsers; fetching as a blob
-// and using createObjectURL() bypasses that — same approach as wget.
-// archive.org redirects to ia800xxx.us.archive.org — we follow redirects
-// using mode:'cors' which archive.org supports via Access-Control-Allow-Origin:*.
-async function downloadFile(evtOrUrl, urlOrFilename, filename) {
-  let url, btn;
-  if (evtOrUrl && typeof evtOrUrl === 'object' && evtOrUrl.currentTarget) {
-    btn = evtOrUrl.currentTarget;
-    url = urlOrFilename;
-  } else {
-    url = evtOrUrl;
-    filename = urlOrFilename;
-    btn = null;
-  }
-
-  // Disable button during download
-  if (btn) { btn.disabled = true; btn.style.opacity = '0.55'; }
-
-  const extractFileName = (resp, fallback) => {
-    const cd = resp.headers.get('Content-Disposition');
-    if (cd) {
-      const match = /filename[^;=\s]*=((['"]).*?\2|[^;\s]+)/i.exec(cd);
-      if (match != null && match[1]) {
-        return match[1].replace(/['"]/g, '');
-      }
-    }
-    return fallback;
-  };
-
-  try {
-    // Check offline IndexedDB cache first
-    const record = await dbGet(fileKey(url)).catch(() => null);
-    if (record?.blob) {
-      triggerBlobDownload(record.blob, filename || record.name || 'file');
-      showToast('Downloaded from offline library ✓');
-      return;
-    }
-
-    // Primary fetch – CORS mode (most reliable)
-    showToast('Downloading… please wait');
-    const resp = await fetch(url, { mode: 'cors', credentials: 'omit', redirect: 'follow' });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const blob = await resp.blob();
-    if (blob.size === 0) throw new Error('Empty response');
-    const finalName = extractFileName(resp, filename || url.split('/').pop());
-    triggerBlobDownload(blob, finalName);
-    showToast('Download complete ✓');
-  } catch (err) {
-    console.warn('downloadFile error:', err);
-    // Fallback – open in new tab so the user can manually save
-    window.open(url, '_blank', 'noopener');
-    showToast('Opened in new tab — use Save As to download');
-  } finally {
-    if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-  }
-}
 
 function triggerBlobDownload(blob, filename) {
   const objUrl = URL.createObjectURL(blob);
