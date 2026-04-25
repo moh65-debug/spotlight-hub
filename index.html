@@ -345,10 +345,11 @@
     for (const child of book.children) {
       if (child.type === 'folder' && child.name.toLowerCase().startsWith('unit')) {
         units++;
-        for (const lesson of (child.children || [])) {
-          if (lesson.type === 'folder') {
+        for (const c of (child.children || [])) {
+          if (c.type === 'mp3') audios++; // unit-level audio
+          if (c.type === 'folder') {
             lessons++;
-            for (const f of (lesson.children || [])) {
+            for (const f of (c.children || [])) {
               if (f.type === 'mp3') audios++;
             }
           }

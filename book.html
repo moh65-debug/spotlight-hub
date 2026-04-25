@@ -608,11 +608,14 @@ function escHtml(s) {
 function fileIsSB(n)    { return /sb/i.test(n) && n.endsWith('.pdf'); }
 function fileIsTG(n)    { return /tg/i.test(n) && n.endsWith('.pdf'); }
 function fileIsAudio(n) { return n.toLowerCase().endsWith('.mp3'); }
+function fileIsScript(n){ return /script/i.test(n) && n.endsWith('.pdf'); }
+function fileIsPdf(n)   { return n.endsWith('.pdf'); }
 
 function buildPath(bookName, ...parts) {
   // Build an archive.org URL: base/BookName/part1/part2/filename
   // Each segment must be percent-encoded (spaces → %20, etc.)
-  const segments = [bookName, ...parts].map(p => encodeURIComponent(p));
+  // Filter out empty string segments (e.g. for orphan lessons with no unit parent)
+  const segments = [bookName, ...parts].filter(p => p !== '').map(p => encodeURIComponent(p));
   return ARCHIVE_BASE + '/' + segments.join('/');
 }
 
@@ -630,12 +633,12 @@ function importIcon(){ return `<svg width="11" height="11" fill="none" viewBox="
 // ============================================================
 function btnSB(href, label) {
   label = label || 'Student Book';
-  return `<button class="btn btn-sb" onclick="downloadFile(${JSON.stringify(href)},${JSON.stringify(label+'.pdf')})">${dlIcon()} ${escHtml(label)}</button>`
+  return `<button class="btn btn-sb" onclick="downloadFile(event,${JSON.stringify(href)},${JSON.stringify(label+'.pdf')})">${dlIcon()} ${escHtml(label)}</button>`
        + btnSaveOffline(href, label, 'pdf');
 }
 function btnTG(href, label) {
   label = label || 'Teacher Guide';
-  return `<button class="btn btn-tg" onclick="downloadFile(${JSON.stringify(href)},${JSON.stringify(label+'.pdf')})">${dlIcon()} ${escHtml(label)}</button>`
+  return `<button class="btn btn-tg" onclick="downloadFile(event,${JSON.stringify(href)},${JSON.stringify(label+'.pdf')})">${dlIcon()} ${escHtml(label)}</button>`
        + btnSaveOffline(href, label, 'pdf');
 }
 
@@ -702,6 +705,7 @@ function renderUnit(unit, bookName, unitIndex) {
   const lessons   = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
   const unitAudios = children.filter(c => fileIsAudio(c.name));
   const unitFiles = children.filter(c => fileIsSB(c.name) || fileIsTG(c.name));
+  const unitScripts = children.filter(c => fileIsPdf(c.name) && !fileIsSB(c.name) && !fileIsTG(c.name));
 
   // Unit-level audio row
   let audioRow = '';
@@ -724,7 +728,19 @@ function renderUnit(unit, bookName, unitIndex) {
       ${unitFiles.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
         const cls  = fileIsSB(f.name) ? 'btn-sb' : 'btn-tg';
-        return `<button class="btn ${cls}" style="font-size:0.72rem;" onclick="downloadFile(${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+        return `<button class="btn ${cls}" style="font-size:0.72rem;" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+             + btnSaveOffline(path, f.name, 'pdf');
+      }).join('')}
+    </div>`;
+  }
+
+  // Unit-level script/extra PDF files (e.g. Audio Script)
+  let unitScriptsRow = '';
+  if (unitScripts.length) {
+    unitScriptsRow = `<div class="unit-audio-row">
+      ${unitScripts.map(f => {
+        const path = buildPath(bookName, unit.name, f.name);
+        return `<button class="btn btn-bundle" style="font-size:0.72rem;" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
              + btnSaveOffline(path, f.name, 'pdf');
       }).join('')}
     </div>`;
@@ -746,7 +762,7 @@ function renderUnit(unit, bookName, unitIndex) {
           </svg>
         </span>
       </div>
-      <div class="unit-body">${audioRow}${unitFilesRow}${lessonRows}</div>
+      <div class="unit-body">${audioRow}${unitFilesRow}${unitScriptsRow}${lessonRows}</div>
     </div>`;
 }
 
@@ -766,26 +782,34 @@ function initializePage() {
 
   // Count stats
   let unitCount = 0, lessonCount = 0, audioCount = 0;
-  const units = [], welcomeBlocks = [];
+  const units = [], welcomeBlocks = [], specialFolders = [], orphanLessons = [];
 
   for (const child of book.children) {
-    if (child.type === 'folder' && /^unit/i.test(child.name)) {
-      units.push(child);
-      unitCount++;
-      for (const c of (child.children || [])) {
-        if (c.type === 'folder') {
-          lessonCount++;
-          for (const f of (c.children || [])) { if (fileIsAudio(f.name)) audioCount++; }
+    if (child.type === 'folder') {
+      if (/^unit/i.test(child.name)) {
+        units.push(child);
+        unitCount++;
+        for (const c of (child.children || [])) {
+          if (c.type === 'folder') {
+            lessonCount++;
+            for (const f of (c.children || [])) { if (fileIsAudio(f.name)) audioCount++; }
+          }
         }
+      } else if (/welcome/i.test(child.name)) {
+        welcomeBlocks.push(child);
+      } else if (/^lesson/i.test(child.name)) {
+        orphanLessons.push(child);
+      } else {
+        specialFolders.push(child);
       }
-    } else if (child.type === 'folder' && /welcome/i.test(child.name)) {
-      welcomeBlocks.push(child);
     }
   }
 
-  // Book-level files
+  // Top-level loose files (not SB/TG — those go in the header)
   const bookSB = book.children.find(c => fileIsSB(c.name));
   const bookTG = book.children.find(c => fileIsTG(c.name));
+  const loosePdfs  = book.children.filter(c => c.type === 'pdf' && !fileIsSB(c.name) && !fileIsTG(c.name));
+  const looseAudio = book.children.filter(c => c.type === 'mp3');
   let rootBtns = '';
   if (bookSB) { const p = buildPath(book.name, bookSB.name); rootBtns += btnSB(p, 'Full Student Book'); }
   if (bookTG) { const p = buildPath(book.name, bookTG.name); rootBtns += btnTG(p, 'Full Teacher Guide'); }
@@ -812,12 +836,15 @@ function initializePage() {
     const wLessons = (wb.children || []).filter(c => c.type === 'folder');
     let wContent = wFiles.map(f => {
       const path = buildPath(book.name, wb.name, f.name);
-      const cls  = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-audio';
-      const icon = fileIsAudio(f.name) ? playIcon() : dlIcon();
       if (fileIsAudio(f.name)) {
-        return `<button class="btn ${cls}" onclick="downloadFile(${JSON.stringify(path)},${JSON.stringify(f.name)})">${icon} ${escHtml(f.name)}</button>`;
+        const queue = wFiles.filter(x => fileIsAudio(x.name)).map(x => ({
+          url: buildPath(book.name, wb.name, x.name), name: x.name
+        }));
+        return `<button class="btn btn-audio" onclick='playAudio(${JSON.stringify(path)},${JSON.stringify(f.name)},${JSON.stringify(queue)})'>${playIcon()} ${escHtml(f.name)}</button>`;
       }
-      return `<button class="btn ${cls}" onclick="downloadFile(${JSON.stringify(path)},${JSON.stringify(f.name)})">${icon} ${escHtml(f.name)}</button>`;
+      const cls  = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
+      return `<button class="btn ${cls}" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+           + btnSaveOffline(path, f.name, 'pdf');
     }).join('');
     if (wLessons.length) wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
     section.innerHTML = `<div class="welcome-block">
@@ -827,6 +854,90 @@ function initializePage() {
   }
 
   units.forEach((unit, i) => { section.innerHTML += renderUnit(unit, book.name, i + 1); });
+
+  // Orphaned top-level lesson folders (Spotlight 1 & 2 have Lesson 1/2 at root)
+  if (orphanLessons.length) {
+    const wrap = document.createElement('div');
+    wrap.className = 'unit-block';
+    wrap.style.marginTop = '0.5rem';
+    wrap.innerHTML = `
+      <div class="unit-header" onclick="toggleUnit(this)">
+        <div class="unit-header-left">
+          <span class="unit-num-badge">Extra</span>
+          <span class="unit-name">Additional Lessons</span>
+          <span class="unit-lesson-count">${orphanLessons.length} lesson${orphanLessons.length !== 1 ? 's' : ''}</span>
+        </div>
+        <span class="unit-chevron">
+          <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+            <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <div class="unit-body">
+        ${orphanLessons.map((l, li) => renderLesson(l, book.name, '', li + 1)).join('')}
+      </div>`;
+    section.appendChild(wrap);
+  }
+
+  // Special folders (e.g. Diagnostic Test in Spotlight 3)
+  specialFolders.forEach(folder => {
+    const fFiles   = (folder.children || []).filter(c => c.type !== 'folder');
+    const fLessons = (folder.children || []).filter(c => c.type === 'folder');
+    const audioQueue = fFiles.filter(f => fileIsAudio(f.name)).map(f => ({
+      url: buildPath(book.name, folder.name, f.name), name: f.name
+    }));
+    let fContent = fFiles.map(f => {
+      const path = buildPath(book.name, folder.name, f.name);
+      if (fileIsAudio(f.name)) {
+        return `<button class="btn btn-audio" onclick='playAudio(${JSON.stringify(path)},${JSON.stringify(f.name)},${JSON.stringify(audioQueue)})'>${playIcon()} ${escHtml(f.name)}</button>`;
+      }
+      const cls = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
+      return `<button class="btn ${cls}" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+           + btnSaveOffline(path, f.name, 'pdf');
+    }).join('');
+    const lessonHtml = fLessons.map((l, li) => renderLesson(l, book.name, folder.name, li + 1)).join('');
+    const wrap = document.createElement('div');
+    wrap.className = 'unit-block';
+    wrap.style.marginTop = '0.5rem';
+    wrap.innerHTML = `
+      <div class="unit-header" onclick="toggleUnit(this)">
+        <div class="unit-header-left">
+          <span class="unit-num-badge" style="background:rgba(74,124,89,0.08);border-color:rgba(74,124,89,0.2);color:#4A7C59;">Extra</span>
+          <span class="unit-name">${escHtml(folder.name)}</span>
+          ${fLessons.length ? `<span class="unit-lesson-count">${fLessons.length} lesson${fLessons.length !== 1 ? 's' : ''}</span>` : ''}
+        </div>
+        <span class="unit-chevron">
+          <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+            <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <div class="unit-body">
+        ${fContent ? `<div class="unit-audio-row" style="flex-wrap:wrap;gap:0.4rem;">${fContent}</div>` : ''}
+        ${lessonHtml}
+      </div>`;
+    section.appendChild(wrap);
+  });
+
+  // Loose top-level files (extra PDFs and audio not part of SB/TG)
+  if (loosePdfs.length || looseAudio.length) {
+    const looseAudioQueue = looseAudio.map(f => ({
+      url: buildPath(book.name, f.name), name: f.name
+    }));
+    let looseHtml = loosePdfs.map(f => {
+      const path = buildPath(book.name, f.name);
+      return `<button class="btn btn-bundle" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+           + btnSaveOffline(path, f.name, 'pdf');
+    }).join('') + looseAudio.map(f => {
+      const path = buildPath(book.name, f.name);
+      return `<button class="btn btn-audio" onclick='playAudio(${JSON.stringify(path)},${JSON.stringify(f.name)},${JSON.stringify(looseAudioQueue)})'>${playIcon()} ${escHtml(f.name)}</button>`;
+    }).join('');
+    const wrap = document.createElement('div');
+    wrap.className = 'welcome-block';
+    wrap.style.marginTop = '0.75rem';
+    wrap.innerHTML = `<p class="welcome-title">Additional Files</p><div class="download-row">${looseHtml}</div>`;
+    section.appendChild(wrap);
+  }
 
   // Open first unit
   const firstUnit = section.querySelector('.unit-block');
@@ -860,8 +971,18 @@ document.getElementById('search').addEventListener('input', function() {
 });
 
 // ── DOWNLOAD — blob fetch then anchor click (works cross-origin) ──
-async function downloadFile(url, filename) {
-  const btn = event && event.currentTarget;
+async function downloadFile(evtOrUrl, urlOrFilename, filename) {
+  // Support both downloadFile(event, url, name) and legacy downloadFile(url, name)
+  let url, btn;
+  if (evtOrUrl && typeof evtOrUrl === 'object' && evtOrUrl.currentTarget) {
+    btn = evtOrUrl.currentTarget;
+    url = urlOrFilename;
+    filename = filename;
+  } else {
+    url = evtOrUrl;
+    filename = urlOrFilename;
+    btn = null;
+  }
   if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
   showToast('Downloading…');
   try {
