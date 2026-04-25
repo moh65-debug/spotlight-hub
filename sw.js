@@ -6,7 +6,6 @@ const SHELL_REQUIRED = [
   './index.html',
   './book.html',
   './data.js',
-  './file-list.json',
 ];
 
 // Optional shell: cached on install, skipped if unavailable.

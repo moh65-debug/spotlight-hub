@@ -1306,34 +1306,36 @@ const SPOTLIGHT_DATA = [
       {
         "name": "Welcome",
         "type": "folder",
-        "children": []
-      },
-      {
-        "name": "Lesson 1",
-        "type": "folder",
         "children": [
           {
-            "name": "Lesson-1-SB.pdf",
-            "type": "pdf"
+            "name": "Lesson 1",
+            "type": "folder",
+            "children": [
+              {
+                "name": "Lesson-1-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-1-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           },
           {
-            "name": "Lesson-1-TG.pdf",
-            "type": "pdf"
+            "name": "Lesson 2",
+            "type": "folder",
+            "children": [
+              {
+                "name": "Lesson-2-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-2-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           }
         ]
-      },
-      {
-        "name": "Lesson 2",
-        "type": "folder",
-        "children": []
-      },
-      {
-        "name": "Lesson-2-SB.pdf",
-        "type": "pdf"
-      },
-      {
-        "name": "Lesson-2-TG.pdf",
-        "type": "pdf"
       }
     ]
   },
@@ -2516,8 +2518,7 @@ const SPOTLIGHT_DATA = [
       {
         "name": "Welcome",
         "type": "folder",
-        "children": []
-      },
+        "children": [
       {
         "name": "Lesson 1",
         "type": "folder",
@@ -2562,9 +2563,11 @@ const SPOTLIGHT_DATA = [
           }
         ]
       },
-      {
-        "name": "Welcome-Audio-Script.pdf",
-        "type": "pdf"
+          {
+            "name": "Welcome-Audio-Script.pdf",
+            "type": "pdf"
+          }
+        ]
       }
     ]
   },
@@ -3416,32 +3419,34 @@ const SPOTLIGHT_DATA = [
       {
         "name": "Welcome",
         "type": "folder",
-        "children": []
-      },
-      {
-        "name": "Diagnostic Test",
-        "type": "folder",
-        "children": []
-      },
-      {
-        "name": "A. Diagnostic Test - Listening part 1 and 2 - Full audio.mp3",
-        "type": "mp3"
-      },
-      {
-        "name": "Diagnostic-Test-SB.pdf",
-        "type": "pdf"
-      },
-      {
-        "name": "Diagnostic-Test-TG.pdf",
-        "type": "pdf"
-      },
-      {
-        "name": "E. Review-Listening Ex. 2.mp3",
-        "type": "mp3"
-      },
-      {
-        "name": "E. Review-Listening Ex. 4.mp3",
-        "type": "mp3"
+        "children": [
+          {
+            "name": "Diagnostic Test",
+            "type": "folder",
+            "children": [
+              {
+                "name": "A. Diagnostic Test - Listening part 1 and 2 - Full audio.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "Diagnostic-Test-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Diagnostic-Test-TG.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "E. Review-Listening Ex. 2.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "E. Review-Listening Ex. 4.mp3",
+                "type": "mp3"
+              }
+            ]
+          }
+        ]
       }
     ]
   }
