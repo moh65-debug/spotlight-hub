@@ -446,6 +446,7 @@
 
 <audio id="audio-el" preload="auto"></audio>
 <div id="toast-msg"></div>
+<div id="offline-banner" style="display:none;position:fixed;top:60px;left:0;right:0;z-index:200;background:#3D4351;color:#fff;text-align:center;padding:7px 1rem;font-size:0.8rem;font-family:var(--sans);">📵 Offline — showing cached content. Save files while online to access them offline.</div>
 
 <footer>
   Spotlight Trilogy — <span id="footer-book">…</span>
@@ -845,6 +846,8 @@ document.getElementById('search').addEventListener('input', function() {
 // ── DOWNLOAD — fetch as blob so the browser triggers a real Save dialog ──
 // Cross-origin <a download> is blocked by browsers; fetching as a blob
 // and using createObjectURL() bypasses that — same approach as wget.
+// archive.org redirects to ia800xxx.us.archive.org — we follow redirects
+// using mode:'cors' which archive.org supports via Access-Control-Allow-Origin:*.
 async function downloadFile(evtOrUrl, urlOrFilename, filename) {
   let url, btn;
   if (evtOrUrl && typeof evtOrUrl === 'object' && evtOrUrl.currentTarget) {
@@ -856,11 +859,22 @@ async function downloadFile(evtOrUrl, urlOrFilename, filename) {
     btn = null;
   }
 
-  // Lock the button while downloading
+  // Disable button during download
   if (btn) { btn.disabled = true; btn.style.opacity = '0.55'; }
 
+  const extractFileName = (resp, fallback) => {
+    const cd = resp.headers.get('Content-Disposition');
+    if (cd) {
+      const match = /filename[^;=\s]*=((['"]).*?\2|[^;\s]+)/i.exec(cd);
+      if (match != null && match[1]) {
+        return match[1].replace(/['"]/g, '');
+      }
+    }
+    return fallback;
+  };
+
   try {
-    // Check offline cache first
+    // Check offline IndexedDB cache first
     const record = await dbGet(fileKey(url)).catch(() => null);
     if (record?.blob) {
       triggerBlobDownload(record.blob, filename || record.name || 'file');
@@ -868,16 +882,18 @@ async function downloadFile(evtOrUrl, urlOrFilename, filename) {
       return;
     }
 
-    // Fetch from network as a blob (archive.org supports CORS)
+    // Primary fetch – CORS mode (most reliable)
     showToast('Downloading… please wait');
-    const resp = await fetch(url);
+    const resp = await fetch(url, { mode: 'cors', credentials: 'omit', redirect: 'follow' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const blob = await resp.blob();
-    triggerBlobDownload(blob, filename || 'file');
+    if (blob.size === 0) throw new Error('Empty response');
+    const finalName = extractFileName(resp, filename || url.split('/').pop());
+    triggerBlobDownload(blob, finalName);
     showToast('Download complete ✓');
   } catch (err) {
     console.warn('downloadFile error:', err);
-    // Last resort: open in new tab so the user can long-press/save manually
+    // Fallback – open in new tab so the user can manually save
     window.open(url, '_blank', 'noopener');
     showToast('Opened in new tab — use Save As to download');
   } finally {
@@ -974,10 +990,10 @@ async function saveOffline(btn, url, name, type) {
   btn.innerHTML = `${saveIcon()} Saving…`;
 
   try {
-    // archive.org supports CORS — fetch works directly in all browsers.
-    const resp = await fetch(url);
+    const resp = await fetch(url, { mode: 'cors', credentials: 'omit', redirect: 'follow' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const blob   = await resp.blob();
+    if (blob.size === 0) throw new Error('Empty response');
     const key    = fileKey(url);
     const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
     await dbPut({ key, name, type, url, blob, sizeMB, savedAt: Date.now() });
@@ -990,8 +1006,7 @@ async function saveOffline(btn, url, name, type) {
     btn.classList.remove('saving');
     btn.disabled = false;
     btn.innerHTML = `${saveIcon()} Save`;
-    // Offer manual import as a fallback (e.g. if user is already offline)
-    showToast('Could not auto-save. Download the file then use "Import" in the Library.');
+    showToast('Could not save — make sure you\'re online and try again.');
     console.warn('saveOffline error:', err);
   }
 }
@@ -1287,7 +1302,72 @@ async function triggerInstall() {
   const { outcome } = await _installPrompt.userChoice;
   if (outcome === 'accepted') _installPrompt = null;
 }
-</script>
 
+// ── OFFLINE BANNER ────────────────────────────────────────────────────────────
+function updateOfflineBanner() {
+  const banner = document.getElementById('offline-banner');
+  if (!banner) return;
+  banner.style.display = navigator.onLine ? 'none' : 'block';
+}
+window.addEventListener('online',  updateOfflineBanner);
+window.addEventListener('offline', updateOfflineBanner);
+updateOfflineBanner(); // set initial state
+</script>
+<!-- Add this at the bottom of book.html -->
+<script>
+  // 1. The Download Function
+  async function downloadPDF(url, filename) {
+    try {
+      // Show a loading state (optional but recommended)
+      const statusMsg = document.getElementById('download-status');
+      if (statusMsg) statusMsg.innerText = 'Downloading...';
+
+      const response = await fetch(url, { mode: 'cors' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create temporary link and trigger download
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      setTimeout(() => {
+        a.remove();
+        URL.revokeObjectURL(blobUrl);
+        if (statusMsg) statusMsg.innerText = 'Download complete.';
+      }, 100);
+
+    } catch (err) {
+      console.error("❌ Download failed:", err);
+      alert("Download failed. Opening in new tab.");
+      window.open(url, '_blank');
+    }
+  }
+
+  // 2. Hook it up to your Download Button
+  // IMPORTANT: Replace '#my-download-btn' with your actual button's ID or Class
+  document.addEventListener('DOMContentLoaded', () => {
+    const downloadBtn = document.querySelector('#download-btn'); // <-- Check your HTML for the correct ID/Class
+    
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Get the current PDF URL and name from your data variables
+        // Example: let currentUrl = document.querySelector('iframe').src;
+        // Example: let currentName = "Lesson-1-SB.pdf"; 
+        
+        // If your logic stores the current file in a variable, use it here:
+        // downloadPDF(currentFileUrl, currentFileName);
+        
+        console.log("Download button clicked! Add your URL logic here.");
+      });
+    }
+  });
+</script>
 </body>
 </html>
