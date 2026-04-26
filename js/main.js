@@ -4,7 +4,9 @@
 
 // Boot after load
 window.addEventListener('load', () => {
+  console.log('Window loaded, SPOTLIGHT_DATA:', typeof SPOTLIGHT_DATA);
   if (typeof SPOTLIGHT_DATA !== 'undefined') {
+    console.log('Initializing page');
     initializePage();
   } else {
     document.getElementById('nav-title').textContent = 'Error: Data not loaded. Please refresh.';
