@@ -1,6 +1,6 @@
 // sw.js — Spotlight Trilogy Service Worker
 // Bump CACHE version when you deploy new files to invalidate the old cache.
-const CACHE = 'spotlight-v7';
+const CACHE = 'spotlight-v8';
 
 const SHELL_REQUIRED = [
   './index.html',
@@ -20,6 +20,7 @@ const SHELL_OPTIONAL = [
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.269/pdf.worker.min.js',
 ];
 
+// ── Install: cache shell files ────────────────────────────────────────────────
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(async c => {
@@ -35,6 +36,7 @@ self.addEventListener('install', e => {
   );
 });
 
+// ── Activate: delete old caches, claim all open tabs immediately ──────────────
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
@@ -45,6 +47,12 @@ self.addEventListener('activate', e => {
   );
 });
 
+// ── Message: page can trigger skipWaiting programmatically ───────────────────
+self.addEventListener('message', e => {
+  if (e.data === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// ── Fetch ─────────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', e => {
   const { request } = e;
   const url = new URL(request.url);
@@ -55,13 +63,13 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Google Fonts — permanent cache-first
+  // Google Fonts — permanent cache-first (versioned by Google)
   if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
     e.respondWith(cacheFirst(request));
     return;
   }
 
-  // cdnjs (pdf.js) — permanent cache-first
+  // cdnjs (pdf.js) — permanent cache-first (pinned version URL)
   if (url.hostname === 'cdnjs.cloudflare.com') {
     e.respondWith(cacheFirst(request));
     return;
@@ -72,10 +80,12 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Same-origin app shell — stale-while-revalidate
-  // Serves from cache INSTANTLY (offline forever), updates in background
-  e.respondWith(staleWhileRevalidate(request));
+  // Same-origin app shell — network-first with cache fallback.
+  // Always fetches fresh content when online; falls back to cache offline.
+  e.respondWith(networkFirstWithFallback(request));
 });
+
+// ── Strategies ────────────────────────────────────────────────────────────────
 
 function cacheFirst(request) {
   return caches.open(CACHE).then(cache =>
@@ -89,22 +99,19 @@ function cacheFirst(request) {
   );
 }
 
-function staleWhileRevalidate(request) {
+function networkFirstWithFallback(request) {
   if (request.method !== 'GET') return fetch(request);
 
   return caches.open(CACHE).then(cache =>
-    cache.match(request).then(cached => {
-      const networkFetch = fetch(request, { credentials: 'omit' })
-        .then(resp => {
-          if (resp.ok) cache.put(request, resp.clone());
-          return resp;
-        })
-        .catch(() => null);
-
-      // Serve cache immediately; update silently in background
-      return cached || networkFetch.then(resp =>
-        resp || new Response('', { status: 503 })
-      );
-    })
+    fetch(request, { credentials: 'omit' })
+      .then(resp => {
+        if (resp.ok) cache.put(request, resp.clone());
+        return resp;
+      })
+      .catch(() =>
+        cache.match(request).then(cached =>
+          cached || new Response('', { status: 503 })
+        )
+      )
   );
 }
