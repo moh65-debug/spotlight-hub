@@ -24,8 +24,18 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
   }
 
   let btns = '';
-  if (sbPath) btns += btnSB(sbPath, 'SB', unitIndex, lessonIndex);
-  if (tgPath) btns += btnTG(tgPath, 'TG', unitIndex, lessonIndex);
+  if (sbPath || tgPath) {
+    btns = `<div class="pdf-cards">` +
+      (sbPath ? `<div class="pdf-card pdf-card-sb">
+        <span class="pdf-card-label">Student Book</span>
+        <div class="pdf-card-actions">${btnSB(sbPath, 'Download', unitIndex, lessonIndex)}</div>
+      </div>` : '') +
+      (tgPath ? `<div class="pdf-card pdf-card-tg">
+        <span class="pdf-card-label">Teacher Guide</span>
+        <div class="pdf-card-actions">${btnTG(tgPath, 'Download', unitIndex, lessonIndex)}</div>
+      </div>` : '') +
+      `</div>`;
+  }
 
   let audioList = '';
   if (audioFiles.length) {
@@ -41,14 +51,15 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
       '</div>';
   }
 
-  const saveLessonBtn = lessonFilesForSave.length > 1 ? btnSaveLesson(lessonFilesForSave) : '';
+  const saveLessonBtn = lessonFilesForSave.length > 1 ? `<div class="save-lesson-wrap">${btnSaveLesson(lessonFilesForSave)}</div>` : '';
 
   return `
     <div class="lesson-row" data-lesson="${escHtml(lesson.name.toLowerCase())}">
       <div class="lesson-num">Lesson ${lessonIndex}</div>
       <div class="lesson-info">
         <div class="lesson-name">${escHtml(lesson.name)}</div>
-        <div class="lesson-actions">${btns || '<span style="font-size:0.73rem;color:var(--slate-light)">No files</span>'}${saveLessonBtn}</div>
+        ${btns ? btns : '<span class="no-files-label">No files</span>'}
+        ${saveLessonBtn}
         ${audioList}
       </div>
     </div>`;
@@ -68,11 +79,10 @@ function renderUnit(unit, bookName, unitIndex) {
     const queue = unitAudios.map(f => ({ url: buildPath(bookName, unit.name, f.name), name: f.name }));
     audioRow = `<div class="unit-audio-row">
       <span class="unit-audio-label">Unit audio (${unitAudios.length})</span>
-      ${unitAudios.map((f, fi) => {
-        const url = queue[fi].url;
-        return `<button class="btn btn-audio" style="font-size:0.7rem;padding:3px 8px;"
-          onclick="playAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(f.name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play</button>`;
-      }).join('')}
+      <div class="btn-group btn-group-audio">
+        <button class="btn btn-audio btn-group-main btn-audio-sm"
+          onclick="playAudio(event)" data-url="${escAttr(queue[0].url)}" data-name="${escAttr(queue[0].name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play All</button>
+      </div>
     </div>`;
   }
 
@@ -81,9 +91,8 @@ function renderUnit(unit, bookName, unitIndex) {
     unitFilesRow = `<div class="unit-audio-row">
       ${unitFiles.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
-        const cls  = fileIsSB(f.name) ? 'btn-sb' : 'btn-tg';
-        return `<button class="btn ${cls}" style="font-size:0.72rem;" onclick="downloadFile(event)" data-url="${escAttr(path)}" data-filename="${escAttr(f.name)}">${dlIcon()} ${escHtml(f.name)}</button>`
-             + btnSaveOffline(path, f.name, 'pdf');
+        const isSB = fileIsSB(f.name);
+        return btnPdfGroup(path, f.name, isSB ? 'btn-sb' : 'btn-tg', isSB ? 'Student Book' : 'Teacher Guide', '');
       }).join('')}
     </div>`;
   }
@@ -104,8 +113,7 @@ function renderUnit(unit, bookName, unitIndex) {
     otherPdfsRow = `<div class="unit-audio-row">
       ${otherPdfs.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
-        return `<button class="btn btn-bundle" style="font-size:0.72rem;" onclick="downloadFile(event)" data-url="${escAttr(path)}" data-filename="${escAttr(f.name)}">${dlIcon()} ${escHtml(f.name)}</button>`
-             + btnSaveOffline(path, f.name, 'pdf');
+        return btnPdfGroup(path, f.name, 'btn-bundle', f.name.replace(/\.pdf$/i,''), '');
       }).join('')}
     </div>`;
   }

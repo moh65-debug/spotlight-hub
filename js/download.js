@@ -289,7 +289,11 @@ async function saveOffline(btn, url, name, type) {
     }
     btn.classList.remove('saving');
     btn.classList.add('saved');
-    btn.innerHTML = saveIcon() + ' Saved \u2713';
+    if (btn.closest && btn.closest('.btn-group')) {
+      btn.innerHTML = `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M2 6l3.5 3.5L10 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    } else {
+      btn.innerHTML = saveIcon() + ' Saved \u2713';
+    }
     showToast('"' + name + '" saved (' + sizeMB + ' MB)');
   } catch (err) {
     btn.classList.remove('saving');
@@ -308,10 +312,21 @@ async function refreshSavedStates() {
     var key = fileKey(btn.dataset.url || '');
     if (savedKeys.has(key)) {
       btn.classList.add('saved');
-      btn.innerHTML = saveIcon() + ' Saved \u2713';
+      // Inside a btn-group, just show a checkmark icon; standalone shows full text
+      if (btn.closest('.btn-group')) {
+        btn.innerHTML = `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M2 6l3.5 3.5L10 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      } else {
+        btn.innerHTML = saveIcon() + ' Saved \u2713';
+      }
       btn.disabled = true;
     } else {
-      if (!btn.classList.contains('saving')) btn.innerHTML = saveIcon() + ' Offline';
+      if (!btn.classList.contains('saving')) {
+        if (btn.closest('.btn-group')) {
+          btn.innerHTML = saveIcon();
+        } else {
+          btn.innerHTML = saveIcon() + ' Offline';
+        }
+      }
     }
   });
 }

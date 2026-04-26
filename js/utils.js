@@ -60,14 +60,21 @@ function smartFilename(url, type) {
 }
 
 // Button Builders
+
+// A grouped pill: primary action + icon actions fused together
+function btnPdfGroup(href, fname, primaryClass, primaryLabel, previewExtraClass) {
+  previewExtraClass = previewExtraClass || '';
+  return `<div class="btn-group">
+    <button class="btn ${primaryClass} btn-group-main" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}">${dlIcon()} ${escHtml(primaryLabel)}</button><button class="btn btn-group-action btn-preview ${previewExtraClass}" onclick="previewPdf(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}" title="Preview">${previewIcon()}</button><button class="btn btn-group-action btn-save btn-save-offline" data-url="${escAttr(href)}" data-name="${escAttr(fname.replace(/\.pdf$/i,''))}" data-type="pdf" onclick="handleSaveOffline(this)" title="Save offline">${saveIcon()}</button>
+  </div>`;
+}
+
 function btnSB(href, label, unitNum, lessonNum) {
   label = label || 'Student Book';
   const fname = (unitNum && lessonNum)
     ? `U${unitNum}-L${lessonNum}-SB.pdf`
     : smartFilename(href, 'SB');
-  return `<button class="btn btn-sb" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}">${dlIcon()} ${escHtml(label)}</button>` +
-         `<button class="btn btn-preview btn-icon-only" onclick="previewPdf(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}" title="Preview PDF">${previewIcon()}</button>` +
-         btnSaveOffline(href, fname.replace(/\.pdf$/i, ''), 'pdf');
+  return btnPdfGroup(href, fname, 'btn-sb', label, '');
 }
 
 function btnTG(href, label, unitNum, lessonNum) {
@@ -75,9 +82,7 @@ function btnTG(href, label, unitNum, lessonNum) {
   const fname = (unitNum && lessonNum)
     ? `U${unitNum}-L${lessonNum}-TG.pdf`
     : smartFilename(href, 'TG');
-  return `<button class="btn btn-tg" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}">${dlIcon()} ${escHtml(label)}</button>` +
-         `<button class="btn btn-preview btn-icon-only" onclick="previewPdf(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}" title="Preview PDF">${previewIcon()}</button>` +
-         btnSaveOffline(href, fname.replace(/\.pdf$/i, ''), 'pdf');
+  return btnPdfGroup(href, fname, 'btn-tg', label, '');
 }
 
 function btnSaveOffline(url, name, type) {
@@ -94,21 +99,21 @@ function btnSaveLesson(lessonFiles) {
 function btnAudioScript(href, label) {
   label = label || 'Audio Script';
   const fname = label.replace(/\s+/g, '-') + '.pdf';
-  return `<button class="btn btn-audio-script" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}">${dlIcon()} ${escHtml(label)}</button>` +
-         `<button class="btn btn-preview btn-icon-only btn-preview-script" onclick="previewPdf(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}" title="Preview Audio Script">${previewIcon()}</button>` +
-         btnSaveOffline(href, fname.replace(/\.pdf$/i, ''), 'pdf');
+  return btnPdfGroup(href, fname, 'btn-audio-script', label, 'btn-preview-script');
 }
 
 function buildAudioRow(url, name, queue) {
   const displayName = name.replace(/\.mp3$/i, '');
   return `<div class="audio-row">
-    <span class="audio-dot"></span>
-    <span class="audio-name" title="${escAttr(name)}">${escHtml(displayName)}</span>
+    <div class="audio-row-info">
+      <span class="audio-dot"></span>
+      <span class="audio-name" title="${escAttr(name)}">${escHtml(displayName)}</span>
+    </div>
     <div class="audio-row-actions">
-      <button class="btn btn-audio btn-audio-sm"
-        onclick="playAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play</button>
-      <button class="btn btn-save btn-icon-only" onclick="downloadAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(name)}" title="Download audio">${dlIcon()}</button>
-      ${btnSaveOffline(url, name, 'mp3')}
+      <div class="btn-group btn-group-audio">
+        <button class="btn btn-audio btn-group-main btn-audio-sm"
+          onclick="playAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play</button><button class="btn btn-group-action" onclick="downloadAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(name)}" title="Download">${dlIcon()}</button><button class="btn btn-group-action btn-save btn-save-offline" data-url="${escAttr(url)}" data-name="${escAttr(name)}" data-type="mp3" onclick="handleSaveOffline(this)" title="Save offline">${saveIcon()}</button>
+      </div>
     </div>
   </div>`;
 }
