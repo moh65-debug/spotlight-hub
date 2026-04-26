@@ -342,15 +342,20 @@
 
   function countItems(book) {
     let units = 0, lessons = 0, audios = 0;
-    function walk(node, depth = 0) {
-      if (node.type === 'mp3') audios++;
-      if (node.type === 'folder') {
-        if (depth === 0 && /^unit/i.test(node.name)) units++;
-        if (/^lesson/i.test(node.name)) lessons++;
-        if (node.children) node.children.forEach(c => walk(c, depth + 1));
+    for (const child of book.children) {
+      if (child.type === 'folder' && child.name.toLowerCase().startsWith('unit')) {
+        units++;
+        for (const c of (child.children || [])) {
+          if (c.type === 'mp3') audios++; // unit-level audio
+          if (c.type === 'folder') {
+            lessons++;
+            for (const f of (c.children || [])) {
+              if (f.type === 'mp3') audios++;
+            }
+          }
+        }
       }
     }
-    book.children.forEach(c => walk(c, 0));
     return { units, lessons, audios };
   }
 
