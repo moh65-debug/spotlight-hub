@@ -6,6 +6,7 @@ const SHELL_REQUIRED = [
   './index.html',
   './book.html',
   './data.js',
+  './file-list.json',
 ];
 
 // Optional shell: cached on install, skipped if unavailable.
@@ -90,7 +91,7 @@ self.addEventListener('fetch', e => {
  */
 function cacheFirst(request) {
   return caches.open(CACHE).then(cache =>
-    cache.match(request, { ignoreSearch: true }).then(cached => {
+    cache.match(request).then(cached => {
       if (cached) return cached;
       return fetch(request).then(resp => {
         if (resp.ok) cache.put(request, resp.clone());
@@ -107,7 +108,7 @@ function cacheFirst(request) {
  */
 function cacheFirstWithNetworkUpdate(request) {
   return caches.open(CACHE).then(cache =>
-    cache.match(request, { ignoreSearch: true }).then(cached => {
+    cache.match(request).then(cached => {
       const networkFetch = fetch(request).then(resp => {
         if (request.method === 'GET' && resp.ok) {
           cache.put(request, resp.clone());
