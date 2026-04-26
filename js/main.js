@@ -184,29 +184,105 @@ function initializePage() {
   if (firstUnit) firstUnit.classList.add('open');
 
   setTimeout(refreshSavedStates, 80);
+  setTimeout(populateFilterDropdowns, 100);
 }
 
 function toggleUnit(header) {
   header.closest('.unit-block').classList.toggle('open');
 }
 
-// Search
-document.getElementById('search').addEventListener('input', function() {
-  const q = this.value.toLowerCase().trim();
-  document.querySelectorAll('.unit-block').forEach(block => {
-    const unitMatch = block.dataset.unit && block.dataset.unit.includes(q);
-    const rows = block.querySelectorAll('.lesson-row');
-    let anyLesson = false;
-    rows.forEach(row => {
-      const match = !q || unitMatch || (row.dataset.lesson && row.dataset.lesson.includes(q));
-      row.style.display = match ? '' : 'none';
-      if (match) anyLesson = true;
+// ── Filter Dropdowns ─────────────────────────────────────────────────────────
+
+function populateFilterDropdowns() {
+  const unitSel   = document.getElementById('filter-unit');
+  const lessonSel = document.getElementById('filter-lesson');
+  if (!unitSel || !lessonSel) return;
+
+  // Collect units and lessons from rendered DOM
+  const unitBlocks = document.querySelectorAll('.unit-block[data-unit]');
+  unitSel.innerHTML = '<option value="">All Units</option>';
+  lessonSel.innerHTML = '<option value="">All Lessons</option>';
+
+  const lessonSet = new Set();
+
+  unitBlocks.forEach(block => {
+    const unitVal  = block.dataset.unit || '';
+    const unitName = block.querySelector('.unit-name')?.textContent?.trim() || unitVal;
+    if (unitVal) {
+      const opt = document.createElement('option');
+      opt.value = unitVal;
+      opt.textContent = unitName;
+      unitSel.appendChild(opt);
+    }
+
+    block.querySelectorAll('.lesson-row[data-lesson]').forEach(row => {
+      const lv = row.dataset.lesson || '';
+      if (lv && !lessonSet.has(lv)) {
+        lessonSet.add(lv);
+        const lName = row.querySelector('.lesson-name')?.textContent?.trim() || lv;
+        const opt = document.createElement('option');
+        opt.value = lv;
+        opt.textContent = lName;
+        lessonSel.appendChild(opt);
+      }
     });
-    const show = !q || unitMatch || anyLesson;
-    block.style.display = show ? '' : 'none';
-    if (q && show) block.classList.add('open');
   });
-});
+
+  unitSel.addEventListener('change', applyFilters);
+  lessonSel.addEventListener('change', applyFilters);
+
+  // When unit changes, repopulate lesson dropdown to only show that unit's lessons
+  unitSel.addEventListener('change', function() {
+    const selectedUnit = this.value;
+    const prevLesson   = lessonSel.value;
+    lessonSel.innerHTML = '<option value="">All Lessons</option>';
+    const lessonsSeen  = new Set();
+
+    unitBlocks.forEach(block => {
+      if (selectedUnit && block.dataset.unit !== selectedUnit) return;
+      block.querySelectorAll('.lesson-row[data-lesson]').forEach(row => {
+        const lv = row.dataset.lesson || '';
+        if (lv && !lessonsSeen.has(lv)) {
+          lessonsSeen.add(lv);
+          const lName = row.querySelector('.lesson-name')?.textContent?.trim() || lv;
+          const opt = document.createElement('option');
+          opt.value = lv;
+          opt.textContent = lName;
+          lessonSel.appendChild(opt);
+        }
+      });
+    });
+
+    // Restore lesson selection if still available
+    if ([...lessonSel.options].some(o => o.value === prevLesson)) {
+      lessonSel.value = prevLesson;
+    }
+    applyFilters();
+  });
+}
+
+function applyFilters() {
+  const unitVal   = (document.getElementById('filter-unit')?.value   || '').trim();
+  const lessonVal = (document.getElementById('filter-lesson')?.value || '').trim();
+
+  document.querySelectorAll('.unit-block').forEach(block => {
+    const unitMatch = !unitVal || block.dataset.unit === unitVal;
+    const rows      = block.querySelectorAll('.lesson-row');
+    let anyLesson   = false;
+
+    rows.forEach(row => {
+      const lessonMatch = !lessonVal || row.dataset.lesson === lessonVal;
+      const show        = unitMatch && lessonMatch;
+      row.style.display = show ? '' : 'none';
+      if (show) anyLesson = true;
+    });
+
+    // Show block if unit matches (even if no lesson filter) or if a lesson inside matches
+    const showBlock        = unitMatch && (!lessonVal || anyLesson);
+    block.style.display    = showBlock ? '' : 'none';
+    if (showBlock && (unitVal || lessonVal)) block.classList.add('open');
+  });
+}
 
 // Toast
 function showToast(message) {
