@@ -1,19 +1,24 @@
 // sw.js — Spotlight Trilogy Service Worker
-const CACHE = 'spotlight-v4';
+const CACHE = 'spotlight-v5';
 
 // Core shell — these MUST be cached for the app to open offline.
 const SHELL_REQUIRED = [
   './index.html',
   './book.html',
   './data.js',
-  './file-list.json',
+  './js/utils.js',
+  './js/render.js',
+  './js/download.js',
+  './js/audio.js',
+  './js/pdf.js',
+  './js/main.js',
 ];
 
 // Optional shell: cached on install, skipped if unavailable.
 const SHELL_OPTIONAL = [
   'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.269/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.269/pdf.worker.min.js',
 ];
 
 // ── INSTALL ───────────────────────────────────────────────────────────────────
