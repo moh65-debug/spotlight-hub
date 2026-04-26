@@ -178,11 +178,11 @@ const SPOTLIGHT_DATA = [
                 "type": "mp3"
               },
               {
-                "name": "U1-L6-B-2b-adjectives.mp3",
+                "name": "U1-L6-B-2b-adjectives-repeat.mp3",
                 "type": "mp3"
               },
               {
-                "name": "U1-L6-B-2b-adjectives-repeat.mp3",
+                "name": "U1-L6-B-2b-adjectives.mp3",
                 "type": "mp3"
               },
               {
@@ -842,11 +842,11 @@ const SPOTLIGHT_DATA = [
                 "type": "pdf"
               },
               {
-                "name": "U4-L5-A-1b.mp3",
+                "name": "U4-L5-A-1b-repeat.mp3",
                 "type": "mp3"
               },
               {
-                "name": "U4-L5-A-1b-repeat.mp3",
+                "name": "U4-L5-A-1b.mp3",
                 "type": "mp3"
               },
               {
@@ -1306,34 +1306,36 @@ const SPOTLIGHT_DATA = [
       {
         "name": "Welcome",
         "type": "folder",
-        "children": []
-      },
-      {
-        "name": "Lesson 1",
-        "type": "folder",
         "children": [
           {
-            "name": "Lesson-1-SB.pdf",
-            "type": "pdf"
+            "name": "Lesson 1",
+            "type": "folder",
+            "children": [
+              {
+                "name": "Lesson-1-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-1-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           },
           {
-            "name": "Lesson-1-TG.pdf",
-            "type": "pdf"
+            "name": "Lesson 2",
+            "type": "folder",
+            "children": [
+              {
+                "name": "Lesson-2-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-2-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           }
         ]
-      },
-      {
-        "name": "Lesson 2",
-        "type": "folder",
-        "children": []
-      },
-      {
-        "name": "Lesson-2-SB.pdf",
-        "type": "pdf"
-      },
-      {
-        "name": "Lesson-2-TG.pdf",
-        "type": "pdf"
       }
     ]
   },
@@ -2516,55 +2518,56 @@ const SPOTLIGHT_DATA = [
       {
         "name": "Welcome",
         "type": "folder",
-        "children": []
-      },
-      {
-        "name": "Lesson 1",
-        "type": "folder",
         "children": [
           {
-            "name": "Lesson-1-SB.pdf",
+            "name": "Lesson 1",
+            "type": "folder",
+            "children": [
+              {
+                "name": "Lesson-1-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-1-TG.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "U0-L1-B-reem-yanis.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "U0-L1-C2.mp3",
+                "type": "mp3"
+              }
+            ]
+          },
+          {
+            "name": "Lesson 2",
+            "type": "folder",
+            "children": [
+              {
+                "name": "Lesson-2-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-2-TG.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "U0-L2-A2-1.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "U0-L2-A2-2.mp3",
+                "type": "mp3"
+              }
+            ]
+          },
+          {
+            "name": "Welcome-Audio-Script.pdf",
             "type": "pdf"
-          },
-          {
-            "name": "Lesson-1-TG.pdf",
-            "type": "pdf"
-          },
-          {
-            "name": "U0-L1-B-reem-yanis.mp3",
-            "type": "mp3"
-          },
-          {
-            "name": "U0-L1-C2.mp3",
-            "type": "mp3"
           }
         ]
-      },
-      {
-        "name": "Lesson 2",
-        "type": "folder",
-        "children": [
-          {
-            "name": "Lesson-2-SB.pdf",
-            "type": "pdf"
-          },
-          {
-            "name": "Lesson-2-TG.pdf",
-            "type": "pdf"
-          },
-          {
-            "name": "U0-L2-A2-1.mp3",
-            "type": "mp3"
-          },
-          {
-            "name": "U0-L2-A2-2.mp3",
-            "type": "mp3"
-          }
-        ]
-      },
-      {
-        "name": "Welcome-Audio-Script.pdf",
-        "type": "pdf"
       }
     ]
   },
@@ -2584,10 +2587,6 @@ const SPOTLIGHT_DATA = [
         "name": "Unit 1",
         "type": "folder",
         "children": [
-          {
-            "name": "0-Unit 1 Spotlight.mp3",
-            "type": "mp3"
-          },
           {
             "name": "Lesson 1",
             "type": "folder",
@@ -2741,19 +2740,24 @@ const SPOTLIGHT_DATA = [
           {
             "name": "Lesson 8",
             "type": "folder",
-            "children": []
+            "children": [
+              {
+                "name": "Lesson 8-A Listening Test.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "Lesson-8-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-8-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           },
           {
-            "name": "Lesson 8-A Listening Test.mp3",
+            "name": "0-Unit 1 Spotlight.mp3",
             "type": "mp3"
-          },
-          {
-            "name": "Lesson-8-SB.pdf",
-            "type": "pdf"
-          },
-          {
-            "name": "Lesson-8-TG.pdf",
-            "type": "pdf"
           }
         ]
       },
@@ -2761,10 +2765,6 @@ const SPOTLIGHT_DATA = [
         "name": "Unit 2",
         "type": "folder",
         "children": [
-          {
-            "name": "0- Unit 2 Spotlight.mp3",
-            "type": "mp3"
-          },
           {
             "name": "Lesson 1",
             "type": "folder",
@@ -2894,19 +2894,24 @@ const SPOTLIGHT_DATA = [
           {
             "name": "Lesson 8",
             "type": "folder",
-            "children": []
+            "children": [
+              {
+                "name": "Lesson 8- A Listening Test.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "Lesson-8-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-8-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           },
           {
-            "name": "Lesson 8- A Listening Test.mp3",
+            "name": "0- Unit 2 Spotlight.mp3",
             "type": "mp3"
-          },
-          {
-            "name": "Lesson-8-SB.pdf",
-            "type": "pdf"
-          },
-          {
-            "name": "Lesson-8-TG.pdf",
-            "type": "pdf"
           }
         ]
       },
@@ -2914,10 +2919,6 @@ const SPOTLIGHT_DATA = [
         "name": "Unit 3",
         "type": "folder",
         "children": [
-          {
-            "name": "0- Unit 3 Spotlight.mp3",
-            "type": "mp3"
-          },
           {
             "name": "Lesson 1",
             "type": "folder",
@@ -3071,19 +3072,24 @@ const SPOTLIGHT_DATA = [
           {
             "name": "Lesson 8",
             "type": "folder",
-            "children": []
+            "children": [
+              {
+                "name": "Lesson 8- A Listening Test.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "Lesson-8-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-8-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           },
           {
-            "name": "Lesson 8- A Listening Test.mp3",
+            "name": "0- Unit 3 Spotlight.mp3",
             "type": "mp3"
-          },
-          {
-            "name": "Lesson-8-SB.pdf",
-            "type": "pdf"
-          },
-          {
-            "name": "Lesson-8-TG.pdf",
-            "type": "pdf"
           }
         ]
       },
@@ -3091,10 +3097,6 @@ const SPOTLIGHT_DATA = [
         "name": "Unit 4",
         "type": "folder",
         "children": [
-          {
-            "name": "0- Unit 4 Spotlight.mp3",
-            "type": "mp3"
-          },
           {
             "name": "Lesson 1",
             "type": "folder",
@@ -3240,19 +3242,24 @@ const SPOTLIGHT_DATA = [
           {
             "name": "Lesson 8",
             "type": "folder",
-            "children": []
+            "children": [
+              {
+                "name": "Lesson 8- A Listening Test.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "Lesson-8-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-8-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           },
           {
-            "name": "Lesson 8- A Listening Test.mp3",
+            "name": "0- Unit 4 Spotlight.mp3",
             "type": "mp3"
-          },
-          {
-            "name": "Lesson-8-SB.pdf",
-            "type": "pdf"
-          },
-          {
-            "name": "Lesson-8-TG.pdf",
-            "type": "pdf"
           }
         ]
       },
@@ -3260,10 +3267,6 @@ const SPOTLIGHT_DATA = [
         "name": "Unit 5",
         "type": "folder",
         "children": [
-          {
-            "name": "0- Unit 5 Spotlight.mp3",
-            "type": "mp3"
-          },
           {
             "name": "Lesson 1",
             "type": "folder",
@@ -3397,51 +3400,58 @@ const SPOTLIGHT_DATA = [
           {
             "name": "Lesson 8",
             "type": "folder",
-            "children": []
+            "children": [
+              {
+                "name": "Lesson 8- A Listening Test.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "Lesson-8-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Lesson-8-TG.pdf",
+                "type": "pdf"
+              }
+            ]
           },
           {
-            "name": "Lesson 8- A Listening Test.mp3",
+            "name": "0- Unit 5 Spotlight.mp3",
             "type": "mp3"
-          },
-          {
-            "name": "Lesson-8-SB.pdf",
-            "type": "pdf"
-          },
-          {
-            "name": "Lesson-8-TG.pdf",
-            "type": "pdf"
           }
         ]
       },
       {
         "name": "Welcome",
         "type": "folder",
-        "children": []
-      },
-      {
-        "name": "Diagnostic Test",
-        "type": "folder",
-        "children": []
-      },
-      {
-        "name": "A. Diagnostic Test - Listening part 1 and 2 - Full audio.mp3",
-        "type": "mp3"
-      },
-      {
-        "name": "Diagnostic-Test-SB.pdf",
-        "type": "pdf"
-      },
-      {
-        "name": "Diagnostic-Test-TG.pdf",
-        "type": "pdf"
-      },
-      {
-        "name": "E. Review-Listening Ex. 2.mp3",
-        "type": "mp3"
-      },
-      {
-        "name": "E. Review-Listening Ex. 4.mp3",
-        "type": "mp3"
+        "children": [
+          {
+            "name": "Diagnostic Test",
+            "type": "folder",
+            "children": [
+              {
+                "name": "E. Review-Listening Ex. 2.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "E. Review-Listening Ex. 4.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "A. Diagnostic Test - Listening part 1 and 2 - Full audio.mp3",
+                "type": "mp3"
+              },
+              {
+                "name": "Diagnostic-Test-SB.pdf",
+                "type": "pdf"
+              },
+              {
+                "name": "Diagnostic-Test-TG.pdf",
+                "type": "pdf"
+              }
+            ]
+          }
+        ]
       }
     ]
   }

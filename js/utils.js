@@ -22,11 +22,11 @@ function escAttr(s) {
   return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function fileIsSB(n)    { return /sb/i.test(n) && n.endsWith('.pdf'); }
-function fileIsTG(n)    { return /tg/i.test(n) && n.endsWith('.pdf'); }
-function fileIsAudio(n) { return n.toLowerCase().endsWith('.mp3'); }
-function fileIsScript(n){ return /script/i.test(n) && n.endsWith('.pdf'); }
-function fileIsPdf(n)   { return n.endsWith('.pdf'); }
+function fileIsSB(n)          { return /sb/i.test(n) && n.endsWith('.pdf'); }
+function fileIsTG(n)          { return /tg/i.test(n) && n.endsWith('.pdf'); }
+function fileIsAudio(n)       { return n.toLowerCase().endsWith('.mp3'); }
+function fileIsAudioScript(n) { return /audio.?script/i.test(n) && n.endsWith('.pdf'); }
+function fileIsPdf(n)         { return n.endsWith('.pdf'); }
 
 function buildPath(bookName, ...parts) {
   const segments = [bookName, ...parts].filter(p => p !== '').map(p => encodeURIComponent(p));
@@ -89,6 +89,14 @@ function btnSaveOffline(url, name, type) {
 function btnSaveLesson(lessonFiles) {
   const data = escAttr(JSON.stringify(lessonFiles));
   return `<button class="btn btn-save-lesson" data-files="${data}" onclick="handleSaveLesson(this)" title="Save all lesson files offline">${saveAllIcon()} Save Lesson</button>`;
+}
+
+function btnAudioScript(href, label) {
+  label = label || 'Audio Script';
+  const fname = label.replace(/\s+/g, '-') + '.pdf';
+  return `<button class="btn btn-audio-script" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}">${dlIcon()} ${escHtml(label)}</button>` +
+         `<button class="btn btn-preview btn-icon-only btn-preview-script" onclick="previewPdf(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}" title="Preview Audio Script">${previewIcon()}</button>` +
+         btnSaveOffline(href, fname.replace(/\.pdf$/i, ''), 'pdf');
 }
 
 function buildAudioRow(url, name, queue) {

@@ -57,10 +57,11 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
 // Unit Render
 function renderUnit(unit, bookName, unitIndex) {
   const children   = unit.children || [];
-  const lessons    = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
-  const unitAudios = children.filter(c => fileIsAudio(c.name));
-  const unitFiles  = children.filter(c => fileIsSB(c.name) || fileIsTG(c.name));
-  const unitScripts = children.filter(c => fileIsPdf(c.name) && !fileIsSB(c.name) && !fileIsTG(c.name));
+  const lessons     = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
+  const unitAudios  = children.filter(c => fileIsAudio(c.name));
+  const unitFiles   = children.filter(c => fileIsSB(c.name) || fileIsTG(c.name));
+  const unitScripts = children.filter(c => fileIsAudioScript(c.name));
+  const otherPdfs   = children.filter(c => fileIsPdf(c.name) && !fileIsSB(c.name) && !fileIsTG(c.name) && !fileIsAudioScript(c.name));
 
   let audioRow = '';
   if (unitAudios.length) {
@@ -89,8 +90,19 @@ function renderUnit(unit, bookName, unitIndex) {
 
   let unitScriptsRow = '';
   if (unitScripts.length) {
-    unitScriptsRow = `<div class="unit-audio-row">
+    unitScriptsRow = `<div class="unit-audio-row unit-script-row">
+      <span class="unit-audio-label">Audio Script</span>
       ${unitScripts.map(f => {
+        const path = buildPath(bookName, unit.name, f.name);
+        return btnAudioScript(path, f.name.replace(/\.pdf$/i, ''));
+      }).join('')}
+    </div>`;
+  }
+
+  let otherPdfsRow = '';
+  if (otherPdfs.length) {
+    otherPdfsRow = `<div class="unit-audio-row">
+      ${otherPdfs.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
         return `<button class="btn btn-bundle" style="font-size:0.72rem;" onclick="downloadFile(event)" data-url="${escAttr(path)}" data-filename="${escAttr(f.name)}">${dlIcon()} ${escHtml(f.name)}</button>`
              + btnSaveOffline(path, f.name, 'pdf');
@@ -114,6 +126,6 @@ function renderUnit(unit, bookName, unitIndex) {
           </svg>
         </span>
       </div>
-      <div class="unit-body">${audioRow}${unitFilesRow}${unitScriptsRow}${lessonRows}</div>
+      <div class="unit-body">${audioRow}${unitFilesRow}${unitScriptsRow}${otherPdfsRow}${lessonRows}</div>
     </div>`;
 }
