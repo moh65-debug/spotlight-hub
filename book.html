@@ -42,7 +42,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(247,244,238,0.94);backdrop
 .nav-accent-bar{height:2px;position:absolute;bottom:0;left:0;right:0;opacity:0.7}
 
 /* BOOK HEADER */
-.book-header{max-width:920px;margin:0 auto;padding:3rem 1.5rem 1.75rem}
+.book-header{max-width:920px;margin:0 auto;padding:3rem 1.5rem 1.75rem;text-align:center;display:flex;flex-direction:column;align-items:center}
 .book-header-eyebrow{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);background:rgba(200,96,58,0.08);border:1px solid rgba(200,96,58,0.15);padding:4px 10px;border-radius:99px;margin-bottom:0.75rem}
 .book-header h1{font-family:var(--serif);font-size:clamp(1.9rem,5vw,2.75rem);line-height:1.1;letter-spacing:-0.025em;margin-bottom:1rem}
 .book-header-meta{display:flex;flex-wrap:wrap;gap:0;align-items:stretch;background:var(--cream-card);border:1px solid rgba(28,31,38,0.08);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:1.75rem;width:fit-content;box-shadow:var(--shadow-card)}
@@ -52,10 +52,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(247,244,238,0.94);backdrop
 .meta-stat span{font-size:0.67rem;color:var(--slate-light);text-transform:uppercase;letter-spacing:0.07em;font-weight:500}
 
 /* BOOK DOWNLOADS */
-.book-downloads{background:var(--cream-card);border:1px solid rgba(28,31,38,0.07);border-radius:var(--radius);padding:1.25rem 1.4rem;margin-bottom:1.75rem;box-shadow:var(--shadow-card)}
-.book-downloads-title{font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--slate-light);margin-bottom:0.85rem;display:flex;align-items:center;gap:0.4rem}
+.book-downloads{background:var(--cream-card);border:1px solid rgba(28,31,38,0.07);border-radius:var(--radius);padding:1.25rem 1.4rem;margin-bottom:1.75rem;box-shadow:var(--shadow-card);text-align:center}
+.book-downloads-title{font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--slate-light);margin-bottom:0.85rem;display:flex;align-items:center;justify-content:center;gap:0.4rem}
 .book-downloads-title::before{content:'';display:block;width:16px;height:1px;background:rgba(28,31,38,0.2)}
-.download-row{display:flex;flex-wrap:wrap;gap:0.5rem}
+.download-row{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center}
 
 /* BUTTONS */
 .btn{display:inline-flex;align-items:center;gap:0.35rem;padding:7px 13px;border-radius:var(--radius-xs);font-size:0.8rem;font-weight:500;font-family:var(--sans);cursor:pointer;border:1px solid transparent;text-decoration:none;transition:all var(--transition);white-space:nowrap;background:transparent;color:inherit;line-height:1}
@@ -124,7 +124,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(247,244,238,0.94);backdrop
 .pdf-card-sb .pdf-card-label{color:var(--accent)}
 .pdf-card-tg .pdf-card-label{color:var(--accent-tg)}
 .pdf-card-actions{display:flex;align-items:center;margin-left:auto}
-.save-lesson-wrap{margin-bottom:0.6rem}
+.save-lesson-wrap{margin-bottom:0.6rem;display:flex;justify-content:center}
 .no-files-label{font-size:0.73rem;color:var(--slate-light)}
 .btn-bundle{background:rgba(28,31,38,0.05);color:var(--slate-mid);border-color:rgba(28,31,38,0.12)}
 .btn-bundle:hover{background:var(--slate);color:#fff;border-color:var(--slate)}
@@ -161,6 +161,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(247,244,238,0.94);backdrop
 .unit-block.welcome-unit.open .unit-chevron{background:var(--accent-audio);border-color:var(--accent-audio)}
 .unit-body{display:none;border-top:1px solid rgba(28,31,38,0.05)}
 .unit-block.open .unit-body{display:block}
+
+/* UNIT AUDIO SECTION (individual rows like lessons) */
+.unit-audio-section{padding:0.5rem 1.25rem 0.5rem 1.5rem;border-bottom:1px solid rgba(28,31,38,0.04);background:rgba(247,244,238,0.5)}
+.audio-list-unit{margin-top:0}
 
 /* UNIT-LEVEL ROWS */
 .unit-audio-row{padding:0.6rem 1.25rem 0.6rem 1.5rem;border-bottom:1px solid rgba(28,31,38,0.04);display:flex;align-items:center;gap:0.5rem;background:rgba(247,244,238,0.5);flex-wrap:wrap}

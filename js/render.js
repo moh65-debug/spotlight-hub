@@ -77,12 +77,10 @@ function renderUnit(unit, bookName, unitIndex) {
   let audioRow = '';
   if (unitAudios.length) {
     const queue = unitAudios.map(f => ({ url: buildPath(bookName, unit.name, f.name), name: f.name }));
-    audioRow = `<div class="unit-audio-row">
-      <span class="unit-audio-label">Unit audio (${unitAudios.length})</span>
-      <div class="btn-group btn-group-audio">
-        <button class="btn btn-audio btn-group-main btn-audio-sm"
-          onclick="playAudio(event)" data-url="${escAttr(queue[0].url)}" data-name="${escAttr(queue[0].name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play All</button>
-      </div>
+    audioRow = `<div class="unit-audio-section">
+      <div class="audio-list audio-list-unit">` +
+      unitAudios.map((f, fi) => buildAudioRow(queue[fi].url, f.name, queue)).join('') +
+      `</div>
     </div>`;
   }
 
