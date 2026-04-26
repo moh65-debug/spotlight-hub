@@ -2,8 +2,14 @@
 //  MAIN.JS - Main application logic
 // ============================================================
 
-// Boot
-initializePage();
+// Boot after load
+window.addEventListener('load', () => {
+  if (typeof SPOTLIGHT_DATA !== 'undefined') {
+    initializePage();
+  } else {
+    document.getElementById('nav-title').textContent = 'Error: Data not loaded. Please refresh.';
+  }
+});
 
 function initializePage() {
   const bookNum = parseInt(getParam('book') || '1', 10);
