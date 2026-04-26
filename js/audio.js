@@ -59,7 +59,12 @@ async function loadAudioTrack() {
       audioEl.src     = objUrl;
     } else {
       const isArchiveURL = isArchiveOrgURL(track.url);
-      audioEl.src = isArchiveURL ? `https://corsproxy.io/?${encodeURIComponent(track.url)}` : track.url;
+      if (isArchiveURL) {
+        // Use S3 endpoint for direct streaming (has CORS headers)
+        audioEl.src = toArchiveS3Url(track.url);
+      } else {
+        audioEl.src = track.url;
+      }
     }
   } catch (_) {
     audioEl.src = track.url;

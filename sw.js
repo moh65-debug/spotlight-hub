@@ -1,5 +1,5 @@
 // sw.js — Spotlight Trilogy Service Worker
-const CACHE = 'spotlight-v5';
+const CACHE = 'spotlight-v6';
 
 // Core shell — these MUST be cached for the app to open offline.
 const SHELL_REQUIRED = [

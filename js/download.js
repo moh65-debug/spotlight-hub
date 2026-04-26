@@ -11,12 +11,47 @@ function isArchiveOrgURL(url) {
   }
 }
 
+/**
+ * Convert an archive.org /download/ URL to the S3-compatible endpoint
+ * which returns proper CORS headers and doesn't need a proxy.
+ * e.g. https://archive.org/download/spotlight-trilogy/Spotlight%201/...
+ *   -> https://s3.us.archive.org/spotlight-trilogy/Spotlight%201/...
+ */
+function toArchiveS3Url(url) {
+  try {
+    const u = new URL(url);
+    if ((u.hostname === 'archive.org' || u.hostname.endsWith('.archive.org')) && u.pathname.startsWith('/download/')) {
+      const withoutDownload = u.pathname.slice('/download/'.length); // "spotlight-trilogy/..."
+      return `https://s3.us.archive.org/${withoutDownload}`;
+    }
+  } catch (_) {}
+  return url; // fallback: return original
+}
+
+async function fetchArchiveFile(url, signal) {
+  const s3Url = toArchiveS3Url(url);
+  
+  // Try S3 endpoint first (has CORS headers, no proxy needed)
+  try {
+    const resp = await fetch(s3Url, { mode: 'cors', credentials: 'omit', redirect: 'follow', signal });
+    if (resp.ok) {
+      const blob = await resp.blob();
+      if (blob.size > 1024) return blob;
+      throw new Error('Response too small');
+    }
+    throw new Error(`HTTP ${resp.status}`);
+  } catch (s3Err) {
+    console.warn('S3 fetch failed, trying proxies:', s3Err.message);
+  }
+
+  // Fallback: CORS proxies with S3 URL (faster than original URL)
+  return tryCorsProxies(s3Url, signal).catch(() => tryCorsProxies(url, signal));
+}
+
 function tryCorsProxies(url, signal) {
   const proxies = [
     { url: `https://corsproxy.io/?${encodeURIComponent(url)}`, headers: {} },
-    { url: `https://cors.lol/?url=${encodeURIComponent(url)}`, headers: {} },
     { url: `https://cors-anywhere.herokuapp.com/${url}`, headers: { 'X-Requested-With': 'XMLHttpRequest' } },
-    { url: `https://corsproxy.org/?${encodeURIComponent(url)}`, headers: {} }
   ];
 
   const errors = [];
@@ -29,25 +64,13 @@ function tryCorsProxies(url, signal) {
     const proxy = proxies[index];
     return fetch(proxy.url, { mode: 'cors', credentials: 'omit', headers: proxy.headers, signal, redirect: 'follow' })
       .then(resp => {
-        if (!resp.ok) {
-          throw new Error(`HTTP ${resp.status}`);
-        }
-        // Check content-type to ensure we got a valid response
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const ct = resp.headers.get('content-type') || '';
-        if (ct.includes('text/html') && !url.endsWith('.html')) {
-          throw new Error('Got HTML instead of file');
-        }
+        if (ct.includes('text/html') && !url.endsWith('.html')) throw new Error('Got HTML instead of file');
         return resp.blob().then(blob => {
-          if (blob.size === 0) {
-            throw new Error('Empty response');
-          }
-          // Basic validation: PDF should be > 10KB, audio > 1KB
-          if (url.endsWith('.pdf') && blob.size < 10240) {
-            throw new Error('PDF too small, likely error page');
-          }
-          if (url.endsWith('.mp3') && blob.size < 1024) {
-            throw new Error('MP3 too small, likely error page');
-          }
+          if (blob.size === 0) throw new Error('Empty response');
+          if (url.endsWith('.pdf') && blob.size < 10240) throw new Error('PDF too small');
+          if (url.endsWith('.mp3') && blob.size < 1024) throw new Error('MP3 too small');
           return blob;
         });
       })
@@ -110,10 +133,9 @@ async function downloadFile(evtOrUrl, urlOrFilename, filename) {
     
     if (isArchiveOrgURL(url)) {
       try {
-        blob = await tryCorsProxies(url, null);
-        respSourceUrl = 'archive.org (proxied)';
+        blob = await fetchArchiveFile(url, null);
       } catch (proxyErr) {
-        throw new Error(`CDN fetch failed: ${proxyErr.message}`);
+        throw new Error(`Fetch failed: ${proxyErr.message}`);
       }
     } else {
       const resp = await fetch(url, { mode: 'cors', credentials: 'omit', redirect: 'follow' });
@@ -242,9 +264,9 @@ async function saveOffline(btn, url, name, type) {
     let blob;
     if (isArchiveURL) {
       try {
-        blob = await tryCorsProxies(url, null);
+        blob = await fetchArchiveFile(url, null);
       } catch (proxyErr) {
-        throw new Error(`CDN fetch failed: ${proxyErr.message}`);
+        throw new Error(`Fetch failed: ${proxyErr.message}`);
       }
     } else {
       const resp = await fetch(url, { mode: 'cors', credentials: 'omit', redirect: 'follow' });
