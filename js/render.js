@@ -1,5 +1,5 @@
 // ============================================================
-//  RENDER.JS - DOM rendering functions
+//  RENDER.JS - DOM rendering functions (enhanced)
 // ============================================================
 
 // Lesson Render
@@ -12,7 +12,6 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
   const sbPath = sbFile ? buildPath(bookName, unitName, lesson.name, sbFile.name) : null;
   const tgPath = tgFile ? buildPath(bookName, unitName, lesson.name, tgFile.name) : null;
 
-  // Collect all lesson files for "Save Lesson" button
   const lessonFilesForSave = [];
   if (sbPath) {
     const fname = `U${unitIndex||'?'}-L${lessonIndex}-SB.pdf`;
@@ -51,7 +50,8 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
       '</div>';
   }
 
-  const saveLessonBtn = lessonFilesForSave.length > 1 ? `<div class="save-lesson-wrap">${btnSaveLesson(lessonFilesForSave)}</div>` : '';
+  const saveLessonBtn = lessonFilesForSave.length > 1
+    ? `<div class="save-lesson-wrap">${btnSaveLesson(lessonFilesForSave)}</div>` : '';
 
   return `
     <div class="lesson-row" data-lesson="${escHtml(lesson.name.toLowerCase())}">
@@ -67,7 +67,7 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
 
 // Unit Render
 function renderUnit(unit, bookName, unitIndex) {
-  const children   = unit.children || [];
+  const children    = unit.children || [];
   const lessons     = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
   const unitAudios  = children.filter(c => fileIsAudio(c.name));
   const unitFiles   = children.filter(c => fileIsSB(c.name) || fileIsTG(c.name));
@@ -97,6 +97,7 @@ function renderUnit(unit, bookName, unitIndex) {
     </div>`;
   }
 
+  // Audio Script row — NOW WITH PREVIEW BUTTON
   let unitScriptsRow = '';
   if (unitScripts.length) {
     unitScriptsRow = `<div class="unit-audio-row unit-script-row">
@@ -135,5 +136,52 @@ function renderUnit(unit, bookName, unitIndex) {
         </span>
       </div>
       <div class="unit-body">${audioRow}${unitFilesRow}${unitScriptsRow}${otherPdfsRow}${lessonRows}</div>
+    </div>`;
+}
+
+// Welcome rendered as a real Unit block
+function renderWelcomeAsUnit(wb, bookName) {
+  const children = wb.children || [];
+  const wFiles   = children.filter(c => c.type !== 'folder');
+  const wLessons = children.filter(c => c.type === 'folder');
+
+  const audioFiles = wFiles.filter(f => fileIsAudio(f.name));
+  const queue = audioFiles.map(f => ({
+    url: buildPath(bookName, wb.name, f.name), name: f.name
+  }));
+
+  let filesRow = '';
+  const pdfFiles = wFiles.filter(f => fileIsPdf(f.name));
+  if (pdfFiles.length || audioFiles.length) {
+    let pdfBtns = pdfFiles.map(f => {
+      const path = buildPath(bookName, wb.name, f.name);
+      const cls  = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
+      return btnPdfGroup(path, f.name, cls, fileIsSB(f.name) ? 'Student Book' : fileIsTG(f.name) ? 'Teacher Guide' : f.name.replace(/\.pdf$/i,''), '');
+    }).join('');
+    let audioBtns = audioFiles.length ? `<div class="btn-group btn-group-audio">
+      <button class="btn btn-audio btn-group-main btn-audio-sm"
+        onclick="playAudio(event)" data-url="${escAttr(queue[0].url)}" data-name="${escAttr(queue[0].name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play All</button>
+    </div>` : '';
+    filesRow = `<div class="unit-audio-row" style="flex-wrap:wrap;gap:0.4rem;">${pdfBtns}${audioBtns}</div>`;
+  }
+
+  const lessonRows = wLessons.map((l, li) => renderLesson(l, bookName, wb.name, li + 1, 'W')).join('');
+  const lessonCount = wLessons.length;
+
+  return `
+    <div class="unit-block welcome-unit" data-unit="${escHtml(wb.name.toLowerCase())}">
+      <div class="unit-header" onclick="toggleUnit(this)">
+        <div class="unit-header-left">
+          <span class="unit-num-badge welcome-badge">Welcome</span>
+          <span class="unit-name">${escHtml(wb.name)}</span>
+          ${lessonCount ? `<span class="unit-lesson-count">${lessonCount} lesson${lessonCount !== 1 ? 's' : ''}</span>` : ''}
+        </div>
+        <span class="unit-chevron">
+          <svg width="12" height="12" fill="none" viewBox="0 0 12 12">
+            <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </div>
+      <div class="unit-body">${filesRow}${lessonRows}</div>
     </div>`;
 }

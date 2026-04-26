@@ -1,12 +1,9 @@
 // ============================================================
-//  MAIN.JS - Main application logic
+//  MAIN.JS - Main application logic (enhanced)
 // ============================================================
 
-// Boot after load
 window.addEventListener('load', () => {
-  console.log('Window loaded, SPOTLIGHT_DATA:', typeof SPOTLIGHT_DATA);
   if (typeof SPOTLIGHT_DATA !== 'undefined') {
-    console.log('Initializing page');
     initializePage();
   } else {
     document.getElementById('nav-title').textContent = 'Error: Data not loaded. Please refresh.';
@@ -74,27 +71,9 @@ function initializePage() {
 
   const section = document.getElementById('units-section');
 
+  // ── Welcome rendered as a proper Unit block ──────────────────
   if (welcomeBlocks.length) {
-    const wb = welcomeBlocks[0];
-    const wFiles   = (wb.children || []).filter(c => c.type !== 'folder');
-    const wLessons = (wb.children || []).filter(c => c.type === 'folder');
-    let wContent = wFiles.map(f => {
-      const path = buildPath(book.name, wb.name, f.name);
-      if (fileIsAudio(f.name)) {
-        const queue = wFiles.filter(x => fileIsAudio(x.name)).map(x => ({
-          url: buildPath(book.name, wb.name, x.name), name: x.name
-        }));
-        return `<button class="btn btn-audio" onclick="playAudio(event)" data-url="${escAttr(path)}" data-name="${escAttr(f.name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} ${escHtml(f.name)}</button>`;
-      }
-      const cls  = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
-      return `<button class="btn ${cls}" onclick="downloadFile(event)" data-url="${escAttr(path)}" data-filename="${escAttr(f.name)}">${dlIcon()} ${escHtml(f.name)}</button>`
-           + btnSaveOffline(path, f.name, 'pdf');
-    }).join('');
-    if (wLessons.length) wContent += wLessons.map((l, li) => renderLesson(l, book.name, wb.name, li + 1)).join('');
-    section.innerHTML = `<div class="welcome-block">
-      <p class="welcome-title">Welcome / Introduction</p>
-      <div class="download-row">${wContent}</div>
-    </div>`;
+    section.innerHTML = renderWelcomeAsUnit(welcomeBlocks[0], book.name);
   }
 
   units.forEach((unit, i) => { section.innerHTML += renderUnit(unit, book.name, i + 1); });
@@ -180,6 +159,7 @@ function initializePage() {
     section.appendChild(wrap);
   }
 
+  // Open the first block by default
   const firstUnit = section.querySelector('.unit-block');
   if (firstUnit) firstUnit.classList.add('open');
 
@@ -191,14 +171,12 @@ function toggleUnit(header) {
   header.closest('.unit-block').classList.toggle('open');
 }
 
-// ── Filter Dropdowns ─────────────────────────────────────────────────────────
-
+// ── Filter Dropdowns ─────────────────────────────────────────
 function populateFilterDropdowns() {
   const unitSel   = document.getElementById('filter-unit');
   const lessonSel = document.getElementById('filter-lesson');
   if (!unitSel || !lessonSel) return;
 
-  // Collect units and lessons from rendered DOM
   const unitBlocks = document.querySelectorAll('.unit-block[data-unit]');
   unitSel.innerHTML = '<option value="">All Units</option>';
   lessonSel.innerHTML = '<option value="">All Lessons</option>';
@@ -214,7 +192,6 @@ function populateFilterDropdowns() {
       opt.textContent = unitName;
       unitSel.appendChild(opt);
     }
-
     block.querySelectorAll('.lesson-row[data-lesson]').forEach(row => {
       const lv = row.dataset.lesson || '';
       if (lv && !lessonSet.has(lv)) {
@@ -231,13 +208,11 @@ function populateFilterDropdowns() {
   unitSel.addEventListener('change', applyFilters);
   lessonSel.addEventListener('change', applyFilters);
 
-  // When unit changes, repopulate lesson dropdown to only show that unit's lessons
   unitSel.addEventListener('change', function() {
     const selectedUnit = this.value;
     const prevLesson   = lessonSel.value;
     lessonSel.innerHTML = '<option value="">All Lessons</option>';
     const lessonsSeen  = new Set();
-
     unitBlocks.forEach(block => {
       if (selectedUnit && block.dataset.unit !== selectedUnit) return;
       block.querySelectorAll('.lesson-row[data-lesson]').forEach(row => {
@@ -252,8 +227,6 @@ function populateFilterDropdowns() {
         }
       });
     });
-
-    // Restore lesson selection if still available
     if ([...lessonSel.options].some(o => o.value === prevLesson)) {
       lessonSel.value = prevLesson;
     }
@@ -269,17 +242,14 @@ function applyFilters() {
     const unitMatch = !unitVal || block.dataset.unit === unitVal;
     const rows      = block.querySelectorAll('.lesson-row');
     let anyLesson   = false;
-
     rows.forEach(row => {
       const lessonMatch = !lessonVal || row.dataset.lesson === lessonVal;
       const show        = unitMatch && lessonMatch;
       row.style.display = show ? '' : 'none';
       if (show) anyLesson = true;
     });
-
-    // Show block if unit matches (even if no lesson filter) or if a lesson inside matches
-    const showBlock        = unitMatch && (!lessonVal || anyLesson);
-    block.style.display    = showBlock ? '' : 'none';
+    const showBlock     = unitMatch && (!lessonVal || anyLesson);
+    block.style.display = showBlock ? '' : 'none';
     if (showBlock && (unitVal || lessonVal)) block.classList.add('open');
   });
 }
@@ -288,7 +258,6 @@ function applyFilters() {
 function showToast(message) {
   const el = document.getElementById('toast-msg');
   el.textContent = message;
-  // Float above audio player if it's active
   const player = document.getElementById('audio-player-bar');
   if (player && player.classList.contains('active')) {
     el.classList.add('above-player');
@@ -302,26 +271,20 @@ function showToast(message) {
 
 // PWA Install
 let _installPrompt = null;
-
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   _installPrompt = e;
   const btn = document.getElementById('btn-install');
   if (btn) btn.classList.add('visible');
 });
-
 window.addEventListener('appinstalled', () => {
   _installPrompt = null;
   const btn = document.getElementById('btn-install');
   if (btn) btn.classList.remove('visible');
   showToast('App installed ✓');
 });
-
 function triggerInstall() {
-  if (!_installPrompt) {
-    showToast('Open this page in your browser to install.');
-    return;
-  }
+  if (!_installPrompt) { showToast('Open this page in your browser to install.'); return; }
   _installPrompt.prompt();
   _installPrompt.userChoice.then(({ outcome }) => {
     if (outcome === 'accepted') _installPrompt = null;
@@ -338,7 +301,6 @@ window.addEventListener('online',  updateOfflineBanner);
 window.addEventListener('offline', updateOfflineBanner);
 updateOfflineBanner();
 
-// Expose to global
 window.toggleUnit = toggleUnit;
 window.showToast = showToast;
 window.triggerInstall = triggerInstall;
