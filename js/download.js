@@ -2,7 +2,22 @@
 //  DOWNLOAD.JS - Download and offline save functionality
 // ============================================================
 
+// Expose all public functions immediately (hoisting makes this safe —
+// 'function' declarations are available before this line executes).
+window.downloadFile      = downloadFile;
+window.downloadAudio     = downloadAudio;
+window.previewPdf        = previewPdf;
+window.handleSaveLesson  = handleSaveLesson;
+window.saveOffline       = saveOffline;
+window.handleSaveOffline = handleSaveOffline;
+window.refreshSavedStates = refreshSavedStates;
+window.openSavedFile     = openSavedFile;
+
 // ── Archive.org helpers ───────────────────────────────────────────────────────
+
+// Your Cloudflare Worker proxy — same domain, no CORS issues, no HTTP redirects.
+// Route: spotlight.dpdns.org/proxy/archive/* → s3.us.archive.org/*
+const ARCHIVE_PROXY = 'https://spotlight.dpdns.org/proxy/archive/';
 
 function isArchiveOrgURL(url) {
   try {
@@ -13,6 +28,26 @@ function isArchiveOrgURL(url) {
   }
 }
 
+// Convert any archive.org URL to a same-origin proxy URL.
+// https://archive.org/download/spotlight-trilogy/X/Y.pdf
+//   → https://spotlight.dpdns.org/proxy/archive/spotlight-trilogy/X/Y.pdf
+function toProxyUrl(url) {
+  try {
+    const u = new URL(url);
+    // Handle archive.org/download/... canonical form
+    if ((u.hostname === 'archive.org' || u.hostname.endsWith('.archive.org')) &&
+        u.pathname.startsWith('/download/')) {
+      return ARCHIVE_PROXY + u.pathname.slice('/download/'.length);
+    }
+    // Handle s3.us.archive.org/... form
+    if (u.hostname === 's3.us.archive.org') {
+      return ARCHIVE_PROXY + u.pathname.slice(1); // strip leading /
+    }
+  } catch (_) {}
+  return url;
+}
+
+// Keep toArchiveS3Url for audio player's direct src= fallback (streaming, not downloaded)
 function toArchiveS3Url(url) {
   try {
     const u = new URL(url);
@@ -25,45 +60,12 @@ function toArchiveS3Url(url) {
 }
 
 async function fetchArchiveFile(url, signal) {
-  const s3Url = toArchiveS3Url(url);
-  try {
-    const resp = await fetch(s3Url, { mode: 'cors', credentials: 'omit', redirect: 'follow', signal });
-    if (resp.ok) {
-      const blob = await resp.blob();
-      if (blob.size > 1024) return blob;
-      throw new Error('Response too small');
-    }
-    throw new Error('HTTP ' + resp.status);
-  } catch (s3Err) {
-    console.warn('S3 fetch failed, trying proxies:', s3Err.message);
-  }
-  return tryCorsProxies(s3Url, signal).catch(() => tryCorsProxies(url, signal));
-}
-
-function tryCorsProxies(url, signal) {
-  const proxies = [
-    { url: 'https://corsproxy.io/?' + encodeURIComponent(url), headers: {} },
-    { url: 'https://cors-anywhere.herokuapp.com/' + url, headers: { 'X-Requested-With': 'XMLHttpRequest' } },
-  ];
-  const errors = [];
-  function tryNext(i) {
-    if (i >= proxies.length) return Promise.reject(new Error('All proxies failed: ' + errors.join('; ')));
-    const p = proxies[i];
-    return fetch(p.url, { mode: 'cors', credentials: 'omit', headers: p.headers, signal, redirect: 'follow' })
-      .then(function(resp) {
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const ct = resp.headers.get('content-type') || '';
-        if (ct.includes('text/html') && !url.endsWith('.html')) throw new Error('Got HTML');
-        return resp.blob().then(function(blob) {
-          if (blob.size === 0) throw new Error('Empty');
-          if (url.endsWith('.pdf') && blob.size < 10240) throw new Error('PDF too small');
-          if (url.endsWith('.mp3') && blob.size < 1024)  throw new Error('MP3 too small');
-          return blob;
-        });
-      })
-      .catch(function(err) { errors.push('Proxy ' + i + ': ' + err.message); return tryNext(i + 1); });
-  }
-  return tryNext(0);
+  const proxyUrl = toProxyUrl(url);
+  const resp = await fetch(proxyUrl, { credentials: 'omit', signal });
+  if (!resp.ok) throw new Error('Proxy HTTP ' + resp.status);
+  const blob = await resp.blob();
+  if (blob.size < 512) throw new Error('Response too small (' + blob.size + ' bytes)');
+  return blob;
 }
 
 // ── Public functions ──────────────────────────────────────────────────────────
@@ -103,7 +105,7 @@ async function downloadFile(evtOrUrl, urlOrFilename, filename) {
     showToast('Download complete ✓');
   } catch (err) {
     console.warn('downloadFile error:', err);
-    var fallbackUrl = isArchiveOrgURL(url) ? toArchiveS3Url(url) : url;
+    var fallbackUrl = isArchiveOrgURL(url) ? toProxyUrl(url) : url;
     window.open(fallbackUrl, '_blank', 'noopener');
     showToast('Opened in new tab — tap Share > Download to save');
   } finally {
@@ -339,13 +341,3 @@ async function openSavedFile(key) {
     _savedFileObjectUrl = null;
   }
 }
-
-// ── Expose public API after all functions are defined ────────────────────────
-window.downloadFile       = downloadFile;
-window.downloadAudio      = downloadAudio;
-window.previewPdf         = previewPdf;
-window.handleSaveLesson   = handleSaveLesson;
-window.saveOffline        = saveOffline;
-window.handleSaveOffline  = handleSaveOffline;
-window.refreshSavedStates = refreshSavedStates;
-window.openSavedFile      = openSavedFile;
