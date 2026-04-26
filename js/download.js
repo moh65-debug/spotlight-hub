@@ -255,17 +255,25 @@ async function saveOffline(btn, url, name, type) {
     if (blob.size === 0) throw new Error('Empty response');
     const key    = fileKey(url);
     const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
-    await dbPut({ key, name, type, url, blob, sizeMB, savedAt: Date.now() });
+    try {
+      await dbPut({ key, name, type, url, blob, sizeMB, savedAt: Date.now() });
+    } catch (dbErr) {
+      // iOS Safari storage quota or private-browsing restriction
+      const isQuota = dbErr && (dbErr.name === 'QuotaExceededError' || dbErr.name === 'NS_ERROR_DOM_QUOTA_REACHED' || String(dbErr).includes('quota'));
+      if (isQuota) throw new Error('Storage full. Free up space on your device and try again.');
+      throw new Error('Could not save to device storage. On iOS, ensure you\'re not in Private Browsing.');
+    }
     btn.classList.remove('saving');
     btn.classList.add('saved');
     btn.innerHTML = `${saveIcon()} Saved ✓`;
     updateLibraryCount();
-    showToast(`"${name}" saved offline (${sizeMB} MB)`);
+    showToast(`"${name}" saved (${sizeMB} MB)`);
   } catch (err) {
     btn.classList.remove('saving');
     btn.disabled = false;
-    btn.innerHTML = `${saveIcon()} Save`;
-    showToast('Could not save — make sure you\'re online and try again.');
+    btn.innerHTML = `${saveIcon()} Offline`;
+    const msg = err.message || 'Could not save — check your connection and try again.';
+    showToast(msg.length > 80 ? 'Could not save. Check connection and try again.' : msg);
     console.warn('saveOffline error:', err);
   }
 }
@@ -279,6 +287,11 @@ async function refreshSavedStates() {
       btn.classList.add('saved');
       btn.innerHTML = `${saveIcon()} Saved ✓`;
       btn.disabled = true;
+    } else {
+      // Ensure label is correct if not saved
+      if (!btn.classList.contains('saving')) {
+        btn.innerHTML = `${saveIcon()} Offline`;
+      }
     }
   });
   updateLibraryCount();

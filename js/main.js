@@ -212,6 +212,13 @@ document.getElementById('search').addEventListener('input', function() {
 function showToast(message) {
   const el = document.getElementById('toast-msg');
   el.textContent = message;
+  // Float above audio player if it's active
+  const player = document.getElementById('audio-player-bar');
+  if (player && player.classList.contains('active')) {
+    el.classList.add('above-player');
+  } else {
+    el.classList.remove('above-player');
+  }
   el.classList.add('visible');
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.remove('visible'), 2400);

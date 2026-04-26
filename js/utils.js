@@ -53,17 +53,21 @@ function btnTG(href, label) {
 
 function btnSaveOffline(url, name, type) {
   return `<button class="btn btn-save btn-save-offline"
-    data-url="${escHtml(url)}" data-name="${escHtml(name)}" data-type="${escHtml(type)}"
-    onclick="handleSaveOffline(this)" title="Save for offline access">${saveIcon()} Save</button>`;
+    data-url="${escAttr(url)}" data-name="${escAttr(name)}" data-type="${escAttr(type)}"
+    onclick="handleSaveOffline(this)" title="Save for offline access">${saveIcon()} Offline</button>`;
 }
 
 function buildAudioRow(url, name, queue) {
+  // Shorten display name: strip extension and truncate
+  const displayName = name.replace(/\.mp3$/i, '');
   return `<div class="audio-row">
     <span class="audio-dot"></span>
-    <span class="audio-name" title="${escHtml(name)}">${escHtml(name)}</span>
-    <button class="btn btn-audio" style="font-size:0.7rem;padding:3px 8px;"
-      onclick="playAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play</button>
-    <a class="btn btn-save" href="${escHtml(url)}" download title="Download file" style="font-size:0.7rem;padding:3px 7px;">${dlIcon()}</a>
-    ${btnSaveOffline(url, name, 'mp3')}
+    <span class="audio-name" title="${escAttr(name)}">${escHtml(displayName)}</span>
+    <div class="audio-row-actions">
+      <button class="btn btn-audio btn-audio-sm"
+        onclick="playAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play</button>
+      <a class="btn btn-save btn-icon-only" href="${escAttr(url)}" download title="Download audio">${dlIcon()}</a>
+      ${btnSaveOffline(url, name, 'mp3')}
+    </div>
   </div>`;
 }

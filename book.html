@@ -293,22 +293,61 @@
   .book-header { animation: fadeUp 0.45s ease both; }
   .unit-block  { animation: fadeUp 0.35s ease both; }
 
+  /* ── AUDIO ROW ACTIONS ── */
+  .audio-row-actions {
+    display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0;
+  }
+  .btn-audio-sm { font-size: 0.7rem !important; padding: 5px 10px !important; min-height: unset !important; }
+  .btn-icon-only { padding: 5px 8px !important; min-height: unset !important; }
+
   @media (max-width: 600px) {
-    nav { padding: 0 1rem; }
-    .nav-title { max-width: 120px; font-size: 0.9rem; }
-    .book-header { padding: 2.5rem 1rem 1.5rem; }
-    .units-section { padding: 0 1rem 4rem; }
-    .search-bar { padding: 0 1rem; }
-    .unit-header { padding: 0.85rem 1rem; }
-    .lesson-row { flex-direction: column; gap: 0.35rem; padding: 0.75rem 1rem; }
-    .lesson-num { min-width: unset; }
-    .unit-audio-row { padding: 0.5rem 1rem; }
-    .book-downloads { padding: 1rem; }
-    /* Mobile touch targets */
-    .btn { padding: 8px 16px; min-height: 44px; }
-    .btn svg { width: 16px; height: 16px; }
-    .search-input { padding: 12px 16px 12px 44px; font-size: 1rem; }
+    nav { padding: 0 0.75rem; }
+    .nav-title { max-width: 130px; font-size: 0.88rem; }
+    .book-header { padding: 2rem 1rem 1.25rem; }
+    .units-section { padding: 0 0.75rem 5rem; }
+    .search-bar { padding: 0 0.75rem; }
+
+    /* Unit header */
+    .unit-header { padding: 0.85rem 1rem; gap: 0.6rem; }
+    .unit-name { font-size: 0.95rem; }
+    .unit-lesson-count { display: none; } /* save space */
     .unit-chevron { width: 28px; height: 28px; }
+
+    /* Lesson rows: stack vertically */
+    .lesson-row { flex-direction: column; gap: 0.3rem; padding: 0.85rem 1rem; }
+    .lesson-num { min-width: unset; font-size: 0.65rem; padding-top: 0; }
+    .lesson-name { font-size: 0.85rem; margin-bottom: 0.4rem; }
+
+    /* Buttons: proper touch targets on mobile */
+    .btn { padding: 9px 14px; min-height: 42px; font-size: 0.82rem; }
+    .btn-save { padding: 7px 10px; min-height: 36px; font-size: 0.75rem; }
+    .btn-audio-sm { padding: 7px 10px !important; min-height: 36px !important; font-size: 0.75rem !important; }
+    .btn-icon-only { padding: 7px 9px !important; min-height: 36px !important; }
+    .btn svg { width: 14px; height: 14px; }
+
+    /* Lesson actions: wrap nicely */
+    .lesson-actions { gap: 0.4rem; }
+
+    /* Audio rows on mobile */
+    .audio-list { gap: 6px; margin-top: 0.5rem; }
+    .audio-row {
+      flex-wrap: nowrap; gap: 0.4rem;
+      background: rgba(247,244,238,0.6); border-radius: 6px;
+      padding: 6px 8px;
+    }
+    .audio-name { font-size: 0.72rem; min-width: 0; }
+    .audio-row-actions { gap: 0.25rem; }
+
+    /* Unit audio row */
+    .unit-audio-row { padding: 0.6rem 1rem; gap: 0.35rem; }
+    .book-downloads { padding: 1rem; }
+    .download-row { gap: 0.4rem; }
+
+    /* Search input */
+    .search-input { padding: 11px 14px 11px 40px; font-size: 0.95rem; }
+
+    /* Toast: above audio player */
+    #toast-msg { bottom: 110px; }
   }
 
   /* ── PDF VIEWER ── */
@@ -380,10 +419,11 @@
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
     background: var(--slate); color: #fff; padding: 9px 18px;
     border-radius: 99px; font-size: 0.82rem; font-family: var(--sans);
-    z-index: 9999; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
+    z-index: 9999; pointer-events: none; transition: opacity 0.3s, transform 0.3s, bottom 0.25s;
     opacity: 0; white-space: nowrap; max-width: 90vw; text-align: center;
   }
   #toast-msg.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast-msg.above-player { bottom: 100px; }
 </style>
 </head>
 <body>

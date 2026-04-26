@@ -72,7 +72,10 @@ async function loadAudioTrack() {
     console.warn('Audio autoplay blocked:', err);
   }
   playerBar.classList.add('active');
-  document.body.style.paddingBottom = (playerBar.offsetHeight || 90) + 'px';
+  const barH = playerBar.offsetHeight || 90;
+  document.body.style.paddingBottom = barH + 'px';
+  // Update toast position
+  document.getElementById('toast-msg')?.classList.add('above-player');
 }
 
 function playAudio(url, name, queue) {
@@ -101,7 +104,9 @@ function playAudioFromBlob(objectUrl, name) {
   trackName.textContent = name;
   audioEl.play().catch(err => console.warn('playAudioFromBlob error:', err));
   playerBar.classList.add('active');
-  document.body.style.paddingBottom = (playerBar.offsetHeight || 90) + 'px';
+  const barH = playerBar.offsetHeight || 90;
+  document.body.style.paddingBottom = barH + 'px';
+  document.getElementById('toast-msg')?.classList.add('above-player');
 }
 
 function audioToggle() { audioEl.paused ? audioEl.play() : audioEl.pause(); }
@@ -120,6 +125,7 @@ function audioClose() {
   }
   playerBar.classList.remove('active');
   document.body.style.paddingBottom = '';
+  document.getElementById('toast-msg')?.classList.remove('above-player');
 }
 
 // Expose to global
