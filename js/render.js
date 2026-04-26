@@ -3,18 +3,29 @@
 // ============================================================
 
 // Lesson Render
-function renderLesson(lesson, bookName, unitName, lessonIndex) {
+function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
   const files = lesson.children || [];
-  const sbFile    = files.find(f => fileIsSB(f.name));
-  const tgFile    = files.find(f => fileIsTG(f.name));
+  const sbFile     = files.find(f => fileIsSB(f.name));
+  const tgFile     = files.find(f => fileIsTG(f.name));
   const audioFiles = files.filter(f => fileIsAudio(f.name));
 
   const sbPath = sbFile ? buildPath(bookName, unitName, lesson.name, sbFile.name) : null;
   const tgPath = tgFile ? buildPath(bookName, unitName, lesson.name, tgFile.name) : null;
 
+  // Collect all lesson files for "Save Lesson" button
+  const lessonFilesForSave = [];
+  if (sbPath) {
+    const fname = `U${unitIndex||'?'}-L${lessonIndex}-SB.pdf`;
+    lessonFilesForSave.push({ url: sbPath, name: fname, type: 'pdf' });
+  }
+  if (tgPath) {
+    const fname = `U${unitIndex||'?'}-L${lessonIndex}-TG.pdf`;
+    lessonFilesForSave.push({ url: tgPath, name: fname, type: 'pdf' });
+  }
+
   let btns = '';
-  if (sbPath) btns += btnSB(sbPath, 'SB');
-  if (tgPath) btns += btnTG(tgPath, 'TG');
+  if (sbPath) btns += btnSB(sbPath, 'SB', unitIndex, lessonIndex);
+  if (tgPath) btns += btnTG(tgPath, 'TG', unitIndex, lessonIndex);
 
   let audioList = '';
   if (audioFiles.length) {
@@ -22,17 +33,22 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
       url:  buildPath(bookName, unitName, lesson.name, f.name),
       name: f.name
     }));
-    audioList = `<div class="audio-list">` +
+    audioFiles.forEach((f, fi) => {
+      lessonFilesForSave.push({ url: queue[fi].url, name: f.name, type: 'mp3' });
+    });
+    audioList = '<div class="audio-list">' +
       audioFiles.map((f, fi) => buildAudioRow(queue[fi].url, f.name, queue)).join('') +
-    `</div>`;
+      '</div>';
   }
+
+  const saveLessonBtn = lessonFilesForSave.length > 1 ? btnSaveLesson(lessonFilesForSave) : '';
 
   return `
     <div class="lesson-row" data-lesson="${escHtml(lesson.name.toLowerCase())}">
       <div class="lesson-num">Lesson ${lessonIndex}</div>
       <div class="lesson-info">
         <div class="lesson-name">${escHtml(lesson.name)}</div>
-        <div class="lesson-actions">${btns || '<span style="font-size:0.73rem;color:var(--slate-light)">No files</span>'}</div>
+        <div class="lesson-actions">${btns || '<span style="font-size:0.73rem;color:var(--slate-light)">No files</span>'}${saveLessonBtn}</div>
         ${audioList}
       </div>
     </div>`;
@@ -40,10 +56,10 @@ function renderLesson(lesson, bookName, unitName, lessonIndex) {
 
 // Unit Render
 function renderUnit(unit, bookName, unitIndex) {
-  const children  = unit.children || [];
-  const lessons   = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
+  const children   = unit.children || [];
+  const lessons    = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
   const unitAudios = children.filter(c => fileIsAudio(c.name));
-  const unitFiles = children.filter(c => fileIsSB(c.name) || fileIsTG(c.name));
+  const unitFiles  = children.filter(c => fileIsSB(c.name) || fileIsTG(c.name));
   const unitScripts = children.filter(c => fileIsPdf(c.name) && !fileIsSB(c.name) && !fileIsTG(c.name));
 
   let audioRow = '';
@@ -76,13 +92,13 @@ function renderUnit(unit, bookName, unitIndex) {
     unitScriptsRow = `<div class="unit-audio-row">
       ${unitScripts.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
-        return `<button class="btn btn-bundle" style="font-size:0.72rem;" onclick="downloadFile(event,${JSON.stringify(path)},${JSON.stringify(f.name)})">${dlIcon()} ${escHtml(f.name)}</button>`
+        return `<button class="btn btn-bundle" style="font-size:0.72rem;" onclick="downloadFile(event)" data-url="${escAttr(path)}" data-filename="${escAttr(f.name)}">${dlIcon()} ${escHtml(f.name)}</button>`
              + btnSaveOffline(path, f.name, 'pdf');
       }).join('')}
     </div>`;
   }
 
-  const lessonRows = lessons.map((l, li) => renderLesson(l, bookName, unit.name, li + 1)).join('');
+  const lessonRows = lessons.map((l, li) => renderLesson(l, bookName, unit.name, li + 1, unitIndex)).join('');
 
   return `
     <div class="unit-block" data-unit="${escHtml(unit.name.toLowerCase())}">

@@ -34,21 +34,50 @@ function buildPath(bookName, ...parts) {
 }
 
 // SVG Icons
-function dlIcon()    { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M6 2v6M3.5 5.5 6 8l2.5-2.5M2 10h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
-function playIcon()  { return `<svg width="10" height="11" fill="currentColor" viewBox="0 0 10 11"><path d="M1.5 1.5l7 4-7 4V1.5Z"/></svg>`; }
-function saveIcon()  { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M9.5 10h-7a1 1 0 0 1-1-1V3l2-2h5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><rect x="3.5" y="6.5" width="5" height="3.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/></svg>`; }
+function dlIcon()      { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M6 2v6M3.5 5.5 6 8l2.5-2.5M2 10h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }
+function playIcon()    { return `<svg width="10" height="11" fill="currentColor" viewBox="0 0 10 11"><path d="M1.5 1.5l7 4-7 4V1.5Z"/></svg>`; }
+function saveIcon()    { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M9.5 10h-7a1 1 0 0 1-1-1V3l2-2h5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><rect x="3.5" y="6.5" width="5" height="3.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/></svg>`; }
+function saveAllIcon() { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M2 9h8M4 5l2 3 2-3M6 2v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`; }
+function previewIcon() { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><ellipse cx="6" cy="6" rx="4.5" ry="4.5" stroke="currentColor" stroke-width="1.3"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/></svg>`; }
 
-// Button Builders
-function btnSB(href, label) {
-  label = label || 'Student Book';
-  return `<button class="btn btn-sb" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(label+'.pdf')}">${dlIcon()} ${escHtml(label)}</button>`
-        + btnSaveOffline(href, label, 'pdf');
+// Build a smart filename like U3-L2-SB.pdf from context numbers
+function smartFilename(url, type) {
+  try {
+    const parts = decodeURIComponent(new URL(url).pathname).split('/');
+    let unitNum = '', lessonNum = '';
+    for (const p of parts) {
+      const um = p.match(/^Unit\s+(\d+)/i);
+      const lm = p.match(/^Lesson\s+(\d+)/i);
+      if (um) unitNum = um[1];
+      if (lm) lessonNum = lm[1];
+    }
+    const u = unitNum   ? `U${unitNum}`   : '';
+    const l = lessonNum ? `L${lessonNum}` : '';
+    const prefix = [u, l].filter(Boolean).join('-');
+    if (prefix) return `${prefix}-${type}.pdf`;
+  } catch (_) {}
+  return `${type}.pdf`;
 }
 
-function btnTG(href, label) {
+// Button Builders
+function btnSB(href, label, unitNum, lessonNum) {
+  label = label || 'Student Book';
+  const fname = (unitNum && lessonNum)
+    ? `U${unitNum}-L${lessonNum}-SB.pdf`
+    : smartFilename(href, 'SB');
+  return `<button class="btn btn-sb" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}">${dlIcon()} ${escHtml(label)}</button>` +
+         `<button class="btn btn-preview btn-icon-only" onclick="previewPdf(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}" title="Preview PDF">${previewIcon()}</button>` +
+         btnSaveOffline(href, fname.replace(/\.pdf$/i, ''), 'pdf');
+}
+
+function btnTG(href, label, unitNum, lessonNum) {
   label = label || 'Teacher Guide';
-  return `<button class="btn btn-tg" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(label+'.pdf')}">${dlIcon()} ${escHtml(label)}</button>`
-        + btnSaveOffline(href, label, 'pdf');
+  const fname = (unitNum && lessonNum)
+    ? `U${unitNum}-L${lessonNum}-TG.pdf`
+    : smartFilename(href, 'TG');
+  return `<button class="btn btn-tg" onclick="downloadFile(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}">${dlIcon()} ${escHtml(label)}</button>` +
+         `<button class="btn btn-preview btn-icon-only" onclick="previewPdf(event)" data-url="${escAttr(href)}" data-filename="${escAttr(fname)}" title="Preview PDF">${previewIcon()}</button>` +
+         btnSaveOffline(href, fname.replace(/\.pdf$/i, ''), 'pdf');
 }
 
 function btnSaveOffline(url, name, type) {
@@ -57,8 +86,12 @@ function btnSaveOffline(url, name, type) {
     onclick="handleSaveOffline(this)" title="Save for offline access">${saveIcon()} Offline</button>`;
 }
 
+function btnSaveLesson(lessonFiles) {
+  const data = escAttr(JSON.stringify(lessonFiles));
+  return `<button class="btn btn-save-lesson" data-files="${data}" onclick="handleSaveLesson(this)" title="Save all lesson files offline">${saveAllIcon()} Save Lesson</button>`;
+}
+
 function buildAudioRow(url, name, queue) {
-  // Shorten display name: strip extension and truncate
   const displayName = name.replace(/\.mp3$/i, '');
   return `<div class="audio-row">
     <span class="audio-dot"></span>
@@ -66,7 +99,7 @@ function buildAudioRow(url, name, queue) {
     <div class="audio-row-actions">
       <button class="btn btn-audio btn-audio-sm"
         onclick="playAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(name)}" data-queue='${JSON.stringify(queue)}'>${playIcon()} Play</button>
-      <a class="btn btn-save btn-icon-only" href="${escAttr(url)}" download title="Download audio">${dlIcon()}</a>
+      <button class="btn btn-save btn-icon-only" onclick="downloadAudio(event)" data-url="${escAttr(url)}" data-name="${escAttr(name)}" title="Download audio">${dlIcon()}</button>
       ${btnSaveOffline(url, name, 'mp3')}
     </div>
   </div>`;
