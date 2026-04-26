@@ -1,6 +1,6 @@
 // sw.js — Spotlight Trilogy Service Worker
 // Bump CACHE version when you deploy new files to invalidate the old cache.
-const CACHE = 'spotlight-v8';
+const CACHE = 'spotlight-v9';
 
 const SHELL_REQUIRED = [
   './index.html',
@@ -16,11 +16,10 @@ const SHELL_REQUIRED = [
 
 const SHELL_OPTIONAL = [
   'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.269/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.269/pdf.worker.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
 ];
 
-// ── Install: cache shell files ────────────────────────────────────────────────
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(async c => {
@@ -36,7 +35,6 @@ self.addEventListener('install', e => {
   );
 });
 
-// ── Activate: delete old caches, claim all open tabs immediately ──────────────
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
@@ -47,12 +45,6 @@ self.addEventListener('activate', e => {
   );
 });
 
-// ── Message: page can trigger skipWaiting programmatically ───────────────────
-self.addEventListener('message', e => {
-  if (e.data === 'SKIP_WAITING') self.skipWaiting();
-});
-
-// ── Fetch ─────────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', e => {
   const { request } = e;
   const url = new URL(request.url);
@@ -63,13 +55,13 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Google Fonts — permanent cache-first (versioned by Google)
+  // Google Fonts — permanent cache-first
   if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
     e.respondWith(cacheFirst(request));
     return;
   }
 
-  // cdnjs (pdf.js) — permanent cache-first (pinned version URL)
+  // cdnjs (pdf.js) — permanent cache-first
   if (url.hostname === 'cdnjs.cloudflare.com') {
     e.respondWith(cacheFirst(request));
     return;
@@ -80,12 +72,10 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Same-origin app shell — network-first with cache fallback.
-  // Always fetches fresh content when online; falls back to cache offline.
-  e.respondWith(networkFirstWithFallback(request));
+  // Same-origin app shell — stale-while-revalidate
+  // Serves from cache INSTANTLY (offline forever), updates in background
+  e.respondWith(staleWhileRevalidate(request));
 });
-
-// ── Strategies ────────────────────────────────────────────────────────────────
 
 function cacheFirst(request) {
   return caches.open(CACHE).then(cache =>
@@ -99,19 +89,22 @@ function cacheFirst(request) {
   );
 }
 
-function networkFirstWithFallback(request) {
+function staleWhileRevalidate(request) {
   if (request.method !== 'GET') return fetch(request);
 
   return caches.open(CACHE).then(cache =>
-    fetch(request, { credentials: 'omit' })
-      .then(resp => {
-        if (resp.ok) cache.put(request, resp.clone());
-        return resp;
-      })
-      .catch(() =>
-        cache.match(request).then(cached =>
-          cached || new Response('', { status: 503 })
-        )
-      )
+    cache.match(request).then(cached => {
+      const networkFetch = fetch(request, { credentials: 'omit' })
+        .then(resp => {
+          if (resp.ok) cache.put(request, resp.clone());
+          return resp;
+        })
+        .catch(() => null);
+
+      // Serve cache immediately; update silently in background
+      return cached || networkFetch.then(resp =>
+        resp || new Response('', { status: 503 })
+      );
+    })
   );
 }

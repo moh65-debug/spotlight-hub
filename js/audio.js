@@ -2,36 +2,13 @@
 //  AUDIO.JS - Audio player functionality
 // ============================================================
 
-// DOM refs — resolved lazily so this file is safe to load in any order
-let audioEl, playerBar, trackName, playBtn, seekEl, curEl, durEl;
-let _audioRefsInit = false;
-
-function _initAudioRefs() {
-  if (_audioRefsInit) return;
-  _audioRefsInit = true;
-  audioEl   = document.getElementById('audio-el');
-  playerBar = document.getElementById('audio-player-bar');
-  trackName = document.getElementById('audio-track-name');
-  playBtn   = document.getElementById('audio-play');
-  seekEl    = document.getElementById('audio-seek');
-  curEl     = document.getElementById('audio-cur');
-  durEl     = document.getElementById('audio-dur');
-
-  audioEl.addEventListener('timeupdate', () => {
-    curEl.textContent = fmtTime(audioEl.currentTime);
-    if (audioEl.duration) seekEl.value = (audioEl.currentTime / audioEl.duration) * 100;
-  });
-  audioEl.addEventListener('loadedmetadata', () => { durEl.textContent = fmtTime(audioEl.duration); });
-  audioEl.addEventListener('ended', () => {
-    if (audioIndex < audioQueue.length - 1) { audioIndex++; loadAudioTrack(); }
-    else { playBtn.textContent = '▶'; }
-  });
-  audioEl.addEventListener('play',  () => { playBtn.textContent = '⏸'; });
-  audioEl.addEventListener('pause', () => { playBtn.textContent = '▶'; });
-  seekEl.addEventListener('input', () => {
-    if (audioEl.duration) audioEl.currentTime = (seekEl.value / 100) * audioEl.duration;
-  });
-}
+const audioEl   = document.getElementById('audio-el');
+const playerBar = document.getElementById('audio-player-bar');
+const trackName = document.getElementById('audio-track-name');
+const playBtn   = document.getElementById('audio-play');
+const seekEl    = document.getElementById('audio-seek');
+const curEl     = document.getElementById('audio-cur');
+const durEl     = document.getElementById('audio-dur');
 
 let audioQueue = [];
 let audioIndex = 0;
@@ -41,10 +18,24 @@ function fmtTime(s) {
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 }
 
+audioEl.addEventListener('timeupdate', () => {
+  curEl.textContent = fmtTime(audioEl.currentTime);
+  if (audioEl.duration) seekEl.value = (audioEl.currentTime / audioEl.duration) * 100;
+});
+audioEl.addEventListener('loadedmetadata', () => { durEl.textContent = fmtTime(audioEl.duration); });
+audioEl.addEventListener('ended', () => {
+  if (audioIndex < audioQueue.length - 1) { audioIndex++; loadAudioTrack(); }
+  else { playBtn.textContent = '▶'; }
+});
+audioEl.addEventListener('play',  () => { playBtn.textContent = '⏸'; });
+audioEl.addEventListener('pause', () => { playBtn.textContent = '▶'; });
+seekEl.addEventListener('input', () => {
+  if (audioEl.duration) audioEl.currentTime = (seekEl.value / 100) * audioEl.duration;
+});
+
 let _audioObjectUrl = null;
 
 async function loadAudioTrack() {
-  _initAudioRefs();
   const track = audioQueue[audioIndex];
   if (!track) return;
   trackName.textContent = track.name;
@@ -67,16 +58,14 @@ async function loadAudioTrack() {
       _audioObjectUrl = objUrl;
       audioEl.src     = objUrl;
     } else {
-      const isArchiveURL = isArchiveOrgURL(track.url);
-      if (isArchiveURL) {
-        // Use S3 endpoint for direct streaming (has CORS headers)
-        audioEl.src = toArchiveS3Url(track.url);
-      } else {
-        audioEl.src = track.url;
-      }
+      // Route archive.org through our same-origin proxy to avoid
+      // mixed-content blocks (s3.us.archive.org redirects to HTTP).
+      audioEl.src = isArchiveOrgURL(track.url)
+        ? toProxyUrl(track.url)
+        : track.url;
     }
   } catch (_) {
-    audioEl.src = track.url;
+    audioEl.src = isArchiveOrgURL(track.url) ? toProxyUrl(track.url) : track.url;
   }
 
   try {
@@ -106,7 +95,6 @@ function playAudio(url, name, queue) {
 }
 
 function playAudioFromBlob(objectUrl, name) {
-  _initAudioRefs();
   if (_audioObjectUrl && _audioObjectUrl !== objectUrl) {
     const prev = _audioObjectUrl;
     setTimeout(() => URL.revokeObjectURL(prev), 3000);
@@ -124,14 +112,12 @@ function playAudioFromBlob(objectUrl, name) {
   document.getElementById('toast-msg')?.classList.add('above-player');
 }
 
-function audioToggle() { _initAudioRefs(); audioEl.paused ? audioEl.play() : audioEl.pause(); }
+function audioToggle() { audioEl.paused ? audioEl.play() : audioEl.pause(); }
 function audioSkip(dir) {
-  _initAudioRefs();
   const next = audioIndex + dir;
   if (next >= 0 && next < audioQueue.length) { audioIndex = next; loadAudioTrack(); }
 }
 function audioClose() {
-  _initAudioRefs();
   audioEl.pause();
   audioEl.removeAttribute('src');
   audioEl.load();
