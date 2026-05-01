@@ -7,6 +7,8 @@
 // ── Book structure ────────────────────────────────────────────
 const BOOK_UNITS = { '1': 6, '2': 6, '3': 5 };
 const LESSONS_PER_UNIT = 8;
+// Derived from download.js's ARCHIVE_PROXY + the archive item name from utils.js ARCHIVE_BASE.
+// Format: <proxy-base>/<archive-item>/  e.g. .../proxy/archive/spotlight-trilogy/
 const ARCHIVE_PROXY = 'https://spotlight.dpdns.org/proxy/archive/spotlight-trilogy/';
 
 // ── Cooldown (2 minutes = 120 seconds) ───────────────────────
@@ -150,6 +152,13 @@ async function fetchPdfBase64(book, unit, lesson, kind) {
   // kind: 'SB' | 'TG'
   const pathPart = `Spotlight%20${book}/Unit%20${unit}/Lesson%20${lesson}/Lesson-${lesson}-${kind}.pdf`;
   const url = ARCHIVE_PROXY + pathPart;
+
+  // Safety check: ensure the archive item name is present in the URL.
+  // If ARCHIVE_PROXY is ever misconfigured (missing spotlight-trilogy/),
+  // this gives a clear error instead of a silent wrong-path 404.
+  if (!url.includes('spotlight-trilogy')) {
+    throw new Error(`Proxy URL misconfigured — missing archive item name. Got: ${url}`);
+  }
 
   const resp = await fetch(url, { credentials: 'omit' });
   if (!resp.ok) throw new Error(`Failed to fetch ${kind} PDF (HTTP ${resp.status})`);
