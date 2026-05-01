@@ -37,6 +37,7 @@ function playIcon()    { return `<svg width="10" height="11" fill="currentColor"
 function saveIcon()    { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M9.5 10h-7a1 1 0 0 1-1-1V3l2-2h5a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><rect x="3.5" y="6.5" width="5" height="3.5" rx="0.5" stroke="currentColor" stroke-width="1.2"/></svg>`; }
 function saveAllIcon() { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M2 9h8M4 5l2 3 2-3M6 2v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`; }
 function previewIcon() { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><ellipse cx="6" cy="6" rx="4.5" ry="4.5" stroke="currentColor" stroke-width="1.3"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/></svg>`; }
+function magicIcon()   { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M6 1.6 7 4l2.4 1-2.4 1L6 8.4 5 6 2.6 5 5 4 6 1.6Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M9.5 7.5 10 8.6l1.1.5-1.1.4-.5 1.1-.4-1.1-1.1-.4 1.1-.5.4-1.1Z" fill="currentColor"/></svg>`; }
 
 function smartFilename(url, type) {
   try {
@@ -94,6 +95,12 @@ function btnSaveOffline(url, name, type) {
 function btnSaveLesson(lessonFiles) {
   const data = escAttr(JSON.stringify(lessonFiles));
   return `<button class="btn btn-save-lesson" data-files="${data}" onclick="handleSaveLesson(this)" title="Save all lesson files offline">${saveAllIcon()} Save Lesson</button>`;
+}
+
+function btnLessonPlanGenerator(book, unit, lesson) {
+  return `<button class="btn btn-bundle" onclick="generateLessonPlan(event)"
+    data-book="${escAttr(book)}" data-unit="${escAttr(unit)}" data-lesson="${escAttr(lesson)}"
+    title="Generate DOCX lesson plan">${magicIcon()} Generate Plan</button>`;
 }
 
 function buildAudioRow(url, name, queue) {
