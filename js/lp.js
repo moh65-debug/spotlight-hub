@@ -1,7 +1,5 @@
 // ============================================================
-//  LP.JS  — Lesson Plan Generator
-//  Calls the Groq API (openai/gpt-oss-120b) to produce
-//  a structured lesson plan JSON, then builds and downloads a DOCX.
+//  LP.JS  — Lesson Plan Generator (fixed: extracts PDF text)
 // ============================================================
 
 // ── Book structure ────────────────────────────────────────────
@@ -110,7 +108,7 @@ function startCooldown() {
 }
 
 // ── Step helpers ──────────────────────────────────────────────
-const STEPS = ['dl','ocr-tg','ocr-sb','ai','docx'];
+const STEPS = ['dl','extract-tg','extract-sb','ai','docx'];
 
 function resetSteps() {
   STEPS.forEach(id => {
@@ -145,34 +143,39 @@ function spFilename(book, unit, lesson, type) {
   return `SP${book}-U${unit}-L${lesson}-${type}`;
 }
 
-// ── PDF fetch via proxy ───────────────────────────────────────
-async function fetchPdfBase64(book, unit, lesson, kind) {
-  // kind: 'SB' | 'TG'
+// ── PDF text extraction using pdf.js ──────────────────────────
+async function fetchPdfText(book, unit, lesson, kind) {
   const pathPart = `Spotlight%20${book}/Unit%20${unit}/Lesson%20${lesson}/Lesson-${lesson}-${kind}.pdf`;
   const url = ARCHIVE_PROXY + pathPart;
 
   const resp = await fetch(url, { credentials: 'omit' });
   if (!resp.ok) throw new Error(`Failed to fetch ${kind} PDF (HTTP ${resp.status})`);
 
-  const blob  = await resp.blob();
+  const blob = await resp.blob();
   if (blob.size < 512) throw new Error(`${kind} PDF seems empty (${blob.size} bytes)`);
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload  = () => resolve(reader.result.split(',')[1]); // base64 only
-    reader.onerror = () => reject(new Error('FileReader failed'));
-    reader.readAsDataURL(blob);
-  });
+  // Use pdf.js (already guaranteed to be loaded via ensurePdfJs)
+  await ensurePdfJs();
+
+  const arrayBuffer = await blob.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = '';
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    fullText += pageText + '\n';
+  }
+  return fullText.trim();
 }
 
-// ── Groq API call (openai/gpt-oss-120b via OpenAI-compatible endpoint) ────────
-// API key lives in the Cloudflare Worker — never exposed in client JS.
+// ── Groq API call (openai/gpt-oss-120b via proxy) ─────────────
 const GROQ_API_URL = 'https://spotlight.dpdns.org/proxy/groq';
 const GROQ_MODEL   = 'openai/gpt-oss-120b';
 
 const SYSTEM_PROMPT = `You are an expert EFL/ESL curriculum designer specializing in Moroccan middle-school English.
 
-Given OCR text from a Teacher Guide (TG) and a Student Book (SB), produce a complete, classroom-ready lesson plan as a single valid JSON object.
+Given the text content from a Teacher Guide (TG) and a Student Book (SB), produce a complete, classroom-ready lesson plan as a single valid JSON object.
 Do NOT output anything outside the JSON — no preamble, no markdown fences.
 
 Fixed values you MUST use exactly:
@@ -213,22 +216,16 @@ Rules:
 - Stage times must add up to exactly 55 minutes.
 - If teacher name or grade are missing from the PDFs, use the values provided by the user.`;
 
-async function callGroqApi(sbBase64, tgBase64, book, unit, lesson, teacher, grade) {
+async function callGroqApi(sbText, tgText, book, unit, lesson, teacher, grade) {
   const lessonCode = `SP${book}-U${unit}-L${lesson}`;
 
-  // Convert base64 PDFs to text via the FileReader API so Groq can read them.
-  // Groq's OpenAI-compatible endpoint does not support raw PDF documents,
-  // so we extract the base64 data URIs and pass them as image content blocks
-  // using the vision-capable model, or send as structured text description.
-  // Since gpt-oss-120b accepts text only, we pass a concise text description
-  // and let the model work from the encoded content embedded in the message.
   const userMessage =
     `Lesson code: ${lessonCode} (Spotlight ${book}, Unit ${unit}, Lesson ${lesson})\n` +
     `Teacher: ${teacher || 'Teacher'}\n` +
     `Grade / Level: ${grade || '7th Grade'}\n` +
     `Total time: 55 min\n\n` +
-    `=== TEACHER GUIDE (TG) — base64 PDF ===\n${tgBase64.slice(0, 7000)}\n\n` +
-    `=== STUDENT BOOK (SB) — base64 PDF ===\n${sbBase64.slice(0, 5000)}\n\n` +
+    `=== TEACHER GUIDE (TG) TEXT ===\n${tgText.slice(0, 15000)}\n\n` +
+    `=== STUDENT BOOK (SB) TEXT ===\n${sbText.slice(0, 15000)}\n\n` +
     `Generate the lesson plan JSON. No page numbers. ` +
     `Use teacher name "${teacher || 'Teacher'}" and level "${grade || '7th Grade'}". ` +
     `Return ONLY the JSON object.`;
@@ -237,7 +234,6 @@ async function callGroqApi(sbBase64, tgBase64, book, unit, lesson, teacher, grad
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // No Authorization header — the Cloudflare Worker injects the Groq API key
     },
     body: JSON.stringify({
       model: GROQ_MODEL,
@@ -251,7 +247,6 @@ async function callGroqApi(sbBase64, tgBase64, book, unit, lesson, teacher, grad
       reasoning_effort: 'medium',
       stream: false,
       stop: null,
-      tools: [{ type: 'browser_search' }],
     }),
   });
 
@@ -389,7 +384,7 @@ async function buildDocx(plan, filename) {
       })
     ]}),
 
-    // Info row 1: Teacher / Level / Textbook / Time
+    // Info row 1
     new TableRow({ children: [
       hCell('Teacher:',  R1[0]), dCell(plan.teacher,  R1[1]),
       hCell('Level:',    R1[2]), dCell(plan.level,    R1[3]),
@@ -397,7 +392,7 @@ async function buildDocx(plan, filename) {
       hCell('Time:',     R1[6]), dCell(plan.time,     R1[7]),
     ]}),
 
-    // Info row 2: Unit / Lesson / Materials / Skills
+    // Info row 2
     new TableRow({ children: [
       hCell('Unit:',              R2[0]), dCell(plan.unit,                R2[1]),
       hCell('Lesson:',            R2[2]), dCell(plan.lesson_title,        R2[3]),
@@ -494,32 +489,47 @@ async function handleGenerate() {
   document.getElementById('result-pill').textContent = filename;
 
   try {
-    // Step 1 — Download PDFs
+    // Step 1 — Download PDFs (unchanged, but we'll reuse for text extraction)
     setStep('dl', 'running');
-    let sbBase64, tgBase64;
+    let sbBlob, tgBlob;
     try {
-      [sbBase64, tgBase64] = await Promise.all([
-        fetchPdfBase64(book, unit, lesson, 'SB'),
-        fetchPdfBase64(book, unit, lesson, 'TG'),
+      // Fetch blobs first (we'll extract text later)
+      const [sbResp, tgResp] = await Promise.all([
+        fetch(ARCHIVE_PROXY + `Spotlight%20${book}/Unit%20${unit}/Lesson%20${lesson}/Lesson-${lesson}-SB.pdf`),
+        fetch(ARCHIVE_PROXY + `Spotlight%20${book}/Unit%20${unit}/Lesson%20${lesson}/Lesson-${lesson}-TG.pdf`)
       ]);
+      if (!sbResp.ok || !tgResp.ok) throw new Error('Failed to download PDFs');
+      [sbBlob, tgBlob] = await Promise.all([sbResp.blob(), tgResp.blob()]);
     } catch (e) {
       throw new Error(`Could not download PDFs: ${e.message}`);
     }
     setStep('dl', 'done');
 
-    // Steps 2 & 3 — mark OCR steps (done inline since API does it)
-    setStep('ocr-tg', 'running');
-    await delay(300);
-    setStep('ocr-tg', 'done');
-    setStep('ocr-sb', 'running');
-    await delay(200);
-    setStep('ocr-sb', 'done');
+    // Step 2 & 3 — Extract text from PDFs
+    setStep('extract-tg', 'running');
+    let tgText;
+    try {
+      await ensurePdfJs();
+      tgText = await extractTextFromBlob(tgBlob);
+    } catch (e) {
+      throw new Error(`TG text extraction failed: ${e.message}`);
+    }
+    setStep('extract-tg', 'done');
+
+    setStep('extract-sb', 'running');
+    let sbText;
+    try {
+      sbText = await extractTextFromBlob(sbBlob);
+    } catch (e) {
+      throw new Error(`SB text extraction failed: ${e.message}`);
+    }
+    setStep('extract-sb', 'done');
 
     // Step 4 — AI generation
     setStep('ai', 'running');
     let plan;
     try {
-      plan = await callGroqApi(sbBase64, tgBase64, book, unit, lesson, teacher, grade);
+      plan = await callGroqApi(sbText, tgText, book, unit, lesson, teacher, grade);
     } catch (e) {
       throw new Error(`AI generation failed: ${e.message}`);
     }
@@ -538,17 +548,14 @@ async function handleGenerate() {
     _generatedPlan = plan;
     _generatedDocxBlob = docxBlob;
 
-    // Show result
     document.getElementById('result-title').textContent = plan.lesson_title || `Lesson ${lesson}`;
     document.getElementById('result-sub').textContent = `Spotlight ${book} — Unit ${unit}, Lesson ${lesson} — ${teacher}`;
     resultBox().classList.add('visible');
 
-    // Start cooldown
     startCooldown();
 
   } catch (err) {
     console.error('Lesson plan generation error:', err);
-    // Mark last running step as error
     STEPS.forEach(id => {
       const icon = document.getElementById(`step-${id}-icon`);
       if (icon && icon.classList.contains('running')) setStep(id, 'error');
@@ -626,7 +633,7 @@ function renderPlanPreview(plan) {
         <td style="width:18%">Techniques</td>
         <td style="width:10%">Time</td>
       </tr>
-      ${stages.map((s, i) => `
+      ${stages.map((s) => `
         <tr>
           <td class="stage-name">${esc(s.stage)}</td>
           <td>${esc(s.procedures)}</td>
@@ -640,6 +647,37 @@ function renderPlanPreview(plan) {
     </table>`;
 
   content.innerHTML = infoRows + stagesHtml;
+}
+
+// ── PDF text extraction helper (uses already loaded pdf.js) ──
+async function extractTextFromBlob(blob) {
+  const arrayBuffer = await blob.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = '';
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    fullText += pageText + '\n';
+  }
+  return fullText.trim();
+}
+
+// ── Ensure pdf.js is loaded (shared with main app) ─────────────
+function ensurePdfJs() {
+  return new Promise((resolve, reject) => {
+    if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) return resolve();
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    script.onload = () => {
+      const workerCode = `importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js');`;
+      const blob       = new Blob([workerCode], { type: 'application/javascript' });
+      pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+      resolve();
+    };
+    script.onerror = () => reject(new Error('Failed to load pdf.js'));
+    document.head.appendChild(script);
+  });
 }
 
 // ── Utilities ─────────────────────────────────────────────────
