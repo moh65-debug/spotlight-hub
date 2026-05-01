@@ -12,16 +12,12 @@ window.saveOffline       = saveOffline;
 window.handleSaveOffline = handleSaveOffline;
 window.refreshSavedStates = refreshSavedStates;
 window.openSavedFile     = openSavedFile;
-window.generateLessonPlan = generateLessonPlan;
 
 // ── Archive.org helpers ───────────────────────────────────────────────────────
 
 // Your Cloudflare Worker proxy — same domain, no CORS issues, no HTTP redirects.
 // Route: spotlight.dpdns.org/proxy/archive/* → s3.us.archive.org/*
 const ARCHIVE_PROXY = 'https://spotlight.dpdns.org/proxy/archive/';
-// Use a path already covered by the existing Cloudflare Worker route
-// spotlight.dpdns.org/proxy/archive/* to avoid 405s from origin.
-const LESSON_PLAN_API = '/proxy/archive/lesson-plan';
 
 function isArchiveOrgURL(url) {
   try {
@@ -162,51 +158,6 @@ async function previewPdf(evtOrBtn) {
     console.warn('previewPdf error:', err);
   } finally {
     btn.disabled = false;
-  }
-}
-
-async function generateLessonPlan(evtOrBtn) {
-  var btn = (evtOrBtn && evtOrBtn.currentTarget) ? evtOrBtn.currentTarget : evtOrBtn;
-  var book = Number.parseInt(btn.dataset.book, 10);
-  var unit = Number.parseInt(btn.dataset.unit, 10);
-  var lesson = Number.parseInt(btn.dataset.lesson, 10);
-  if (!Number.isFinite(book) || !Number.isFinite(unit) || !Number.isFinite(lesson)) {
-    showToast('Lesson plan is only available for numbered unit lessons.');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.style.opacity = '0.55';
-  var oldHtml = btn.innerHTML;
-  btn.innerHTML = 'Generating...';
-  showToast('Generating lesson plan DOCX…');
-
-  try {
-    var resp = await fetch(LESSON_PLAN_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ book: book, unit: unit, lesson: lesson }),
-    });
-
-    if (!resp.ok) {
-      var message = 'Lesson plan generation failed.';
-      try {
-        var data = await resp.json();
-        if (data && data.error) message = data.error;
-      } catch (_) {}
-      throw new Error(message);
-    }
-
-    var blob = await resp.blob();
-    triggerBlobDownload(blob, `U${unit}-L${lesson}-LP.docx`);
-    showToast('Lesson plan downloaded ✓');
-  } catch (err) {
-    console.warn('generateLessonPlan error:', err);
-    showToast(err.message || 'Could not generate lesson plan right now.');
-  } finally {
-    btn.disabled = false;
-    btn.style.opacity = '';
-    btn.innerHTML = oldHtml;
   }
 }
 

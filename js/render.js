@@ -3,7 +3,7 @@
 // ============================================================
 
 // Lesson Render
-function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex, bookNumber) {
+function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
   const files = lesson.children || [];
   const sbFile     = files.find(f => fileIsSB(f.name));
   const tgFile     = files.find(f => fileIsTG(f.name));
@@ -52,10 +52,6 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex, bookNu
 
   const saveLessonBtn = lessonFilesForSave.length > 1
     ? `<div class="save-lesson-wrap">${btnSaveLesson(lessonFilesForSave)}</div>` : '';
-  const hasGeneratorInputs = !!(sbPath && tgPath && Number.isFinite(Number(bookNumber)) && Number.isFinite(Number(unitIndex)));
-  const lessonPlanBtn = hasGeneratorInputs
-    ? `<div class="save-lesson-wrap">${btnLessonPlanGenerator(bookNumber, unitIndex, lessonIndex)}</div>`
-    : "";
 
   return `
     <div class="lesson-row" data-lesson="${escHtml(lesson.name.toLowerCase())}">
@@ -63,7 +59,6 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex, bookNu
       <div class="lesson-info">
         <div class="lesson-name">${escHtml(lesson.name)}</div>
         ${btns ? btns : '<span class="no-files-label">No files</span>'}
-        ${lessonPlanBtn}
         ${saveLessonBtn}
         ${audioList}
       </div>
@@ -71,7 +66,7 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex, bookNu
 }
 
 // Unit Render
-function renderUnit(unit, bookName, unitIndex, bookNumber) {
+function renderUnit(unit, bookName, unitIndex) {
   const children    = unit.children || [];
   const lessons     = children.filter(c => c.type === 'folder' && /lesson/i.test(c.name));
   const unitAudios  = children.filter(c => fileIsAudio(c.name));
@@ -122,7 +117,7 @@ function renderUnit(unit, bookName, unitIndex, bookNumber) {
     </div>`;
   }
 
-  const lessonRows = lessons.map((l, li) => renderLesson(l, bookName, unit.name, li + 1, unitIndex, bookNumber)).join('');
+  const lessonRows = lessons.map((l, li) => renderLesson(l, bookName, unit.name, li + 1, unitIndex)).join('');
 
   return `
     <div class="unit-block" data-unit="${escHtml(unit.name.toLowerCase())}">
@@ -143,7 +138,7 @@ function renderUnit(unit, bookName, unitIndex, bookNumber) {
 }
 
 // Welcome rendered as a real Unit block
-function renderWelcomeAsUnit(wb, bookName, bookNumber) {
+function renderWelcomeAsUnit(wb, bookName) {
   const children = wb.children || [];
   const wFiles   = children.filter(c => c.type !== 'folder');
   const wLessons = children.filter(c => c.type === 'folder');
@@ -168,7 +163,7 @@ function renderWelcomeAsUnit(wb, bookName, bookNumber) {
     filesRow = `<div class="unit-audio-row" style="flex-wrap:wrap;gap:0.4rem;">${pdfBtns}${audioBtns}</div>`;
   }
 
-  const lessonRows = wLessons.map((l, li) => renderLesson(l, bookName, wb.name, li + 1, 'W', bookNumber)).join('');
+  const lessonRows = wLessons.map((l, li) => renderLesson(l, bookName, wb.name, li + 1, 'W')).join('');
   const lessonCount = wLessons.length;
 
   return `

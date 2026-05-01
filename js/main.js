@@ -73,10 +73,10 @@ function initializePage() {
 
   // ── Welcome rendered as a proper Unit block ──────────────────
   if (welcomeBlocks.length) {
-    section.innerHTML = renderWelcomeAsUnit(welcomeBlocks[0], book.name, bookNum);
+    section.innerHTML = renderWelcomeAsUnit(welcomeBlocks[0], book.name);
   }
 
-  units.forEach((unit, i) => { section.innerHTML += renderUnit(unit, book.name, i + 1, bookNum); });
+  units.forEach((unit, i) => { section.innerHTML += renderUnit(unit, book.name, i + 1); });
 
   if (orphanLessons.length) {
     const wrap = document.createElement('div');
@@ -96,7 +96,7 @@ function initializePage() {
         </span>
       </div>
       <div class="unit-body">
-        ${orphanLessons.map((l, li) => renderLesson(l, book.name, '', li + 1, NaN, bookNum)).join('')}
+        ${orphanLessons.map((l, li) => renderLesson(l, book.name, '', li + 1)).join('')}
       </div>`;
     section.appendChild(wrap);
   }
@@ -116,7 +116,7 @@ function initializePage() {
       return `<button class="btn ${cls}" onclick="downloadFile(event)" data-url="${escAttr(path)}" data-filename="${escAttr(f.name)}">${dlIcon()} ${escHtml(f.name)}</button>`
            + btnSaveOffline(path, f.name, 'pdf');
     }).join('');
-    const lessonHtml = fLessons.map((l, li) => renderLesson(l, book.name, folder.name, li + 1, NaN, bookNum)).join('');
+    const lessonHtml = fLessons.map((l, li) => renderLesson(l, book.name, folder.name, li + 1)).join('');
     const wrap = document.createElement('div');
     wrap.className = 'unit-block';
     wrap.style.marginTop = '0.5rem';
