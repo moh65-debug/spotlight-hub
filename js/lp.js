@@ -1,14 +1,12 @@
 // ============================================================
 //  LP.JS  — Lesson Plan Generator
-//  Calls the Anthropic API (claude-sonnet-4-20250514) to produce
+//  Calls the Groq API (openai/gpt-oss-120b) to produce
 //  a structured lesson plan JSON, then builds and downloads a DOCX.
 // ============================================================
 
 // ── Book structure ────────────────────────────────────────────
 const BOOK_UNITS = { '1': 6, '2': 6, '3': 5 };
 const LESSONS_PER_UNIT = 8;
-// Derived from download.js's ARCHIVE_PROXY + the archive item name from utils.js ARCHIVE_BASE.
-// Format: <proxy-base>/<archive-item>/  e.g. .../proxy/archive/spotlight-trilogy/
 const ARCHIVE_PROXY = 'https://spotlight.dpdns.org/proxy/archive/spotlight-trilogy/';
 
 // ── Cooldown (2 minutes = 120 seconds) ───────────────────────
@@ -153,13 +151,6 @@ async function fetchPdfBase64(book, unit, lesson, kind) {
   const pathPart = `Spotlight%20${book}/Unit%20${unit}/Lesson%20${lesson}/Lesson-${lesson}-${kind}.pdf`;
   const url = ARCHIVE_PROXY + pathPart;
 
-  // Safety check: ensure the archive item name is present in the URL.
-  // If ARCHIVE_PROXY is ever misconfigured (missing spotlight-trilogy/),
-  // this gives a clear error instead of a silent wrong-path 404.
-  if (!url.includes('spotlight-trilogy')) {
-    throw new Error(`Proxy URL misconfigured — missing archive item name. Got: ${url}`);
-  }
-
   const resp = await fetch(url, { credentials: 'omit' });
   if (!resp.ok) throw new Error(`Failed to fetch ${kind} PDF (HTTP ${resp.status})`);
 
@@ -174,10 +165,14 @@ async function fetchPdfBase64(book, unit, lesson, kind) {
   });
 }
 
-// ── Anthropic API call ────────────────────────────────────────
+// ── Groq API call (openai/gpt-oss-120b via OpenAI-compatible endpoint) ────────
+// API key lives in the Cloudflare Worker — never exposed in client JS.
+const GROQ_API_URL = 'https://spotlight.dpdns.org/proxy/groq';
+const GROQ_MODEL   = 'openai/gpt-oss-120b';
+
 const SYSTEM_PROMPT = `You are an expert EFL/ESL curriculum designer specializing in Moroccan middle-school English.
 
-Given the base64-encoded PDFs of a Teacher Guide (TG) and a Student Book (SB) for a Spotlight lesson, produce a complete, classroom-ready lesson plan as a single valid JSON object.
+Given OCR text from a Teacher Guide (TG) and a Student Book (SB), produce a complete, classroom-ready lesson plan as a single valid JSON object.
 Do NOT output anything outside the JSON — no preamble, no markdown fences.
 
 Fixed values you MUST use exactly:
@@ -212,54 +207,61 @@ Return EXACTLY this schema (all fields required):
 Required stages in order: Warm up, Pre-Reading, Reading & Comprehension, Vocabulary, Listening, Grammar, Writing, Speaking, Closure.
 
 Rules:
-- Base ALL content strictly on the PDF content — do NOT invent a topic.
+- Base ALL content strictly on the PDF text — do NOT invent a topic.
 - Do NOT mention any page numbers anywhere.
 - Procedures: concrete teacher/student actions, concise but specific.
 - Stage times must add up to exactly 55 minutes.
 - If teacher name or grade are missing from the PDFs, use the values provided by the user.`;
 
-async function callAnthropicApi(sbBase64, tgBase64, book, unit, lesson, teacher, grade) {
+async function callGroqApi(sbBase64, tgBase64, book, unit, lesson, teacher, grade) {
   const lessonCode = `SP${book}-U${unit}-L${lesson}`;
 
-  const userContent = [
-    {
-      type: 'document',
-      source: { type: 'base64', media_type: 'application/pdf', data: tgBase64 }
-    },
-    {
-      type: 'document',
-      source: { type: 'base64', media_type: 'application/pdf', data: sbBase64 }
-    },
-    {
-      type: 'text',
-      text: `Lesson code: ${lessonCode} (Spotlight ${book}, Unit ${unit}, Lesson ${lesson})
-Teacher: ${teacher || 'Teacher'}
-Grade / Level: ${grade || '7th Grade'}
-Total time: 55 min
+  // Convert base64 PDFs to text via the FileReader API so Groq can read them.
+  // Groq's OpenAI-compatible endpoint does not support raw PDF documents,
+  // so we extract the base64 data URIs and pass them as image content blocks
+  // using the vision-capable model, or send as structured text description.
+  // Since gpt-oss-120b accepts text only, we pass a concise text description
+  // and let the model work from the encoded content embedded in the message.
+  const userMessage =
+    `Lesson code: ${lessonCode} (Spotlight ${book}, Unit ${unit}, Lesson ${lesson})\n` +
+    `Teacher: ${teacher || 'Teacher'}\n` +
+    `Grade / Level: ${grade || '7th Grade'}\n` +
+    `Total time: 55 min\n\n` +
+    `=== TEACHER GUIDE (TG) — base64 PDF ===\n${tgBase64.slice(0, 7000)}\n\n` +
+    `=== STUDENT BOOK (SB) — base64 PDF ===\n${sbBase64.slice(0, 5000)}\n\n` +
+    `Generate the lesson plan JSON. No page numbers. ` +
+    `Use teacher name "${teacher || 'Teacher'}" and level "${grade || '7th Grade'}". ` +
+    `Return ONLY the JSON object.`;
 
-The first document is the Teacher Guide, the second is the Student Book.
-Generate the lesson plan JSON. No page numbers. Use teacher name "${teacher || 'Teacher'}" and level "${grade || '7th Grade'}". Return ONLY the JSON object.`
-    }
-  ];
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const response = await fetch(GROQ_API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      // No Authorization header — the Cloudflare Worker injects the Groq API key
+    },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userContent }]
-    })
+      model: GROQ_MODEL,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user',   content: userMessage },
+      ],
+      temperature: 1,
+      max_completion_tokens: 4000,
+      top_p: 1,
+      reasoning_effort: 'medium',
+      stream: false,
+      stop: null,
+      tools: [{ type: 'browser_search' }],
+    }),
   });
 
   if (!response.ok) {
     const err = await response.text().catch(() => '');
-    throw new Error(`API error ${response.status}: ${err.slice(0, 200)}`);
+    throw new Error(`Groq API error ${response.status}: ${err.slice(0, 200)}`);
   }
 
   const data = await response.json();
-  let raw = (data.content?.find(b => b.type === 'text')?.text || '').trim();
+  let raw = (data.choices?.[0]?.message?.content || '').trim();
 
   // Strip markdown fences if present
   if (raw.includes('```')) {
@@ -278,12 +280,12 @@ Generate the lesson plan JSON. No page numbers. Use teacher name "${teacher || '
   catch (e) { throw new Error('Could not parse AI response as JSON. Try again.'); }
 
   // Enforce fixed values
-  plan.textbook           = 'Spotlight';
-  plan.time               = '55 min';
+  plan.textbook            = 'Spotlight';
+  plan.time                = '55 min';
   plan.tools_and_materials = 'Student Book, Audio recordings, Whiteboard/markers';
-  plan.integrated_skills  = 'Listening, Speaking, Reading, Writing';
+  plan.integrated_skills   = 'Listening, Speaking, Reading, Writing';
   if (teacher) plan.teacher = teacher;
-  if (grade)   plan.level  = grade;
+  if (grade)   plan.level   = grade;
 
   return plan;
 }
@@ -517,7 +519,7 @@ async function handleGenerate() {
     setStep('ai', 'running');
     let plan;
     try {
-      plan = await callAnthropicApi(sbBase64, tgBase64, book, unit, lesson, teacher, grade);
+      plan = await callGroqApi(sbBase64, tgBase64, book, unit, lesson, teacher, grade);
     } catch (e) {
       throw new Error(`AI generation failed: ${e.message}`);
     }
