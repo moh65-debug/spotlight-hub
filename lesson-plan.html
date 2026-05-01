@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson Plan Generator — Spotlight Trilogy</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1C1F26">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spotlight">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F7F4EE;--cream-dark:#EDE8DD;--cream-card:#FDFCF9;
+  --slate:#1C1F26;--slate-mid:#3D4351;--slate-light:#6B7280;
+  --accent:#C8603A;--accent-tg:#3A6B8A;--accent-audio:#4A7C59;
+  --accent-lp:#6B3FA0;
+  --serif:'DM Serif Display',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;
+  --radius:16px;--radius-sm:10px;--radius-xs:7px;
+  --transition:0.22s cubic-bezier(0.4,0,0.2,1);
+  --shadow-card:0 1px 3px rgba(28,31,38,0.06),0 4px 12px rgba(28,31,38,0.04);
+  --shadow-hover:0 8px 28px rgba(28,31,38,0.10),0 2px 6px rgba(28,31,38,0.06);
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--slate);font-family:var(--sans);font-size:16px;line-height:1.6;min-height:100vh}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(247,244,238,0.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(28,31,38,0.07);padding:0 1.5rem;display:flex;align-items:center;gap:0.75rem;height:58px;position:relative}
+.nav-back{display:flex;align-items:center;gap:0.35rem;font-size:0.82rem;color:var(--slate-light);text-decoration:none;transition:color var(--transition);flex-shrink:0;font-weight:400}
+.nav-back:hover{color:var(--slate)}
+.nav-divider{width:1px;height:16px;background:rgba(28,31,38,0.12);flex-shrink:0}
+.nav-title{font-family:var(--serif);font-size:1rem;color:var(--slate);letter-spacing:-0.01em}
+.nav-accent-bar{height:2px;position:absolute;bottom:0;left:0;right:0;background:var(--accent-lp);opacity:0.7}
+
+/* PAGE WRAP */
+.page-wrap{max-width:720px;margin:0 auto;padding:3rem 1.5rem 6rem}
+
+/* HERO */
+.lp-hero{text-align:center;margin-bottom:2.5rem}
+.lp-eyebrow{display:inline-flex;align-items:center;gap:0.4rem;font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent-lp);background:rgba(107,63,160,0.07);border:1px solid rgba(107,63,160,0.15);padding:4px 12px;border-radius:99px;margin-bottom:0.85rem}
+.lp-hero h1{font-family:var(--serif);font-size:clamp(2rem,5vw,2.8rem);line-height:1.1;letter-spacing:-0.025em;margin-bottom:0.75rem}
+.lp-hero h1 em{font-style:italic;color:var(--accent-lp)}
+.lp-hero p{font-size:0.95rem;color:var(--slate-mid);font-weight:300;line-height:1.8;max-width:480px;margin:0 auto}
+
+/* FORM CARD */
+.lp-card{background:var(--cream-card);border:1px solid rgba(28,31,38,0.08);border-radius:var(--radius);padding:2rem;box-shadow:var(--shadow-card);margin-bottom:1.5rem}
+.lp-card-title{font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent-lp);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem}
+.lp-card-title::after{content:'';flex:1;height:1px;background:rgba(107,63,160,0.12)}
+
+/* FORM GRID */
+.lp-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.lp-field{display:flex;flex-direction:column;gap:0.4rem}
+.lp-field.full{grid-column:1/-1}
+.lp-label{font-size:0.72rem;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--slate-light)}
+.lp-input,.lp-select{width:100%;padding:10px 14px;border-radius:var(--radius-sm);border:1px solid rgba(28,31,38,0.12);background:#fff;font-family:var(--sans);font-size:0.9rem;color:var(--slate);outline:none;transition:border-color var(--transition),box-shadow var(--transition);box-shadow:var(--shadow-card)}
+.lp-input:focus,.lp-select:focus{border-color:var(--accent-lp);box-shadow:0 0 0 3px rgba(107,63,160,0.1)}
+.lp-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' stroke='%236B7280' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:calc(100% - 12px) center;padding-right:36px;cursor:pointer}
+.lp-input::placeholder{color:var(--slate-light)}
+.lp-input:disabled,.lp-select:disabled{opacity:0.5;pointer-events:none;background:var(--cream)}
+
+/* GENERATE BUTTON */
+.btn-generate{display:flex;align-items:center;justify-content:center;gap:0.5rem;width:100%;padding:14px 20px;border-radius:var(--radius-sm);font-size:0.95rem;font-weight:500;font-family:var(--sans);cursor:pointer;border:none;background:var(--accent-lp);color:#fff;transition:all var(--transition);box-shadow:0 4px 16px rgba(107,63,160,0.3);letter-spacing:-0.01em;margin-top:0.5rem}
+.btn-generate:hover:not(:disabled){background:#7d4db8;box-shadow:0 6px 22px rgba(107,63,160,0.38);transform:translateY(-1px)}
+.btn-generate:active:not(:disabled){transform:translateY(0)}
+.btn-generate:disabled{opacity:0.55;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-generate svg{flex-shrink:0}
+
+/* COOLDOWN BAR */
+.cooldown-wrap{display:none;flex-direction:column;gap:0.5rem;margin-top:0.75rem}
+.cooldown-wrap.visible{display:flex}
+.cooldown-label{font-size:0.75rem;color:var(--slate-light);text-align:center}
+.cooldown-track{height:4px;background:rgba(107,63,160,0.12);border-radius:99px;overflow:hidden}
+.cooldown-fill{height:100%;background:var(--accent-lp);border-radius:99px;transition:width 1s linear}
+
+/* STATUS STEPS */
+.lp-status{display:none;flex-direction:column;gap:0;border:1px solid rgba(28,31,38,0.08);border-radius:var(--radius-sm);overflow:hidden;background:#fff;box-shadow:var(--shadow-card)}
+.lp-status.visible{display:flex}
+.lp-step{display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1.1rem;border-bottom:1px solid rgba(28,31,38,0.05);transition:background var(--transition)}
+.lp-step:last-child{border-bottom:none}
+.lp-step-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.78rem;transition:all var(--transition)}
+.lp-step-icon.idle{background:rgba(28,31,38,0.06);color:var(--slate-light)}
+.lp-step-icon.running{background:rgba(107,63,160,0.1);color:var(--accent-lp);animation:spin 1.2s linear infinite}
+.lp-step-icon.done{background:rgba(74,124,89,0.1);color:var(--accent-audio)}
+.lp-step-icon.error{background:rgba(200,96,58,0.1);color:var(--accent)}
+.lp-step-text{flex:1;font-size:0.85rem;color:var(--slate-mid)}
+.lp-step.active .lp-step-text{color:var(--slate);font-weight:500}
+.lp-step.done-step .lp-step-text{color:var(--slate-light)}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* RESULT CARD */
+.lp-result{display:none;border:1px solid rgba(74,124,89,0.2);border-radius:var(--radius);background:rgba(74,124,89,0.04);padding:1.5rem;box-shadow:var(--shadow-card)}
+.lp-result.visible{display:block}
+.lp-result-title{font-family:var(--serif);font-size:1.2rem;color:var(--slate);margin-bottom:0.4rem}
+.lp-result-sub{font-size:0.8rem;color:var(--slate-light);margin-bottom:1.25rem}
+.lp-result-btns{display:flex;gap:0.6rem;flex-wrap:wrap}
+
+/* RESULT BUTTONS */
+.btn-dl-docx{display:inline-flex;align-items:center;gap:0.45rem;padding:10px 18px;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:500;font-family:var(--sans);cursor:pointer;border:none;background:var(--accent-lp);color:#fff;transition:all var(--transition);box-shadow:0 3px 12px rgba(107,63,160,0.28)}
+.btn-dl-docx:hover{background:#7d4db8;box-shadow:0 5px 18px rgba(107,63,160,0.38);transform:translateY(-1px)}
+.btn-preview-json{display:inline-flex;align-items:center;gap:0.45rem;padding:10px 18px;border-radius:var(--radius-sm);font-size:0.875rem;font-weight:500;font-family:var(--sans);cursor:pointer;border:1px solid rgba(28,31,38,0.12);background:transparent;color:var(--slate-mid);transition:all var(--transition)}
+.btn-preview-json:hover{background:var(--cream);border-color:rgba(28,31,38,0.22)}
+
+/* LESSON PLAN PREVIEW */
+.lp-preview-panel{display:none;margin-top:1.25rem;border:1px solid rgba(28,31,38,0.08);border-radius:var(--radius-sm);overflow:hidden;background:#fff}
+.lp-preview-panel.visible{display:block}
+.lp-preview-header{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1rem;background:var(--cream);border-bottom:1px solid rgba(28,31,38,0.07);font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--slate-light)}
+.lp-preview-table{width:100%;border-collapse:collapse;font-size:0.82rem}
+.lp-preview-table th{background:#1F3864;color:#fff;text-align:left;padding:8px 12px;font-weight:600;font-size:0.75rem;letter-spacing:0.05em}
+.lp-preview-table td{padding:7px 12px;border-bottom:1px solid rgba(28,31,38,0.05);vertical-align:top;color:var(--slate-mid);line-height:1.5}
+.lp-preview-table tr:last-child td{border-bottom:none}
+.lp-preview-table tr:nth-child(even) td{background:rgba(247,244,238,0.6)}
+.lp-preview-table .stage-name{font-weight:600;color:var(--slate);white-space:nowrap}
+.lp-preview-header-row{background:#2E4C8B!important}
+.lp-preview-header-row td{color:#fff!important;font-weight:600;font-size:0.75rem!important;letter-spacing:0.05em}
+
+/* META PILL */
+.lp-meta-pill{display:inline-flex;align-items:center;gap:0.3rem;background:rgba(107,63,160,0.07);border:1px solid rgba(107,63,160,0.15);color:var(--accent-lp);font-size:0.7rem;font-weight:600;padding:3px 10px;border-radius:99px;margin-bottom:1rem}
+
+/* ERROR */
+.lp-error{display:none;padding:1rem 1.25rem;border-radius:var(--radius-sm);background:rgba(200,96,58,0.07);border:1px solid rgba(200,96,58,0.18);color:var(--accent);font-size:0.85rem;line-height:1.6}
+.lp-error.visible{display:block}
+
+/* INFO NOTE */
+.lp-note{font-size:0.78rem;color:var(--slate-light);text-align:center;line-height:1.7;margin-top:0.5rem}
+
+/* FOOTER */
+footer{border-top:1px solid rgba(28,31,38,0.06);padding:1.75rem 1.5rem;text-align:center;font-size:0.78rem;color:var(--slate-light)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.lp-hero{animation:fadeUp 0.45s ease both}
+.lp-card{animation:fadeUp 0.45s 0.08s ease both}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  nav{padding:0 0.85rem}
+  .page-wrap{padding:2rem 1rem 5rem}
+  .lp-form-grid{grid-template-columns:1fr}
+  .lp-card{padding:1.25rem}
+  .lp-result-btns{flex-direction:column}
+  .btn-dl-docx,.btn-preview-json{width:100%;justify-content:center}
+  .lp-preview-table{font-size:0.75rem}
+}
+</style>
+</head>
+<body>
+
+<nav style="position:relative;">
+  <a class="nav-back" href="index.html">
+    <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M9 3 5 7l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    All books
+  </a>
+  <div class="nav-divider"></div>
+  <span class="nav-title">Lesson Plan Generator</span>
+  <div class="nav-accent-bar"></div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- HERO -->
+  <div class="lp-hero">
+    <div class="lp-eyebrow">
+      <svg width="11" height="11" fill="none" viewBox="0 0 11 11"><rect x="1" y="1" width="9" height="9" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M3.5 5.5h4M5.5 3.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      AI-Powered
+    </div>
+    <h1>Generate a<br><em>Lesson Plan</em></h1>
+    <p>Fill in the details below. The AI reads the Teacher Guide and Student Book PDFs for your chosen lesson and produces a ready-to-use DOCX lesson plan.</p>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="lp-card">
+    <div class="lp-card-title">Lesson Details</div>
+
+    <div class="lp-form-grid">
+
+      <div class="lp-field full">
+        <label class="lp-label" for="lp-teacher">Teacher Name</label>
+        <input class="lp-input" type="text" id="lp-teacher" placeholder="e.g. Mr. Alaoui" autocomplete="name">
+      </div>
+
+      <div class="lp-field">
+        <label class="lp-label" for="lp-class">Class / Grade</label>
+        <input class="lp-input" type="text" id="lp-class" placeholder="e.g. 3rd Year Collège">
+      </div>
+
+      <div class="lp-field">
+        <label class="lp-label" for="lp-book">Spotlight Version</label>
+        <select class="lp-select" id="lp-book">
+          <option value="">— select —</option>
+          <option value="1">Spotlight 1 (7th Grade)</option>
+          <option value="2">Spotlight 2 (8th Grade)</option>
+          <option value="3">Spotlight 3 (9th Grade)</option>
+        </select>
+      </div>
+
+      <div class="lp-field">
+        <label class="lp-label" for="lp-unit">Unit</label>
+        <select class="lp-select" id="lp-unit" disabled>
+          <option value="">— select book first —</option>
+        </select>
+      </div>
+
+      <div class="lp-field">
+        <label class="lp-label" for="lp-lesson">Lesson</label>
+        <select class="lp-select" id="lp-lesson" disabled>
+          <option value="">— select unit first —</option>
+        </select>
+      </div>
+
+    </div><!-- /grid -->
+
+    <button class="btn-generate" id="btn-generate" onclick="handleGenerate()" disabled>
+      <svg width="15" height="15" fill="none" viewBox="0 0 15 15"><path d="M7.5 1v2M7.5 12v2M12 7.5h2M1 7.5h2M10.6 4.4l1.4-1.4M3 12l1.4-1.4M10.6 10.6 12 12M3 3l1.4 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.4"/></svg>
+      Generate Lesson Plan
+    </button>
+
+    <!-- Cooldown -->
+    <div class="cooldown-wrap" id="cooldown-wrap">
+      <div class="cooldown-label" id="cooldown-label">Next generation available in <strong id="cooldown-sec">120</strong>s</div>
+      <div class="cooldown-track"><div class="cooldown-fill" id="cooldown-fill" style="width:100%"></div></div>
+    </div>
+
+    <p class="lp-note">Generation takes ~30–60 seconds. One plan every 2 minutes.</p>
+  </div>
+
+  <!-- PROGRESS STEPS -->
+  <div class="lp-status" id="lp-status">
+    <div class="lp-step" id="step-dl">
+      <div class="lp-step-icon idle" id="step-dl-icon">①</div>
+      <div class="lp-step-text">Downloading PDFs from archive</div>
+    </div>
+    <div class="lp-step" id="step-ocr-tg">
+      <div class="lp-step-icon idle" id="step-ocr-tg-icon">②</div>
+      <div class="lp-step-text">Reading Teacher Guide (OCR)</div>
+    </div>
+    <div class="lp-step" id="step-ocr-sb">
+      <div class="lp-step-icon idle" id="step-ocr-sb-icon">③</div>
+      <div class="lp-step-text">Reading Student Book (OCR)</div>
+    </div>
+    <div class="lp-step" id="step-ai">
+      <div class="lp-step-icon idle" id="step-ai-icon">④</div>
+      <div class="lp-step-text">Generating lesson plan with AI</div>
+    </div>
+    <div class="lp-step" id="step-docx">
+      <div class="lp-step-icon idle" id="step-docx-icon">⑤</div>
+      <div class="lp-step-text">Building DOCX file</div>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="lp-error" id="lp-error"></div>
+
+  <!-- RESULT -->
+  <div class="lp-result" id="lp-result">
+    <div class="lp-meta-pill" id="result-pill">SP1-U1-L1-LP.docx</div>
+    <div class="lp-result-title" id="result-title">Lesson Plan Ready</div>
+    <div class="lp-result-sub" id="result-sub">Generated successfully</div>
+    <div class="lp-result-btns">
+      <button class="btn-dl-docx" id="btn-dl-docx" onclick="downloadDocx()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M7 2v7M4 6.5 7 10l3-3.5M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Download DOCX
+      </button>
+      <button class="btn-preview-json" onclick="togglePreview()">
+        <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><ellipse cx="7" cy="7" rx="5.5" ry="5.5" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="7" r="2" fill="currentColor"/></svg>
+        Preview Plan
+      </button>
+    </div>
+
+    <!-- Inline preview table -->
+    <div class="lp-preview-panel" id="lp-preview-panel">
+      <div class="lp-preview-header">
+        <span>Lesson Plan Preview</span>
+        <button onclick="togglePreview()" style="background:none;border:none;cursor:pointer;color:var(--slate-light);font-size:0.8rem;">✕ Close</button>
+      </div>
+      <div id="preview-content" style="overflow-x:auto;padding:0"></div>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<footer>Spotlight Trilogy — Lesson Plan Generator</footer>
+
+<script src="data.js"></script>
+<script src="js/lp.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

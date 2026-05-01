@@ -17,6 +17,9 @@ function initializePage() {
   const accent  = ACCENTS[bookIdx] || ACCENTS[0];
   const level   = LEVELS[bookIdx] || '';
 
+  // Tell utils.js which Spotlight version we're on so filenames get SP1/SP2/SP3
+  CURRENT_BOOK_NUM = bookNum;
+
   document.documentElement.style.setProperty('--accent', accent);
   document.getElementById('nav-title').textContent = book.name;
   document.getElementById('nav-accent-bar').style.background = accent;

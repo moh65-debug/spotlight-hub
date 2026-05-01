@@ -12,13 +12,17 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
   const sbPath = sbFile ? buildPath(bookName, unitName, lesson.name, sbFile.name) : null;
   const tgPath = tgFile ? buildPath(bookName, unitName, lesson.name, tgFile.name) : null;
 
+  // Numeric unit index for SP-aware filenames
+  const uNum = typeof unitIndex === 'number' ? unitIndex : (unitIndex === 'W' ? null : parseInt(unitIndex, 10) || null);
+  const lNum = lessonIndex;
+
   const lessonFilesForSave = [];
   if (sbPath) {
-    const fname = `U${unitIndex||'?'}-L${lessonIndex}-SB.pdf`;
+    const fname = (uNum && lNum) ? makePdfFilename(uNum, lNum, 'SB') : smartFilename(sbPath, 'SB');
     lessonFilesForSave.push({ url: sbPath, name: fname, type: 'pdf' });
   }
   if (tgPath) {
-    const fname = `U${unitIndex||'?'}-L${lessonIndex}-TG.pdf`;
+    const fname = (uNum && lNum) ? makePdfFilename(uNum, lNum, 'TG') : smartFilename(tgPath, 'TG');
     lessonFilesForSave.push({ url: tgPath, name: fname, type: 'pdf' });
   }
 
@@ -27,11 +31,11 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
     btns = `<div class="pdf-cards">` +
       (sbPath ? `<div class="pdf-card pdf-card-sb">
         <span class="pdf-card-label">Student Book</span>
-        <div class="pdf-card-actions">${btnSB(sbPath, 'Download', unitIndex, lessonIndex)}</div>
+        <div class="pdf-card-actions">${btnSB(sbPath, 'Download', uNum, lNum)}</div>
       </div>` : '') +
       (tgPath ? `<div class="pdf-card pdf-card-tg">
         <span class="pdf-card-label">Teacher Guide</span>
-        <div class="pdf-card-actions">${btnTG(tgPath, 'Download', unitIndex, lessonIndex)}</div>
+        <div class="pdf-card-actions">${btnTG(tgPath, 'Download', uNum, lNum)}</div>
       </div>` : '') +
       `</div>`;
   }
@@ -43,10 +47,11 @@ function renderLesson(lesson, bookName, unitName, lessonIndex, unitIndex) {
       name: f.name
     }));
     audioFiles.forEach((f, fi) => {
-      lessonFilesForSave.push({ url: queue[fi].url, name: f.name, type: 'mp3' });
+      const dlName = makeAudioFilename(f.name, uNum, lNum);
+      lessonFilesForSave.push({ url: queue[fi].url, name: dlName, type: 'mp3' });
     });
     audioList = '<div class="audio-list">' +
-      audioFiles.map((f, fi) => buildAudioRow(queue[fi].url, f.name, queue)).join('') +
+      audioFiles.map((f, fi) => buildAudioRow(queue[fi].url, f.name, queue, uNum, lNum)).join('') +
       '</div>';
   }
 
@@ -74,12 +79,14 @@ function renderUnit(unit, bookName, unitIndex) {
   const unitScripts = children.filter(c => fileIsAudioScript(c.name));
   const otherPdfs   = children.filter(c => fileIsPdf(c.name) && !fileIsSB(c.name) && !fileIsTG(c.name) && !fileIsAudioScript(c.name));
 
+  const uNum = typeof unitIndex === 'number' ? unitIndex : parseInt(unitIndex, 10) || null;
+
   let audioRow = '';
   if (unitAudios.length) {
     const queue = unitAudios.map(f => ({ url: buildPath(bookName, unit.name, f.name), name: f.name }));
     audioRow = `<div class="unit-audio-section">
       <div class="audio-list audio-list-unit">` +
-      unitAudios.map((f, fi) => buildAudioRow(queue[fi].url, f.name, queue)).join('') +
+      unitAudios.map((f, fi) => buildAudioRow(queue[fi].url, f.name, queue, uNum, null)).join('') +
       `</div>
     </div>`;
   }
@@ -90,19 +97,20 @@ function renderUnit(unit, bookName, unitIndex) {
       ${unitFiles.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
         const isSB = fileIsSB(f.name);
-        return btnPdfGroup(path, f.name, isSB ? 'btn-sb' : 'btn-tg', isSB ? 'Student Book' : 'Teacher Guide', '');
+        const fname = isSB ? makePdfFilename(uNum, null, 'SB') : makePdfFilename(uNum, null, 'TG');
+        return btnPdfGroup(path, fname, isSB ? 'btn-sb' : 'btn-tg', isSB ? 'Student Book' : 'Teacher Guide', '');
       }).join('')}
     </div>`;
   }
 
-  // Audio Script row — NOW WITH PREVIEW BUTTON
+  // Audio Script row — with preview button
   let unitScriptsRow = '';
   if (unitScripts.length) {
     unitScriptsRow = `<div class="unit-audio-row unit-script-row">
       <span class="unit-audio-label">Audio Script</span>
       ${unitScripts.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
-        return btnAudioScript(path, f.name.replace(/\.pdf$/i, ''));
+        return btnAudioScript(path, f.name.replace(/\.pdf$/i, ''), uNum);
       }).join('')}
     </div>`;
   }
@@ -112,7 +120,8 @@ function renderUnit(unit, bookName, unitIndex) {
     otherPdfsRow = `<div class="unit-audio-row">
       ${otherPdfs.map(f => {
         const path = buildPath(bookName, unit.name, f.name);
-        return btnPdfGroup(path, f.name, 'btn-bundle', f.name.replace(/\.pdf$/i,''), '');
+        const fname = `${spPrefix()}-U${uNum || '?'}-${f.name}`;
+        return btnPdfGroup(path, fname, 'btn-bundle', f.name.replace(/\.pdf$/i,''), '');
       }).join('')}
     </div>`;
   }
@@ -154,7 +163,9 @@ function renderWelcomeAsUnit(wb, bookName) {
     let pdfBtns = pdfFiles.map(f => {
       const path = buildPath(bookName, wb.name, f.name);
       const cls  = fileIsSB(f.name) ? 'btn-sb' : fileIsTG(f.name) ? 'btn-tg' : 'btn-bundle';
-      return btnPdfGroup(path, f.name, cls, fileIsSB(f.name) ? 'Student Book' : fileIsTG(f.name) ? 'Teacher Guide' : f.name.replace(/\.pdf$/i,''), '');
+      const label = fileIsSB(f.name) ? 'Student Book' : fileIsTG(f.name) ? 'Teacher Guide' : f.name.replace(/\.pdf$/i,'');
+      const fname = fileIsSB(f.name) ? `${spPrefix()}-Welcome-SB.pdf` : fileIsTG(f.name) ? `${spPrefix()}-Welcome-TG.pdf` : `${spPrefix()}-${f.name}`;
+      return btnPdfGroup(path, fname, cls, label, '');
     }).join('');
     let audioBtns = audioFiles.length ? `<div class="btn-group btn-group-audio">
       <button class="btn btn-audio btn-group-main btn-audio-sm"
