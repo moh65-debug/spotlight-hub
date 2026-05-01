@@ -19,7 +19,9 @@ window.generateLessonPlan = generateLessonPlan;
 // Your Cloudflare Worker proxy — same domain, no CORS issues, no HTTP redirects.
 // Route: spotlight.dpdns.org/proxy/archive/* → s3.us.archive.org/*
 const ARCHIVE_PROXY = 'https://spotlight.dpdns.org/proxy/archive/';
-const LESSON_PLAN_API = 'https://spotlight.dpdns.org/api/lesson-plan';
+// Use a path already covered by the existing Cloudflare Worker route
+// spotlight.dpdns.org/proxy/archive/* to avoid 405s from origin.
+const LESSON_PLAN_API = '/proxy/archive/lesson-plan';
 
 function isArchiveOrgURL(url) {
   try {
