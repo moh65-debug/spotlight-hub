@@ -232,22 +232,20 @@ async function callGroqApi(sbText, tgText, book, unit, lesson, teacher, grade) {
 
   const response = await fetch(GROQ_API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: GROQ_MODEL,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user',   content: userMessage },
+        { role: 'user',   content: userMessage }
       ],
       temperature: 1,
-      max_completion_tokens: 4000,
+      max_completion_tokens: 4000,    // matches your working Python snippet
       top_p: 1,
-      reasoning_effort: 'medium',
-      stream: false,
-      stop: null,
-    }),
+      reasoning_effort: "medium",     // improves reasoning depth
+      stream: false,                  // we want the full JSON in one response
+      tools: [{ type: "browser_search" }]  // enables web search if needed
+    })
   });
 
   if (!response.ok) {
