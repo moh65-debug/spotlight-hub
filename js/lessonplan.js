@@ -22,7 +22,7 @@
 // ── Book structure ───────────────────────────────────────────
 const BOOK_UNITS = { '1': 6, '2': 6, '3': 5 };
 const LESSONS_PER_UNIT = 8;
-const ARCHIVE_BASE_LP = 'https://archive.org/download/spotlight-trilogy';
+const ARCHIVE_BASE_LP = 'https://spotlight.dpdns.org/download/spotlight-trilogy';
 
 // ── State ────────────────────────────────────────────────────
 let _generatedPlan = null;
