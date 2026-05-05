@@ -346,10 +346,26 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
 }
 
 // ── Build DOCX using docx.js ─────────────────────────────────
+async function ensureDocx() {
+  if (window.docx && window.docx.Document) return window.docx;
+  await new Promise((resolve, reject) => {
+    if (document.querySelector('script[data-docx]')) {
+      setTimeout(resolve, 800);
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/docx@8.5.0/build/index.js';
+    s.setAttribute('data-docx', '1');
+    s.onload = () => setTimeout(resolve, 100);
+    s.onerror = () => reject(new Error('Failed to load docx.js'));
+    document.head.appendChild(s);
+  });
+  if (window.docx && window.docx.Document) return window.docx;
+  throw new Error('docx.js library could not be loaded');
+}
+
 async function buildDocx(plan) {
-  // docx is loaded from CDN as window.docx
-  const D = window.docx;
-  if (!D) throw new Error('docx.js library not loaded');
+  const D = await ensureDocx();
 
   const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
