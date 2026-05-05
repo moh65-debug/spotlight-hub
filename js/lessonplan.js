@@ -256,7 +256,7 @@ Return EXACTLY this schema (all fields required):
   "objectives": ["objective 1", "objective 2", "objective 3"],
   "stages": [
     {
-      "stage": "Exact Heading (e.g., Presentation: A. Listen)",
+      "stage": "Cleaned Heading (e.g., Presentation: Listening)",
       "procedures": "",
       "interaction_patterns": "",
       "techniques": "",
@@ -268,8 +268,8 @@ Return EXACTLY this schema (all fields required):
 
 Rules:
 - Base ALL content strictly on the PDF text — do NOT invent a topic.
-- EXTRACT THE EXACT HEADINGS AND SUBHEADINGS from the Teacher Guide for the "stage" names.
-- Do NOT group multiple lettered subheadings into one massive stage. Create a separate stage object in the JSON for EVERY explicit section (e.g., "Warm up", "Presentation: A. Listen", "Presentation: B. Read", "Practice: E. Fill in the Missing Information", "Use: F. Speak"). Match the document's explicit structure and sequence perfectly.
+- Create a separate stage object in the JSON for EVERY explicit sub-section in the Teacher Guide to match its exact sequence.
+- Format stage names cleanly: Combine the main phase and the activity (e.g., "Presentation", "Practice"), but REMOVE all letter prefixes (A., B., etc.) and adapt action verbs into gerunds where appropriate. For example, change "Presentation: A. Listen" to "Presentation: Listening". Change "Presentation: B. Read" to "Presentation: Reading". Change "Practice: E. Fill in the Missing Information" to "Practice: Fill in the Missing Information". Change "Use: F. Speak" to "Use: Speaking".
 - Do NOT mention any page numbers anywhere.
 - Procedures: concrete teacher/student actions, concise but specific. Number the steps.
 - Stage times must add up to exactly 55 minutes.
