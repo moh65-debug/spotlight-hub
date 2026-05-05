@@ -669,6 +669,13 @@ async function buildDocx(plan) {
       reflectionsRow,
     ],
   });
+  
+  // This tiny, invisible spacer paragraph prevents Google Docs from merging 
+  // the two adjacent tables and forcing their columns to link/snap together.
+  const spacer = new Paragraph({
+    spacing: { before: 0, after: 0, line: 1 },
+    children: [new TextRun({ text: "", size: 2 })] // size 2 is 1pt font
+  });
 
   const doc = new Document({
     sections: [{
@@ -684,6 +691,7 @@ async function buildDocx(plan) {
       },
       children: [
         headerTable,
+        spacer,
         stagesTable,
       ],
     }],
