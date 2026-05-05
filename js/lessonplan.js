@@ -430,18 +430,35 @@ async function buildDocx(plan) {
   ];
   SW[4] = TW - SW[0] - SW[1] - SW[2] - SW[3];
 
-  // Info row 1: Teacher | value | Level | value | Textbook | value | Time | value
-  const LBL  = Math.floor(TW * 0.085);
-  const WIDE = Math.floor(TW * 0.175);
-  const MED  = Math.floor(TW * 0.11);
-  const R1   = [LBL, WIDE, LBL, MED, LBL, WIDE, LBL, 0];
-  R1[7] = TW - R1[0] - R1[1] - R1[2] - R1[3] - R1[4] - R1[5] - R1[6];
+  // Info rows — 8 shared columns so Teacher/Unit, Level/Lesson, etc. align perfectly.
+  // Col:  0=lbl  1=val-A  2=lbl  3=val-B  4=lbl        5=val-C  6=lbl  7=val-D
+  // Row1: Teacher | name  | Level | grade | Textbook | Spotlight | Time | 55min
+  // Row2: Unit    | num   | Lesson| title | Tools&Mat | …        | Skills| …
+  const LBL  = Math.floor(TW * 0.075);  // narrow label col (Teacher:, Unit:, etc.)
+  const LBBL = Math.floor(TW * 0.100);  // wider label col (Tools & Materials:)
+  const SM   = Math.floor(TW * 0.055);  // Unit value (just a number)
+  const MED  = Math.floor(TW * 0.095);  // Level value / Skills value
+  const WIDE = Math.floor(TW * 0.175);  // Teacher name / Lesson title
 
-  // Info row 2: Unit | value | Lesson | value | Tools & Materials | value | Skills | value
-  const LLBL = Math.floor(TW * 0.115);
-  const SM   = Math.floor(TW * 0.065);
-  const R2   = [LBL, SM, LBL, WIDE, LLBL, 0, LBL, MED];
-  R2[5] = TW - R2[0] - R2[1] - R2[2] - R2[3] - R2[4] - R2[6] - R2[7];
+  // All 8 column widths shared by BOTH info rows — MUST sum to TW
+  // Col indices: 0   1     2    3     4      5       6    7
+  const COL8 = [LBL, WIDE, LBL, MED,  LBBL,  0,      LBL, MED];
+  // Col 5 (Tools value / Textbook value): fill remaining space
+  COL8[5] = TW - COL8[0] - COL8[1] - COL8[2] - COL8[3] - COL8[4] - COL8[6] - COL8[7];
+
+  // Row 1 uses same column widths — just col 1 value wider to fit teacher name,
+  // and col 3 narrower. Override individual data-cell widths inline but keep
+  // array for columnWidths declaration.
+  const R1 = [...COL8];
+  // Row 1 col 1 = Teacher value (WIDE), col 3 = Level value (MED), col 5 = Textbook value, col 7 = Time value
+  // These already match COL8 — no override needed.
+
+  // Row 2 col 1 = Unit value (SM, narrower), adjust col 3 accordingly
+  const R2 = [...COL8];
+  const unitValW = Math.floor(TW * 0.055); // narrow: just a unit number
+  const lessonValW = COL8[3] + (COL8[1] - unitValW); // lesson title gets extra space
+  R2[1] = unitValW;
+  R2[3] = lessonValW;
 
   // ── Helper: header cell (dark bg, white bold text) ────────
   function hCell(text, width, opts = {}) {
@@ -553,9 +570,9 @@ async function buildDocx(plan) {
 
   const infoRow2 = new TableRow({ children: [
     hCell('Unit:',              R2[0], { fill: ACCENT }),
-    dCell(plan.unit,                R2[1], { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
+    dCell(plan.unit,            R2[1], { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
     hCell('Lesson:',            R2[2], { fill: ACCENT }),
-    dCell(plan.lesson_title,        R2[3], { vAlign: VerticalAlign.CENTER }),
+    dCell(plan.lesson_title,    R2[3], { vAlign: VerticalAlign.CENTER }),
     hCell('Tools & Materials:', R2[4], { fill: ACCENT }),
     dCell(plan.tools_and_materials, R2[5], { vAlign: VerticalAlign.CENTER }),
     hCell('Skills:',            R2[6], { fill: ACCENT }),
@@ -563,7 +580,7 @@ async function buildDocx(plan) {
   ]});
 
   // ── Objectives row — each objective on its own line ───────
-  const objLW = Math.floor(TW * 0.105);
+  const objLW = COL8[0];  // align with header table label columns
   const objWidth = TW - objLW;
   const objectives = plan.objectives || [];
   const objParagraphs = objectives.map((o, i) => new Paragraph({
@@ -637,7 +654,7 @@ async function buildDocx(plan) {
   });
 
   // ── Reflections row ───────────────────────────────────────
-  const reflLW = Math.floor(TW * 0.105);
+  const reflLW = SW[0];  // align with stages table first column
   const reflWidth = TW - reflLW;
   const reflText = String(plan.reflections || '').trim();
   // Split reflections into sentences for multi-paragraph display
@@ -668,7 +685,36 @@ async function buildDocx(plan) {
     ],
   });
 
-  // ── Assemble document ─────────────────────────────────────
+  // ── Assemble document — TWO TABLES for Google Docs compatibility ──────────
+  // Google Docs struggles when a single table mixes different column-span layouts.
+  // Solution: separate "header" table (title + info rows + objectives) from
+  // "stages" table (stage header + stage rows + reflections).
+
+  // Header table: 8 columns matching COL8
+  const headerTable = new Table({
+    width: { size: TW, type: WidthType.DXA },
+    columnWidths: COL8,
+    borders: { insideH: { style: BorderStyle.NONE, size: 0 }, insideV: { style: BorderStyle.NONE, size: 0 } },
+    rows: [
+      titleRow,
+      infoRow1,
+      infoRow2,
+      objectivesRow,
+    ],
+  });
+
+  // Stages table: 5 columns matching SW
+  const stagesTable = new Table({
+    width: { size: TW, type: WidthType.DXA },
+    columnWidths: SW,
+    borders: { insideH: { style: BorderStyle.NONE, size: 0 }, insideV: { style: BorderStyle.NONE, size: 0 } },
+    rows: [
+      stageHeader,
+      ...stageRows,
+      reflectionsRow,
+    ],
+  });
+
   const doc = new Document({
     sections: [{
       properties: {
@@ -682,19 +728,8 @@ async function buildDocx(plan) {
         },
       },
       children: [
-        new Table({
-          width: { size: TW, type: WidthType.DXA },
-          columnWidths: [TW], // single span for title; stage rows handled per-row
-          rows: [
-            titleRow,
-            infoRow1,
-            infoRow2,
-            objectivesRow,
-            stageHeader,
-            ...stageRows,
-            reflectionsRow,
-          ],
-        }),
+        headerTable,
+        stagesTable,
       ],
     }],
   });
