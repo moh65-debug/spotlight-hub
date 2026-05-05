@@ -1,5 +1,3 @@
---- START OF FILE lessonplan.js ---
-
 // ============================================================
 //  LESSONPLAN.JS — Client-side lesson plan generator
 //  Fetches PDFs, extracts text with pdf.js, calls Groq API,
@@ -806,5 +804,3 @@ window.startGeneration   = startGeneration;
 window.downloadDocx      = downloadDocx;
 window.downloadJson      = downloadJson;
 window.resetForm         = resetForm;
-
---- END OF FILE lessonplan.js ---
