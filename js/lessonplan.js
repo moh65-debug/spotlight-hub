@@ -256,7 +256,7 @@ Return EXACTLY this schema (all fields required):
   "objectives": ["objective 1", "objective 2", "objective 3"],
   "stages": [
     {
-      "stage": "Warm up",
+      "stage": "Name of the stage extracted from text",
       "procedures": "",
       "interaction_patterns": "",
       "techniques": "",
@@ -266,11 +266,9 @@ Return EXACTLY this schema (all fields required):
   "reflections": ""
 }
 
-Required stages in order: Warm up, Pre-Reading, Reading & Comprehension,
-Vocabulary, Listening, Grammar, Writing, Speaking, Closure.
-
 Rules:
 - Base ALL content strictly on the PDF text — do NOT invent a topic.
+- EXTRACT THE ACTUAL STAGES from the Teacher Guide. Do NOT force a fixed sequence. The lesson might use headings like "Warm up", "Presentation", "Practice", "Use", "Listening", etc. Follow the exact structural sequence provided in the specific lesson's text.
 - Do NOT mention any page numbers anywhere.
 - Procedures: concrete teacher/student actions, concise but specific.
 - Stage times must add up to exactly 55 minutes.
