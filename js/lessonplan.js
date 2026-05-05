@@ -354,7 +354,7 @@ async function ensureDocx() {
       return;
     }
     const s = document.createElement('script');
-    s.src = 'https://unpkg.com/docx@8.5.0/build/index.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
     s.setAttribute('data-docx', '1');
     s.onload = () => setTimeout(resolve, 100);
     s.onerror = () => reject(new Error('Failed to load docx.js'));
