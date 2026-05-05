@@ -1,10 +1,11 @@
 // sw.js — Spotlight Trilogy Service Worker
 // Bump CACHE version when you deploy new files to invalidate the old cache.
-const CACHE = 'spotlight-v9';
+const CACHE = 'spotlight-v10';
 
 const SHELL_REQUIRED = [
   './index.html',
   './book.html',
+  './lesson-plan.html',
   './data.js',
   './js/utils.js',
   './js/render.js',
@@ -12,6 +13,7 @@ const SHELL_REQUIRED = [
   './js/audio.js',
   './js/pdf.js',
   './js/main.js',
+  './js/lessonplan.js',
 ];
 
 const SHELL_OPTIONAL = [
