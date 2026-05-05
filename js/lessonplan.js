@@ -298,7 +298,7 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
       'Authorization': 'Bearer ' + key,
     },
     body: JSON.stringify({
-      model: 'meta-llama/llama-4-maverick-17b-128e-instruct',
+      model: 'openai/gpt-oss-120b',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user',   content: userMessage },
