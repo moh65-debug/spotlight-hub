@@ -1,5 +1,3 @@
---- START OF FILE lessonplan.js ---
-
 // ============================================================
 //  LESSONPLAN.JS — Client-side lesson plan generator
 //  Fetches PDFs, extracts text with pdf.js, calls Groq API,
@@ -128,8 +126,7 @@ async function startGeneration() {
 
   if (!book || !unit || !lesson) return;
 
-  // SP3-U4-L6 format
-  _currentLessonCode = 'SP' + book + '-U' + unit + '-L' + lesson;
+  _currentLessonCode = 'U' + unit + '-L' + lesson;
 
   // UI: hide result/error, show progress
   $('result-card').classList.remove('visible');
@@ -404,7 +401,7 @@ async function buildDocx(plan) {
   const {
     Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
     AlignmentType, BorderStyle, WidthType, ShadingType, VerticalAlign,
-    PageOrientation, TableLayoutType
+    PageOrientation,
   } = D;
 
   const DARK_BLUE  = '1F3864';
@@ -433,21 +430,35 @@ async function buildDocx(plan) {
   ];
   SW[4] = TW - SW[0] - SW[1] - SW[2] - SW[3];
 
-  // Info rows — 8 strictly shared columns to avoid Google Docs layout breaks.
+  // Info rows — 8 shared columns so Teacher/Unit, Level/Lesson, etc. align perfectly.
   // Col:  0=lbl  1=val-A  2=lbl  3=val-B  4=lbl        5=val-C  6=lbl  7=val-D
   // Row1: Teacher | name  | Level | grade | Textbook | Spotlight | Time | 55min
-  // Row2: Unit    | num   | Lesson| title | Tools&Mat| …        |Skills| …
-  const COL8 = [
-    Math.floor(TW * 0.075), // 0: Lbl 1 (Teacher / Unit)
-    Math.floor(TW * 0.150), // 1: Val 1 (Name / Num)
-    Math.floor(TW * 0.075), // 2: Lbl 2 (Level / Lesson)
-    Math.floor(TW * 0.200), // 3: Val 2 (Grade / Title)
-    Math.floor(TW * 0.120), // 4: Lbl 3 (Textbook / Tools)
-    Math.floor(TW * 0.190), // 5: Val 3 (Spotlight / Tools Val)
-    Math.floor(TW * 0.060), // 6: Lbl 4 (Time / Skills)
-    0                       // 7: Val 4 (Remainder)
-  ];
-  COL8[7] = TW - COL8[0] - COL8[1] - COL8[2] - COL8[3] - COL8[4] - COL8[5] - COL8[6];
+  // Row2: Unit    | num   | Lesson| title | Tools&Mat | …        | Skills| …
+  const LBL  = Math.floor(TW * 0.075);  // narrow label col (Teacher:, Unit:, etc.)
+  const LBBL = Math.floor(TW * 0.100);  // wider label col (Tools & Materials:)
+  const SM   = Math.floor(TW * 0.055);  // Unit value (just a number)
+  const MED  = Math.floor(TW * 0.095);  // Level value / Skills value
+  const WIDE = Math.floor(TW * 0.175);  // Teacher name / Lesson title
+
+  // All 8 column widths shared by BOTH info rows — MUST sum to TW
+  // Col indices: 0   1     2    3     4      5       6    7
+  const COL8 = [LBL, WIDE, LBL, MED,  LBBL,  0,      LBL, MED];
+  // Col 5 (Tools value / Textbook value): fill remaining space
+  COL8[5] = TW - COL8[0] - COL8[1] - COL8[2] - COL8[3] - COL8[4] - COL8[6] - COL8[7];
+
+  // Row 1 uses same column widths — just col 1 value wider to fit teacher name,
+  // and col 3 narrower. Override individual data-cell widths inline but keep
+  // array for columnWidths declaration.
+  const R1 = [...COL8];
+  // Row 1 col 1 = Teacher value (WIDE), col 3 = Level value (MED), col 5 = Textbook value, col 7 = Time value
+  // These already match COL8 — no override needed.
+
+  // Row 2 col 1 = Unit value (SM, narrower), adjust col 3 accordingly
+  const R2 = [...COL8];
+  const unitValW = Math.floor(TW * 0.055); // narrow: just a unit number
+  const lessonValW = COL8[3] + (COL8[1] - unitValW); // lesson title gets extra space
+  R2[1] = unitValW;
+  R2[3] = lessonValW;
 
   // ── Helper: header cell (dark bg, white bold text) ────────
   function hCell(text, width, opts = {}) {
@@ -547,25 +558,25 @@ async function buildDocx(plan) {
 
   // ── Info rows ─────────────────────────────────────────────
   const infoRow1 = new TableRow({ children: [
-    hCell('Teacher:',  COL8[0], { fill: ACCENT }),
-    dCell(plan.teacher,  COL8[1], { vAlign: VerticalAlign.CENTER }),
-    hCell('Level:',    COL8[2], { fill: ACCENT }),
-    dCell(plan.level,    COL8[3], { vAlign: VerticalAlign.CENTER }),
-    hCell('Textbook:', COL8[4], { fill: ACCENT }),
-    dCell(plan.textbook, COL8[5], { vAlign: VerticalAlign.CENTER }),
-    hCell('Time:',     COL8[6], { fill: ACCENT }),
-    dCell(plan.time,     COL8[7], { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
+    hCell('Teacher:',  R1[0], { fill: ACCENT }),
+    dCell(plan.teacher,  R1[1], { vAlign: VerticalAlign.CENTER }),
+    hCell('Level:',    R1[2], { fill: ACCENT }),
+    dCell(plan.level,    R1[3], { vAlign: VerticalAlign.CENTER }),
+    hCell('Textbook:', R1[4], { fill: ACCENT }),
+    dCell(plan.textbook, R1[5], { vAlign: VerticalAlign.CENTER }),
+    hCell('Time:',     R1[6], { fill: ACCENT }),
+    dCell(plan.time,     R1[7], { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
   const infoRow2 = new TableRow({ children: [
-    hCell('Unit:',              COL8[0], { fill: ACCENT }),
-    dCell(plan.unit,            COL8[1], { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Lesson:',            COL8[2], { fill: ACCENT }),
-    dCell(plan.lesson_title,    COL8[3], { vAlign: VerticalAlign.CENTER }),
-    hCell('Tools & Materials:', COL8[4], { fill: ACCENT }),
-    dCell(plan.tools_and_materials, COL8[5], { vAlign: VerticalAlign.CENTER }),
-    hCell('Skills:',            COL8[6], { fill: ACCENT }),
-    dCell(plan.integrated_skills,   COL8[7], { vAlign: VerticalAlign.CENTER }),
+    hCell('Unit:',              R2[0], { fill: ACCENT }),
+    dCell(plan.unit,            R2[1], { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
+    hCell('Lesson:',            R2[2], { fill: ACCENT }),
+    dCell(plan.lesson_title,    R2[3], { vAlign: VerticalAlign.CENTER }),
+    hCell('Tools & Materials:', R2[4], { fill: ACCENT }),
+    dCell(plan.tools_and_materials, R2[5], { vAlign: VerticalAlign.CENTER }),
+    hCell('Skills:',            R2[6], { fill: ACCENT }),
+    dCell(plan.integrated_skills,   R2[7], { vAlign: VerticalAlign.CENTER }),
   ]});
 
   // ── Objectives row — each objective on its own line ───────
@@ -683,7 +694,6 @@ async function buildDocx(plan) {
   const headerTable = new Table({
     width: { size: TW, type: WidthType.DXA },
     columnWidths: COL8,
-    layout: TableLayoutType ? TableLayoutType.FIXED : 'fixed',
     borders: { insideH: { style: BorderStyle.NONE, size: 0 }, insideV: { style: BorderStyle.NONE, size: 0 } },
     rows: [
       titleRow,
@@ -697,7 +707,6 @@ async function buildDocx(plan) {
   const stagesTable = new Table({
     width: { size: TW, type: WidthType.DXA },
     columnWidths: SW,
-    layout: TableLayoutType ? TableLayoutType.FIXED : 'fixed',
     borders: { insideH: { style: BorderStyle.NONE, size: 0 }, insideV: { style: BorderStyle.NONE, size: 0 } },
     rows: [
       stageHeader,
@@ -806,5 +815,3 @@ window.startGeneration   = startGeneration;
 window.downloadDocx      = downloadDocx;
 window.downloadJson      = downloadJson;
 window.resetForm         = resetForm;
-
---- END OF FILE lessonplan.js ---
