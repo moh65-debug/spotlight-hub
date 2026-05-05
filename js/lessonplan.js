@@ -74,7 +74,6 @@ function updateGenerateBtn() {
 const STEP_TARGETS = [15, 35, 55, 80, 100];
 
 function setStep(idx, state) {
-  // state: 'active' | 'done' | 'error'
   const el = $('step-' + idx);
   if (!el) return;
   el.className = 'progress-step ' + state;
@@ -100,7 +99,6 @@ function showError(msg) {
 }
 
 function resetForm() {
-  // Respect cooldown — only allowed if cooldown elapsed
   if (Date.now() < _cooldownUntil) return;
   $('result-card').classList.remove('visible');
   $('error-card').classList.remove('visible');
@@ -129,7 +127,6 @@ async function startGeneration() {
   // SP3-U4-L6 format
   _currentLessonCode = 'SP' + book + '-U' + unit + '-L' + lesson;
 
-  // UI: hide result/error, show progress
   $('result-card').classList.remove('visible');
   $('error-card').classList.remove('visible');
   $('progress-card').classList.add('visible');
@@ -193,7 +190,6 @@ async function startGeneration() {
     setStep(4, 'done');
     setAllStepsDone();
 
-    // Show result + start cooldown
     showResult(plan, book, unit, lesson);
     startCooldown();
 
@@ -205,8 +201,6 @@ async function startGeneration() {
 
 // ── Fetch PDF as ArrayBuffer ─────────────────────────────────
 async function fetchPdfBytes(url) {
-  // Always route through the same-origin proxy to avoid CORS / HTTP-redirect issues.
-  // Normalise: replace any accidental /download/ prefix with /proxy/archive/
   const safeUrl = url
     .replace('https://spotlight.dpdns.org/download/', 'https://spotlight.dpdns.org/proxy/archive/')
     .replace('https://archive.org/download/',         'https://spotlight.dpdns.org/proxy/archive/')
@@ -219,7 +213,6 @@ async function fetchPdfBytes(url) {
 
 // ── Extract text from PDF bytes using pdf.js ─────────────────
 async function extractPdfText(arrayBuffer) {
-  // pdf.js must be loaded globally
   const pdfjsLib = window['pdfjs-dist/build/pdf'];
   if (!pdfjsLib) throw new Error('pdf.js not loaded');
   pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -321,7 +314,6 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
   const data = await resp.json();
   let raw = (data.choices?.[0]?.message?.content || '').trim();
 
-  // Strip markdown code fences if present
   if (raw.includes('```')) {
     for (const part of raw.split('```')) {
       const stripped = part.trim().replace(/^json\s*/i, '').trim();
@@ -329,7 +321,6 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
     }
   }
 
-  // Extract JSON object
   const start = raw.indexOf('{');
   const end   = raw.lastIndexOf('}');
   if (start !== -1 && end !== -1) raw = raw.slice(start, end + 1);
@@ -338,7 +329,6 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
   try { plan = JSON.parse(raw); }
   catch(e) { throw new Error('Could not parse AI response as JSON. Raw: ' + raw.slice(0, 300)); }
 
-  // Force fixed values
   plan.textbook            = 'Spotlight';
   plan.time                = '55 min';
   plan.tools_and_materials = 'Student Book, Audio recordings, Whiteboard/markers';
@@ -412,46 +402,38 @@ async function buildDocx(plan) {
   const LIGHT_GREY = 'F0F4FA';
   const LIGHT_BLUE = 'DCE6F1';
 
-  // Thin border for inner cells, slightly more visible outer border
   const bdInner = { style: BorderStyle.SINGLE, size: 2, color: 'B8C8DC' };
   const bdOuter = { style: BorderStyle.SINGLE, size: 6, color: '1F3864' };
   const bdsInner = { top: bdInner, bottom: bdInner, left: bdInner, right: bdInner };
   const bdsOuter = { top: bdOuter, bottom: bdOuter, left: bdOuter, right: bdOuter };
 
-  // Landscape Letter, 0.5" margins → content width = 15840 - 1440 = 14400 DXA
-  const TW = 14400;
+  // Explicit, strict DXA column measurements to force Google Docs compliance
+  const TW = 14400; // Total width for Letter Landscape w/ 0.5" margins
 
-  // Column widths for the main stage table (5 cols, must sum to TW)
-  const SW = [
-    Math.floor(TW * 0.13),  // Stage name
-    Math.floor(TW * 0.46),  // Procedures (widest)
-    Math.floor(TW * 0.13),  // Interaction Patterns
-    Math.floor(TW * 0.19),  // Techniques
-    0,                       // Time (remainder)
-  ];
-  SW[4] = TW - SW[0] - SW[1] - SW[2] - SW[3];
+  // Header Table Column Widths (Must perfectly sum to 14400)
+  const C_LBL1 = 1296;
+  const C_VAL1 = 2016;
+  const C_LBL2 = 1080;
+  const C_VAL2 = 2952;
+  const C_LBL3 = 1728;
+  const C_VAL3 = 2592;
+  const C_LBL4 = 864;
+  const C_VAL4 = 1872;
+  const HEADER_COLS = [C_LBL1, C_VAL1, C_LBL2, C_VAL2, C_LBL3, C_VAL3, C_LBL4, C_VAL4];
 
-  // Info rows — 8 strictly shared columns to avoid Google Docs layout breaks.
-  // Col:  0=lbl  1=val-A  2=lbl  3=val-B  4=lbl        5=val-C  6=lbl  7=val-D
-  // Row1: Teacher | name  | Level | grade | Textbook | Spotlight | Time | 55min
-  // Row2: Unit    | num   | Lesson| title | Tools&Mat| …        |Skills| …
-  const COL8 = [
-    Math.floor(TW * 0.075), // 0: Lbl 1 (Teacher / Unit)
-    Math.floor(TW * 0.150), // 1: Val 1 (Name / Num)
-    Math.floor(TW * 0.075), // 2: Lbl 2 (Level / Lesson)
-    Math.floor(TW * 0.200), // 3: Val 2 (Grade / Title)
-    Math.floor(TW * 0.120), // 4: Lbl 3 (Textbook / Tools)
-    Math.floor(TW * 0.190), // 5: Val 3 (Spotlight / Tools Val)
-    Math.floor(TW * 0.060), // 6: Lbl 4 (Time / Skills)
-    0                       // 7: Val 4 (Remainder)
-  ];
-  COL8[7] = TW - COL8[0] - COL8[1] - COL8[2] - COL8[3] - COL8[4] - COL8[5] - COL8[6];
+  // Stages Table Column Widths (Must perfectly sum to 14400)
+  const S_STG = 1728;
+  const S_PRO = 6336;
+  const S_INT = 2160;
+  const S_TEC = 2880;
+  const S_TIM = 1296;
+  const STAGE_COLS = [S_STG, S_PRO, S_INT, S_TEC, S_TIM];
 
   // ── Helper: header cell (dark bg, white bold text) ────────
-  function hCell(text, width, opts = {}) {
+  function hCell(text, cellWidth, opts = {}) {
     return new TableCell({
       borders: bdsInner,
-      width: { size: width, type: WidthType.DXA },
+      width: { size: cellWidth, type: WidthType.DXA },
       shading: { fill: opts.fill || DARK_BLUE, type: ShadingType.CLEAR },
       margins: { top: 100, bottom: 100, left: 140, right: 140 },
       verticalAlign: VerticalAlign.CENTER,
@@ -471,19 +453,16 @@ async function buildDocx(plan) {
     });
   }
 
-  // ── Helper: data cell — splits text on ". " into separate paragraphs ──
-  function dCell(text, width, opts = {}) {
+  // ── Helper: data cell ────────
+  function dCell(text, cellWidth, opts = {}) {
     const raw = String(text || '').trim();
     const fill = opts.fill || WHITE;
     const align = opts.align || AlignmentType.LEFT;
     const sz = opts.size || 18;
 
-    // Split long procedure/reflection text into logical sentences for readability
     let paragraphs;
     if (opts.multiPara && raw.length > 80) {
-      // Split on ". " boundaries keeping the period
       const sentences = raw.split(/(?<=\.)\s+/);
-      // Group into ~2-sentence chunks to avoid too many tiny paragraphs
       const chunks = [];
       let buf = '';
       sentences.forEach((sent, i) => {
@@ -508,7 +487,7 @@ async function buildDocx(plan) {
 
     return new TableCell({
       borders: bdsInner,
-      width: { size: width, type: WidthType.DXA },
+      width: { size: cellWidth, type: WidthType.DXA },
       shading: { fill, type: ShadingType.CLEAR },
       margins: { top: 100, bottom: 100, left: 140, right: 140 },
       verticalAlign: opts.vAlign || VerticalAlign.TOP,
@@ -545,30 +524,28 @@ async function buildDocx(plan) {
 
   // ── Info rows ─────────────────────────────────────────────
   const infoRow1 = new TableRow({ children: [
-    hCell('Teacher:',  COL8[0], { fill: ACCENT }),
-    dCell(plan.teacher,  COL8[1], { vAlign: VerticalAlign.CENTER }),
-    hCell('Level:',    COL8[2], { fill: ACCENT }),
-    dCell(plan.level,    COL8[3], { vAlign: VerticalAlign.CENTER }),
-    hCell('Textbook:', COL8[4], { fill: ACCENT }),
-    dCell(plan.textbook, COL8[5], { vAlign: VerticalAlign.CENTER }),
-    hCell('Time:',     COL8[6], { fill: ACCENT }),
-    dCell(plan.time,     COL8[7], { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
+    hCell('Teacher:',  C_LBL1, { fill: ACCENT }),
+    dCell(plan.teacher,  C_VAL1, { vAlign: VerticalAlign.CENTER }),
+    hCell('Level:',    C_LBL2, { fill: ACCENT }),
+    dCell(plan.level,    C_VAL2, { vAlign: VerticalAlign.CENTER }),
+    hCell('Textbook:', C_LBL3, { fill: ACCENT }),
+    dCell(plan.textbook, C_VAL3, { vAlign: VerticalAlign.CENTER }),
+    hCell('Time:',     C_LBL4, { fill: ACCENT }),
+    dCell(plan.time,     C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
   const infoRow2 = new TableRow({ children: [
-    hCell('Unit:',              COL8[0], { fill: ACCENT }),
-    dCell(plan.unit,            COL8[1], { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Lesson:',            COL8[2], { fill: ACCENT }),
-    dCell(plan.lesson_title,    COL8[3], { vAlign: VerticalAlign.CENTER }),
-    hCell('Tools & Materials:', COL8[4], { fill: ACCENT }),
-    dCell(plan.tools_and_materials, COL8[5], { vAlign: VerticalAlign.CENTER }),
-    hCell('Skills:',            COL8[6], { fill: ACCENT }),
-    dCell(plan.integrated_skills,   COL8[7], { vAlign: VerticalAlign.CENTER }),
+    hCell('Unit:',              C_LBL1, { fill: ACCENT }),
+    dCell(plan.unit,            C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
+    hCell('Lesson:',            C_LBL2, { fill: ACCENT }),
+    dCell(plan.lesson_title,    C_VAL2, { vAlign: VerticalAlign.CENTER }),
+    hCell('Tools & Materials:', C_LBL3, { fill: ACCENT }),
+    dCell(plan.tools_and_materials, C_VAL3, { vAlign: VerticalAlign.CENTER }),
+    hCell('Skills:',            C_LBL4, { fill: ACCENT }),
+    dCell(plan.integrated_skills,   C_VAL4, { vAlign: VerticalAlign.CENTER }),
   ]});
 
-  // ── Objectives row — each objective on its own line ───────
-  const objLW = COL8[0];  // align with header table label columns
-  const objWidth = TW - objLW;
+  // ── Objectives row ────────────────────────────────────────
   const objectives = plan.objectives || [];
   const objParagraphs = objectives.map((o, i) => new Paragraph({
     alignment: AlignmentType.LEFT,
@@ -580,10 +557,10 @@ async function buildDocx(plan) {
   }));
 
   const objectivesRow = new TableRow({ children: [
-    hCell('Objectives:', objLW, { fill: MID_BLUE }),
+    hCell('Objectives:', C_LBL1, { fill: MID_BLUE }),
     new TableCell({
       borders: bdsInner,
-      width: { size: objWidth, type: WidthType.DXA },
+      width: { size: TW - C_LBL1, type: WidthType.DXA },
       shading: { fill: 'EEF3FA', type: ShadingType.CLEAR },
       margins: { top: 100, bottom: 100, left: 160, right: 160 },
       columnSpan: 7,
@@ -596,11 +573,11 @@ async function buildDocx(plan) {
   const stageHeader = new TableRow({
     tableHeader: true,
     children: [
-      hCell('Stages',               SW[0], { fill: MID_BLUE, size: 19 }),
-      hCell('Procedures',           SW[1], { fill: MID_BLUE, size: 19 }),
-      hCell('Interaction Patterns', SW[2], { fill: MID_BLUE, size: 19 }),
-      hCell('Techniques',           SW[3], { fill: MID_BLUE, size: 19 }),
-      hCell('Time',                 SW[4], { fill: MID_BLUE, size: 19 }),
+      hCell('Stages',               S_STG, { fill: MID_BLUE, size: 19 }),
+      hCell('Procedures',           S_PRO, { fill: MID_BLUE, size: 19 }),
+      hCell('Interaction Patterns', S_INT, { fill: MID_BLUE, size: 19 }),
+      hCell('Techniques',           S_TEC, { fill: MID_BLUE, size: 19 }),
+      hCell('Time',                 S_TIM, { fill: MID_BLUE, size: 19 }),
     ],
   });
 
@@ -609,10 +586,9 @@ async function buildDocx(plan) {
     const fill = idx % 2 === 0 ? WHITE : LIGHT_GREY;
     return new TableRow({
       children: [
-        // Stage name — bold, centered vertically
         new TableCell({
           borders: bdsInner,
-          width: { size: SW[0], type: WidthType.DXA },
+          width: { size: S_STG, type: WidthType.DXA },
           shading: { fill: LIGHT_BLUE, type: ShadingType.CLEAR },
           margins: { top: 100, bottom: 100, left: 140, right: 140 },
           verticalAlign: VerticalAlign.CENTER,
@@ -628,23 +604,16 @@ async function buildDocx(plan) {
             })],
           })],
         }),
-        // Procedures — multi-paragraph for readability
-        dCell(s.procedures, SW[1], { fill, multiPara: true }),
-        // Interaction Patterns
-        dCell(s.interaction_patterns, SW[2], { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
-        // Techniques
-        dCell(s.techniques, SW[3], { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
-        // Time
-        dCell(s.time, SW[4], { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
+        dCell(s.procedures, S_PRO, { fill, multiPara: true }),
+        dCell(s.interaction_patterns, S_INT, { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
+        dCell(s.techniques, S_TEC, { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
+        dCell(s.time, S_TIM, { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
       ],
     });
   });
 
   // ── Reflections row ───────────────────────────────────────
-  const reflLW = SW[0];  // align with stages table first column
-  const reflWidth = TW - reflLW;
   const reflText = String(plan.reflections || '').trim();
-  // Split reflections into sentences for multi-paragraph display
   const reflSentences = reflText.split(/(?<=\.)\s+/).filter(Boolean);
   const reflParagraphs = reflSentences.length > 1
     ? reflSentences.map((sent, i) => new Paragraph({
@@ -659,10 +628,10 @@ async function buildDocx(plan) {
 
   const reflectionsRow = new TableRow({
     children: [
-      hCell('Reflections', reflLW, { fill: DARK_BLUE }),
+      hCell('Reflections', S_STG, { fill: DARK_BLUE }),
       new TableCell({
         borders: bdsInner,
-        width: { size: reflWidth, type: WidthType.DXA },
+        width: { size: TW - S_STG, type: WidthType.DXA },
         shading: { fill: 'F7F9FC', type: ShadingType.CLEAR },
         margins: { top: 120, bottom: 120, left: 160, right: 160 },
         columnSpan: 4,
@@ -672,15 +641,13 @@ async function buildDocx(plan) {
     ],
   });
 
-  // ── Assemble document — TWO TABLES for Google Docs compatibility ──────────
-  // Google Docs struggles when a single table mixes different column-span layouts.
-  // Solution: separate "header" table (title + info rows + objectives) from
-  // "stages" table (stage header + stage rows + reflections).
+  // ── Assemble document ─────────────────────────────────────
+  // Explicitly passing `columnWidths` arrays (in DXA) is required by Google Docs 
+  // to establish the rigid grid map to prevent dynamic column collapsing.
 
-  // Header table: 8 columns matching COL8
   const headerTable = new Table({
     width: { size: TW, type: WidthType.DXA },
-    columnWidths: COL8,
+    columnWidths: HEADER_COLS,
     layout: TableLayoutType ? TableLayoutType.FIXED : 'fixed',
     borders: { insideH: { style: BorderStyle.NONE, size: 0 }, insideV: { style: BorderStyle.NONE, size: 0 } },
     rows: [
@@ -691,10 +658,9 @@ async function buildDocx(plan) {
     ],
   });
 
-  // Stages table: 5 columns matching SW
   const stagesTable = new Table({
     width: { size: TW, type: WidthType.DXA },
-    columnWidths: SW,
+    columnWidths: STAGE_COLS,
     layout: TableLayoutType ? TableLayoutType.FIXED : 'fixed',
     borders: { insideH: { style: BorderStyle.NONE, size: 0 }, insideV: { style: BorderStyle.NONE, size: 0 } },
     rows: [
@@ -709,8 +675,8 @@ async function buildDocx(plan) {
       properties: {
         page: {
           size: {
-            width: 12240,   // Short edge (portrait width) — docx-js swaps for landscape
-            height: 15840,  // Long edge (portrait height)
+            width: 12240,
+            height: 15840,
             orientation: PageOrientation.LANDSCAPE,
           },
           margin: { top: 720, right: 720, bottom: 720, left: 720 },
@@ -737,7 +703,6 @@ function showResult(plan, book, unit, lesson) {
     'Spotlight ' + book + ' · Unit ' + unit + ' · Lesson ' + lesson +
     ' — ready to download';
 
-  // Build preview table
   const stages = plan.stages || [];
   let rows = '';
   stages.forEach(s => {
