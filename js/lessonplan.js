@@ -283,8 +283,8 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
     'Textbook: Spotlight  |  Total time: 55 min\n' +
     'Teacher: ' + teacher + '\n' +
     'Grade/Level: ' + level + '\n\n' +
-    '=== TEACHER GUIDE (TG) ===\n' + tgText.slice(0, 7000) + '\n\n' +
-    '=== STUDENT BOOK (SB) ===\n' + sbText.slice(0, 5000) + '\n\n' +
+    '=== TEACHER GUIDE (TG) ===\n' + tgText + '\n\n' +
+    '=== STUDENT BOOK (SB) ===\n' + sbText + '\n\n' +
     'Generate the lesson plan JSON. No page numbers. Return ONLY the JSON object.';
 
   const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -294,13 +294,13 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
       'Authorization': 'Bearer ' + key,
     },
     body: JSON.stringify({
-      model: 'openai/gpt-oss-120b',
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user',   content: userMessage },
       ],
       temperature: 0.7,
-      max_tokens: 4000,
+      max_completion_tokens: 8192,
       stream: false,
     }),
   });
