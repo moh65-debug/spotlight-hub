@@ -22,7 +22,6 @@
 // ── Book structure ───────────────────────────────────────────
 const BOOK_UNITS = { '1': 6, '2': 6, '3': 5 };
 const LESSONS_PER_UNIT = 8;
-const ARCHIVE_BASE_LP = 'https://spotlight.dpdns.org/download/spotlight-trilogy';
 
 // ── State ────────────────────────────────────────────────────
 let _generatedPlan = null;
@@ -142,7 +141,7 @@ async function startGeneration() {
     const bookFolder  = 'Spotlight%20' + book;
     const unitFolder  = 'Unit%20' + unit;
     const lessonFolder= 'Lesson%20' + lesson;
-    const baseUrl     = ARCHIVE_BASE_LP + '/' + bookFolder + '/' + unitFolder + '/' + lessonFolder + '/';
+    const baseUrl     = 'https://spotlight.dpdns.org/proxy/archive/spotlight-trilogy/' + bookFolder + '/' + unitFolder + '/' + lessonFolder + '/';
     const sbUrl = baseUrl + 'Lesson-' + lesson + '-SB.pdf';
     const tgUrl = baseUrl + 'Lesson-' + lesson + '-TG.pdf';
 
@@ -153,7 +152,7 @@ async function startGeneration() {
         fetchPdfBytes(tgUrl),
       ]);
     } catch(e) {
-      throw new Error('Could not download PDFs from archive.org. Check your internet connection. (' + e.message + ')');
+      throw new Error('Could not download PDFs. Check your internet connection. (' + e.message + ')');
     }
     setStep(0, 'done');
 
@@ -202,8 +201,15 @@ async function startGeneration() {
 
 // ── Fetch PDF as ArrayBuffer ─────────────────────────────────
 async function fetchPdfBytes(url) {
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + url);
+  // Always route through the same-origin proxy to avoid CORS / HTTP-redirect issues.
+  // Normalise: replace any accidental /download/ prefix with /proxy/archive/
+  const safeUrl = url
+    .replace('https://spotlight.dpdns.org/download/', 'https://spotlight.dpdns.org/proxy/archive/')
+    .replace('https://archive.org/download/',         'https://spotlight.dpdns.org/proxy/archive/')
+    .replace('https://s3.us.archive.org/',            'https://spotlight.dpdns.org/proxy/archive/');
+
+  const resp = await fetch(safeUrl, { credentials: 'omit', redirect: 'follow' });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + safeUrl);
   return await resp.arrayBuffer();
 }
 
