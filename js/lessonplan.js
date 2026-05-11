@@ -163,7 +163,7 @@ async function startGeneration() {
     setStep(3, 'active');
     let plan;
     try {
-      plan = await callGroq(tgText, sbText, _currentLessonCode, teacher, level, unit, lesson);
+      plan = await callGroq(tgText, sbText, _currentLessonCode, teacher, level, unit, lesson, book);
     } catch(e) {
       throw new Error('AI generation failed. ' + e.message);
     }
@@ -227,7 +227,7 @@ complete, classroom-ready lesson plan as a single valid JSON object.
 Do NOT output anything outside the JSON — no preamble, no markdown fences.
 
 Fixed values you MUST use exactly:
-  "textbook": "Spotlight"
+  "textbook": "Spotlight 1" (or 2 or 3 — match the actual book)
   "time": "55 min"
   "tools_and_materials": "Student Book, Audio recordings, Whiteboard/markers"
   "integrated_skills": "Listening, Speaking, Reading, Writing"
@@ -236,7 +236,7 @@ Return EXACTLY this schema (all fields required):
 {
   "teacher": "",
   "level": "",
-  "textbook": "Spotlight",
+  "textbook": "Spotlight 1" (or 2 or 3 — match the actual book),
   "time": "55 min",
   "unit": "",
   "lesson_title": "",
@@ -265,10 +265,11 @@ Rules:
 - Use the teacher name and grade/level provided by the user.`;
 
 // ── Call Groq API via Cloudflare Worker proxy ────────────────
-async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson) {
+async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson, bookNum) {
+  const textbookLabel = 'Spotlight ' + (bookNum || '1');
   const userMessage =
     'Lesson code: ' + lessonCode + '  (Unit ' + unit + ', Lesson ' + lesson + ')\n' +
-    'Textbook: Spotlight  |  Total time: 55 min\n' +
+    'Textbook: ' + textbookLabel + '  |  Total time: 55 min\n' +
     'Teacher: ' + teacher + '\n' +
     'Grade/Level: ' + level + '\n\n' +
     '=== TEACHER GUIDE (TG) ===\n' + tgText + '\n\n' +
@@ -313,7 +314,7 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
   try { plan = JSON.parse(raw); }
   catch(e) { throw new Error('Could not parse AI response as JSON. Raw: ' + raw.slice(0, 300)); }
 
-  plan.textbook            = 'Spotlight';
+  plan.textbook            = textbookLabel;
   plan.time                = '55 min';
   plan.tools_and_materials = 'Student Book, Audio recordings, Whiteboard/markers';
   plan.integrated_skills   = 'Listening, Speaking, Reading, Writing';
@@ -509,11 +510,11 @@ async function buildDocx(plan) {
   // ── Info rows ─────────────────────────────────────────────
   const infoRow1 = new TableRow({ children: [
     hCell('Teacher:',  C_LBL1, { fill: ACCENT }),
-    dCell(plan.teacher,  C_VAL1, { vAlign: VerticalAlign.CENTER }),
+    dCell(plan.teacher,  C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
     hCell('Level:',    C_LBL2, { fill: ACCENT }),
-    dCell(plan.level,    C_VAL2, { vAlign: VerticalAlign.CENTER }),
+    dCell(plan.level,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
     hCell('Textbook:', C_LBL3, { fill: ACCENT }),
-    dCell(plan.textbook, C_VAL3, { vAlign: VerticalAlign.CENTER }),
+    dCell(plan.textbook, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
     hCell('Time:',     C_LBL4, { fill: ACCENT }),
     dCell(plan.time,     C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
@@ -522,11 +523,11 @@ async function buildDocx(plan) {
     hCell('Unit:',              C_LBL1, { fill: ACCENT }),
     dCell(plan.unit,            C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
     hCell('Lesson:',            C_LBL2, { fill: ACCENT }),
-    dCell(plan.lesson_title,    C_VAL2, { vAlign: VerticalAlign.CENTER }),
+    dCell(plan.lesson_title,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
     hCell('Tools & Materials:', C_LBL3, { fill: ACCENT }),
-    dCell(plan.tools_and_materials, C_VAL3, { vAlign: VerticalAlign.CENTER }),
+    dCell(plan.tools_and_materials, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
     hCell('Skills:',            C_LBL4, { fill: ACCENT }),
-    dCell(plan.integrated_skills,   C_VAL4, { vAlign: VerticalAlign.CENTER }),
+    dCell(plan.integrated_skills,   C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
   // ── Objectives row ────────────────────────────────────────

@@ -38,19 +38,33 @@ function saveIcon()    { return `<svg width="11" height="11" fill="none" viewBox
 function saveAllIcon() { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M2 9h8M4 5l2 3 2-3M6 2v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`; }
 function previewIcon() { return `<svg width="11" height="11" fill="none" viewBox="0 0 12 12"><ellipse cx="6" cy="6" rx="4.5" ry="4.5" stroke="currentColor" stroke-width="1.3"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/></svg>`; }
 
+function extractBookNum(url) {
+  try {
+    const parts = decodeURIComponent(new URL(url).pathname).split('/');
+    for (const p of parts) {
+      const bm = p.match(/^Spotlight\s+(\d+)/i);
+      if (bm) return bm[1];
+    }
+  } catch (_) {}
+  return '';
+}
+
 function smartFilename(url, type) {
   try {
     const parts = decodeURIComponent(new URL(url).pathname).split('/');
-    let unitNum = '', lessonNum = '';
+    let bookNum = '', unitNum = '', lessonNum = '';
     for (const p of parts) {
+      const bm = p.match(/^Spotlight\s+(\d+)/i);
       const um = p.match(/^Unit\s+(\d+)/i);
       const lm = p.match(/^Lesson\s+(\d+)/i);
+      if (bm) bookNum = bm[1];
       if (um) unitNum = um[1];
       if (lm) lessonNum = lm[1];
     }
+    const b = bookNum   ? `SP${bookNum}`   : '';
     const u = unitNum   ? `U${unitNum}`   : '';
     const l = lessonNum ? `L${lessonNum}` : '';
-    const prefix = [u, l].filter(Boolean).join('-');
+    const prefix = [b, u, l].filter(Boolean).join('-');
     if (prefix) return `${prefix}-${type}.pdf`;
   } catch (_) {}
   return `${type}.pdf`;
@@ -66,13 +80,27 @@ function btnPdfGroup(href, fname, primaryClass, primaryLabel, previewExtraClass)
 
 function btnSB(href, label, unitNum, lessonNum) {
   label = label || 'Student Book';
-  const fname = (unitNum && lessonNum) ? `U${unitNum}-L${lessonNum}-SB.pdf` : smartFilename(href, 'SB');
+  let fname;
+  if (unitNum && lessonNum) {
+    const bookNum = extractBookNum(href);
+    const b = bookNum ? `SP${bookNum}` : '';
+    fname = `${b}-U${unitNum}-L${lessonNum}-SB.pdf`;
+  } else {
+    fname = smartFilename(href, 'SB');
+  }
   return btnPdfGroup(href, fname, 'btn-sb', label, '');
 }
 
 function btnTG(href, label, unitNum, lessonNum) {
   label = label || 'Teacher Guide';
-  const fname = (unitNum && lessonNum) ? `U${unitNum}-L${lessonNum}-TG.pdf` : smartFilename(href, 'TG');
+  let fname;
+  if (unitNum && lessonNum) {
+    const bookNum = extractBookNum(href);
+    const b = bookNum ? `SP${bookNum}` : '';
+    fname = `${b}-U${unitNum}-L${lessonNum}-TG.pdf`;
+  } else {
+    fname = smartFilename(href, 'TG');
+  }
   return btnPdfGroup(href, fname, 'btn-tg', label, '');
 }
 
