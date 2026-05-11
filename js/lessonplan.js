@@ -1,23 +1,12 @@
 // ============================================================
 //  LESSONPLAN.JS — Client-side lesson plan generator
-//  Fetches PDFs, extracts text with pdf.js, calls Groq API,
+//  Fetches PDFs, extracts text with pdf.js, calls Groq API via
+//  Cloudflare Worker proxy (API key hidden server-side),
 //  builds a .docx using docx.js
 // ============================================================
 
-// ── Key assembly (split to avoid plain-text scanning) ────────
-(function(){
-  const _s=[
-    'NnZuTE1EU3VJWA==',
-    'aHI2Nkc3NUI0MA==',
-    'V0dkeWIzRllVUA==',
-    'cmFHZkVKMUZ4aA==',
-    'MmVDOGdkY3c0QW16',
-  ];
-  window._gk=function(){
-    const _p=['g','s','k','_'].join('');
-    return _p+_s.map(function(x){return atob(x);}).join('');
-  };
-})();
+// Groq API is proxied through Cloudflare Worker — key never exposed to client
+const GROQ_PROXY = 'https://spotlight.dpdns.org/proxy/groq';
 
 // ── Book structure ───────────────────────────────────────────
 const BOOK_UNITS = { '1': 6, '2': 6, '3': 5 };
@@ -275,9 +264,8 @@ Rules:
 - Stage times must add up to exactly 55 minutes.
 - Use the teacher name and grade/level provided by the user.`;
 
-// ── Call Groq API directly ───────────────────────────────────
+// ── Call Groq API via Cloudflare Worker proxy ────────────────
 async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson) {
-  const key = _gk();
   const userMessage =
     'Lesson code: ' + lessonCode + '  (Unit ' + unit + ', Lesson ' + lesson + ')\n' +
     'Textbook: Spotlight  |  Total time: 55 min\n' +
@@ -287,12 +275,9 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
     '=== STUDENT BOOK (SB) ===\n' + sbText + '\n\n' +
     'Generate the lesson plan JSON. No page numbers. Return ONLY the JSON object.';
 
-  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const resp = await fetch(GROQ_PROXY, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + key,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
       messages: [
@@ -307,7 +292,7 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
 
   if (!resp.ok) {
     const errBody = await resp.text();
-    throw new Error('Groq API error ' + resp.status + ': ' + errBody.slice(0, 200));
+    throw new Error('AI service error ' + resp.status + ': ' + errBody.slice(0, 200));
   }
 
   const data = await resp.json();
