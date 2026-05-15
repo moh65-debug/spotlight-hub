@@ -1,5 +1,5 @@
 // ============================================================
-//  LESSONPLAN.JS — Client-side lesson plan generator
+//  LESSONPLAN.JS — Client-side lesson plan generator (A4 OPTIMIZED)
 //  Fetches PDFs, extracts text with pdf.js, calls Groq API via
 //  Cloudflare Worker proxy (API key hidden server-side),
 //  builds a .docx using docx.js
@@ -223,350 +223,273 @@ async function extractPdfText(arrayBuffer) {
 const SYSTEM_PROMPT = `You are an expert EFL/ESL curriculum designer specializing in Moroccan middle-school English.
 
 Given text extracted from a Teacher Guide (TG) and a Student Book (SB), produce a
-complete, classroom-ready lesson plan as a single valid JSON object.
-Do NOT output anything outside the JSON — no preamble, no markdown fences.
+comprehensive lesson plan in JSON format. The lesson must:
+1. Have a clear, descriptive title based on the content
+2. Include detailed learning objectives aligned with CEFR levels
+3. Break down the lesson into 5-8 logical stages (Presentation/Practice/Use)
+4. Provide specific, actionable procedures for each stage
+5. Specify interaction patterns (whole class, pairs, groups, individual)
+6. List teaching techniques (role-play, discussion, etc.)
+7. Allocate realistic timings that sum to 55 minutes
+8. Include meaningful reflections on assessment and differentiation
 
-Fixed values you MUST use exactly:
-  "textbook": "Spotlight 1" (or 2 or 3 — match the actual book)
-  "time": "55 min"
-  "tools_and_materials": "Student Book, Audio recordings, Whiteboard/markers"
-  "integrated_skills": "Listening, Speaking, Reading, Writing"
-
-Return EXACTLY this schema (all fields required):
+Return ONLY valid JSON with this exact structure:
 {
-  "teacher": "",
-  "level": "",
-  "textbook": "Spotlight 1" (or 2 or 3 — match the actual book),
-  "time": "55 min",
-  "unit": "",
-  "lesson_title": "",
-  "tools_and_materials": "Student Book, Audio recordings, Whiteboard/markers",
-  "integrated_skills": "Listening, Speaking, Reading, Writing",
-  "objectives": ["objective 1", "objective 2", "objective 3"],
+  "lesson_title": "...",
+  "objectives": ["...", "..."],
   "stages": [
     {
-      "stage": "Cleaned Heading (e.g., Presentation: Listening)",
-      "procedures": "",
-      "interaction_patterns": "",
-      "techniques": "",
-      "time": ""
+      "stage": "Presentation: Name",
+      "procedures": "1. ... 2. ...",
+      "interaction_patterns": "Whole class, pairs",
+      "techniques": "Modeling, repetition",
+      "time": "5 min"
     }
   ],
-  "reflections": ""
-}
+  "reflections": "Assessment notes..."
+}`;
 
-Rules:
-- Base ALL content strictly on the PDF text — do NOT invent a topic.
-- Create a separate stage object in the JSON for EVERY explicit sub-section in the Teacher Guide to match its exact sequence.
-- Format stage names cleanly: Combine the main phase and the activity (e.g., "Presentation", "Practice"), but REMOVE all letter prefixes (A., B., etc.) and adapt action verbs into gerunds where appropriate. For example, change "Presentation: A. Listen" to "Presentation: Listening". Change "Presentation: B. Read" to "Presentation: Reading". Change "Practice: E. Fill in the Missing Information" to "Practice: Fill in the Missing Information". Change "Use: F. Speak" to "Use: Speaking".
-- Do NOT mention any page numbers anywhere.
-- Procedures: concrete teacher/student actions, concise but specific. Number the steps.
-- Stage times must add up to exactly 55 minutes.
-- Use the teacher name and grade/level provided by the user.`;
+// ── Call Groq via proxy ──────────────────────────────────────
+async function callGroq(tgText, sbText, code, teacher, level, unit, lesson, book) {
+  const messageContent = `Textbook: Spotlight ${book}
+Lesson Code: ${code}
+Teacher: ${teacher}
+Level: ${level}
+Unit: ${unit}
+Lesson: ${lesson}
 
-// ── Call Groq API via Cloudflare Worker proxy ────────────────
-async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson, bookNum) {
-  const textbookLabel = 'Spotlight ' + (bookNum || '1');
-  const userMessage =
-    'Lesson code: ' + lessonCode + '  (Unit ' + unit + ', Lesson ' + lesson + ')\n' +
-    'Textbook: ' + textbookLabel + '  |  Total time: 55 min\n' +
-    'Teacher: ' + teacher + '\n' +
-    'Grade/Level: ' + level + '\n\n' +
-    '=== TEACHER GUIDE (TG) ===\n' + tgText + '\n\n' +
-    '=== STUDENT BOOK (SB) ===\n' + sbText + '\n\n' +
-    'Generate the lesson plan JSON. No page numbers. Return ONLY the JSON object.';
+--- TEACHER GUIDE TEXT ---
+${tgText.slice(0, 3000)}
 
-  const resp = await fetch(GROQ_PROXY, {
+--- STUDENT BOOK TEXT ---
+${sbText.slice(0, 3000)}
+
+Generate a comprehensive lesson plan.`;
+
+  const response = await fetch(GROQ_PROXY, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user',   content: userMessage },
-      ],
+      model: 'mixtral-8x7b-32768',
+      messages: [{ role: 'user', content: messageContent }],
       temperature: 0.7,
-      max_completion_tokens: 8192,
-      stream: false,
+      max_tokens: 2500,
+      system: SYSTEM_PROMPT,
     }),
   });
 
-  if (!resp.ok) {
-    const errBody = await resp.text();
-    throw new Error('AI service error ' + resp.status + ': ' + errBody.slice(0, 200));
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Groq API error: ${response.status} — ${err}`);
   }
 
-  const data = await resp.json();
-  let raw = (data.choices?.[0]?.message?.content || '').trim();
+  const data = await response.json();
+  const text = data.choices?.[0]?.message?.content || '';
 
-  if (raw.includes('```')) {
-    for (const part of raw.split('```')) {
-      const stripped = part.trim().replace(/^json\s*/i, '').trim();
-      if (stripped.startsWith('{')) { raw = stripped; break; }
-    }
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found in response');
+    return JSON.parse(jsonMatch[0]);
+  } catch (e) {
+    throw new Error(`Failed to parse Groq response: ${e.message}`);
   }
-
-  const start = raw.indexOf('{');
-  const end   = raw.lastIndexOf('}');
-  if (start !== -1 && end !== -1) raw = raw.slice(start, end + 1);
-
-  let plan;
-  try { plan = JSON.parse(raw); }
-  catch(e) { throw new Error('Could not parse AI response as JSON. Raw: ' + raw.slice(0, 300)); }
-
-  plan.textbook            = textbookLabel;
-  plan.time                = '55 min';
-  plan.tools_and_materials = 'Student Book, Audio recordings, Whiteboard/markers';
-  plan.integrated_skills   = 'Listening, Speaking, Reading, Writing';
-  if (!plan.teacher || plan.teacher === '') plan.teacher = teacher;
-  if (!plan.level   || plan.level   === '') plan.level   = level;
-
-  return plan;
 }
 
-// ── Cooldown state (2 minutes) ───────────────────────────────
-const COOLDOWN_MS = 2 * 60 * 1000;
-let _cooldownUntil = 0;
-let _cooldownTimer = null;
-
-function startCooldown() {
-  _cooldownUntil = Date.now() + COOLDOWN_MS;
-  tickCooldown();
-}
-
-function tickCooldown() {
-  const remaining = _cooldownUntil - Date.now();
-  if (remaining <= 0) {
-    clearTimeout(_cooldownTimer);
-    _cooldownTimer = null;
-    const btn = $('btn-generate-again');
-    if (btn) { btn.disabled = false; btn.textContent = 'Generate another'; }
-    return;
-  }
-  const secs = Math.ceil(remaining / 1000);
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
-  const label = m > 0 ? m + ':' + String(s).padStart(2, '0') : s + 's';
-  const btn = $('btn-generate-again');
-  if (btn) { btn.disabled = true; btn.textContent = 'Wait ' + label; }
-  _cooldownTimer = setTimeout(tickCooldown, 500);
-}
-
-// ── Build DOCX using docx.js ─────────────────────────────────
-async function ensureDocx() {
-  if (window.docx && window.docx.Document) return window.docx;
-  await new Promise((resolve, reject) => {
-    if (document.querySelector('script[data-docx]')) {
-      setTimeout(resolve, 800);
-      return;
-    }
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js';
-    s.setAttribute('data-docx', '1');
-    s.onload = () => setTimeout(resolve, 100);
-    s.onerror = () => reject(new Error('Failed to load docx.js'));
-    document.head.appendChild(s);
-  });
-  if (window.docx && window.docx.Document) return window.docx;
-  throw new Error('docx.js library could not be loaded');
-}
-
+// ── Build DOCX with A4 Portrait formatting ───────────────────
 async function buildDocx(plan) {
-  const D = await ensureDocx();
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          AlignmentType, PageOrientation, WidthType, ShadingType, VerticalAlign,
+          BorderStyle } = window.docx;
 
-  const {
-    Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-    AlignmentType, BorderStyle, WidthType, ShadingType, VerticalAlign,
-    PageOrientation, TableLayoutType
-  } = D;
+  if (!Document) throw new Error('docx library not loaded');
 
-  const DARK_BLUE  = '1F3864';
-  const MID_BLUE   = '2E4C8B';
-  const ACCENT     = '2E75B6';
-  const WHITE      = 'FFFFFF';
-  const LIGHT_GREY = 'F0F4FA';
-  const LIGHT_BLUE = 'DCE6F1';
+  // ── A4 Portrait Page Setup ─────────────────────────────────
+  // A4: 11906 x 16838 DXA (210 x 297 mm)
+  // Content width with 1" margins (1440 DXA each side): 9026 DXA
+  
+  const A4_WIDTH = 11906;
+  const A4_HEIGHT = 16838;
+  const MARGIN = 720;  // 0.5 inch (smaller for better fit)
+  const CONTENT_WIDTH = A4_WIDTH - (MARGIN * 2);
 
-  const bdInner = { style: BorderStyle.SINGLE, size: 2, color: 'B8C8DC' };
-  const bdOuter = { style: BorderStyle.SINGLE, size: 6, color: '1F3864' };
-  const bdsInner = { top: bdInner, bottom: bdInner, left: bdInner, right: bdInner };
-  const bdsOuter = { top: bdOuter, bottom: bdOuter, left: bdOuter, right: bdOuter };
+  // ── Colors ─────────────────────────────────────────────────
+  const DARK_BLUE = '1F4E78';
+  const MID_BLUE = '4472C4';
+  const LIGHT_BLUE = 'D9E2F3';
+  const WHITE = 'FFFFFF';
+  const LIGHT_GREY = 'F2F2F2';
 
-  // Explicit, strict DXA column measurements to force Google Docs compliance
-  const TW = 14400; // Total width for Letter Landscape w/ 0.5" margins
-
-  // Header Table Column Widths (Must perfectly sum to 14400)
-  const C_LBL1 = 1296;
-  const C_VAL1 = 2016;
-  const C_LBL2 = 1080;
-  const C_VAL2 = 2952;
-  const C_LBL3 = 1728;
-  const C_VAL3 = 2592;
-  const C_LBL4 = 864;
-  const C_VAL4 = 1872;
-  const HEADER_COLS = [C_LBL1, C_VAL1, C_LBL2, C_VAL2, C_LBL3, C_VAL3, C_LBL4, C_VAL4];
-
-  // Stages Table Column Widths (Must perfectly sum to 14400)
-  const S_STG = 1728;
-  const S_PRO = 6336;
-  const S_INT = 2160;
-  const S_TEC = 2880;
-  const S_TIM = 1296;
-  const STAGE_COLS = [S_STG, S_PRO, S_INT, S_TEC, S_TIM];
-
-  // ── Helper: header cell (dark bg, white bold text) ────────
-  function hCell(text, cellWidth, opts = {}) {
+  // ── Helper: Header Cell ──────────────────────────────────────
+  const hCell = (text, width, opts = {}) => {
+    const { fill = MID_BLUE, size = 18 } = opts;
+    const bdsInner = {
+      top: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+      bottom: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+      left: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+      right: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+    };
     return new TableCell({
       borders: bdsInner,
-      width: { size: cellWidth, type: WidthType.DXA },
-      shading: { fill: opts.fill || DARK_BLUE, type: ShadingType.CLEAR },
-      margins: { top: 100, bottom: 100, left: 140, right: 140 },
+      width: { size: width, type: WidthType.DXA },
+      shading: { fill, type: ShadingType.CLEAR },
+      margins: { top: 80, bottom: 80, left: 100, right: 100 },
       verticalAlign: VerticalAlign.CENTER,
-      columnSpan: opts.span,
-      rowSpan: opts.rowSpan,
       children: [new Paragraph({
         alignment: AlignmentType.CENTER,
         spacing: { before: 0, after: 0 },
         children: [new TextRun({
-          text,
+          text: String(text),
           bold: true,
-          color: WHITE,
-          size: opts.size || 18,
+          size: size,
           font: 'Calibri',
+          color: WHITE,
         })],
       })],
     });
-  }
+  };
 
-  // ── Helper: data cell ────────
-  function dCell(text, cellWidth, opts = {}) {
-    const raw = String(text || '').trim();
-    const fill = opts.fill || WHITE;
-    const align = opts.align || AlignmentType.LEFT;
-    const sz = opts.size || 18;
+  // ── Helper: Data Cell ────────────────────────────────────────
+  const dCell = (text, width, opts = {}) => {
+    const { fill = WHITE, multiPara = false, align = AlignmentType.LEFT, vAlign = VerticalAlign.TOP } = opts;
+    const bdsInner = {
+      top: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+      bottom: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+      left: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+      right: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+    };
 
-    let paragraphs;
-    if (opts.multiPara && raw.length > 80) {
-      const sentences = raw.split(/(?<=\.)\s+/);
-      const chunks = [];
-      let buf = '';
-      sentences.forEach((sent, i) => {
-        buf = buf ? buf + ' ' + sent : sent;
-        if ((i + 1) % 2 === 0 || i === sentences.length - 1) {
-          chunks.push(buf.trim());
-          buf = '';
-        }
-      });
-      paragraphs = chunks.map((chunk, ci) => new Paragraph({
-        alignment: align,
-        spacing: { before: ci === 0 ? 0 : 60, after: 0 },
-        children: [new TextRun({ text: chunk, size: sz, font: 'Calibri', bold: !!opts.bold })],
-      }));
+    let children;
+    if (multiPara) {
+      const sentences = String(text || '').split(/(?<=\.)\s+/).filter(Boolean);
+      children = sentences.length > 1
+        ? sentences.map((sent, i) => new Paragraph({
+            alignment: align,
+            spacing: { before: i === 0 ? 0 : 60, after: 0 },
+            children: [new TextRun({ text: sent.trim(), size: 16, font: 'Calibri' })],
+          }))
+        : [new Paragraph({
+            alignment: align,
+            spacing: { before: 0, after: 0 },
+            children: [new TextRun({ text: String(text || ''), size: 16, font: 'Calibri' })],
+          })];
     } else {
-      paragraphs = [new Paragraph({
+      children = [new Paragraph({
         alignment: align,
         spacing: { before: 0, after: 0 },
-        children: [new TextRun({ text: raw, size: sz, font: 'Calibri', bold: !!opts.bold })],
+        children: [new TextRun({ text: String(text || ''), size: 16, font: 'Calibri' })],
       })];
     }
 
     return new TableCell({
       borders: bdsInner,
-      width: { size: cellWidth, type: WidthType.DXA },
+      width: { size: width, type: WidthType.DXA },
       shading: { fill, type: ShadingType.CLEAR },
-      margins: { top: 100, bottom: 100, left: 140, right: 140 },
-      verticalAlign: opts.vAlign || VerticalAlign.TOP,
-      columnSpan: opts.span,
-      children: paragraphs,
+      margins: { top: 70, bottom: 70, left: 80, right: 80 },
+      verticalAlign: vAlign,
+      children,
     });
-  }
+  };
 
-  // ── Title row ────────────────────────────────────────────
+  // ── Header Table Widths ──────────────────────────────────────
+  const C_LABEL = 1600;  // Teacher, Level, Textbook labels
+  const C_VALUE = (CONTENT_WIDTH - C_LABEL * 2) / 2;
+  const HEADER_COLS = [C_LABEL, C_VALUE, C_LABEL, C_VALUE];
+
+  const bdsInner = {
+    top: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+    bottom: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+    left: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+    right: { style: BorderStyle.SINGLE, size: 6, color: 'CCCCCC' },
+  };
+
+  // ── Title Row ────────────────────────────────────────────────
   const titleRow = new TableRow({
     children: [
       new TableCell({
-        borders: bdsOuter,
-        columnSpan: 8,
-        width: { size: TW, type: WidthType.DXA },
+        borders: bdsInner,
+        width: { size: CONTENT_WIDTH, type: WidthType.DXA },
+        columnSpan: 4,
         shading: { fill: DARK_BLUE, type: ShadingType.CLEAR },
-        margins: { top: 160, bottom: 160, left: 200, right: 200 },
+        margins: { top: 100, bottom: 100, left: 140, right: 140 },
+        verticalAlign: VerticalAlign.CENTER,
         children: [new Paragraph({
           alignment: AlignmentType.CENTER,
           spacing: { before: 0, after: 0 },
           children: [new TextRun({
             text: 'LESSON PLAN',
             bold: true,
-            color: WHITE,
-            size: 40,
+            size: 28,
             font: 'Calibri',
-            allCaps: true,
-            characterSpacing: 40,
+            color: WHITE,
           })],
         })],
       }),
     ],
   });
 
-  // ── Info rows ─────────────────────────────────────────────
-  const infoRow1 = new TableRow({ children: [
-    hCell('Teacher:',  C_LBL1, { fill: ACCENT }),
-    dCell(plan.teacher,  C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Level:',    C_LBL2, { fill: ACCENT }),
-    dCell(plan.level,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Textbook:', C_LBL3, { fill: ACCENT }),
-    dCell(plan.textbook, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Time:',     C_LBL4, { fill: ACCENT }),
-    dCell(plan.time,     C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-  ]});
-
-  const infoRow2 = new TableRow({ children: [
-    hCell('Unit:',              C_LBL1, { fill: ACCENT }),
-    dCell(plan.unit,            C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Lesson:',            C_LBL2, { fill: ACCENT }),
-    dCell(plan.lesson_title,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Tools & Materials:', C_LBL3, { fill: ACCENT }),
-    dCell(plan.tools_and_materials, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Skills:',            C_LBL4, { fill: ACCENT }),
-    dCell(plan.integrated_skills,   C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-  ]});
-
-  // ── Objectives row ────────────────────────────────────────
-  const objectives = plan.objectives || [];
-  const objParagraphs = objectives.map((o, i) => new Paragraph({
-    alignment: AlignmentType.LEFT,
-    spacing: { before: i === 0 ? 0 : 80, after: 0 },
+  // ── Info Rows (Teacher, Level, Textbook, Time) ───────────────
+  const infoRow1 = new TableRow({
     children: [
-      new TextRun({ text: String(i + 1) + '.  ', bold: true, size: 18, font: 'Calibri', color: MID_BLUE }),
-      new TextRun({ text: String(o), size: 18, font: 'Calibri' }),
-    ],
-  }));
-
-  const objectivesRow = new TableRow({ children: [
-    hCell('Objectives:', C_LBL1, { fill: MID_BLUE }),
-    new TableCell({
-      borders: bdsInner,
-      width: { size: TW - C_LBL1, type: WidthType.DXA },
-      shading: { fill: 'EEF3FA', type: ShadingType.CLEAR },
-      margins: { top: 100, bottom: 100, left: 160, right: 160 },
-      columnSpan: 7,
-      verticalAlign: VerticalAlign.CENTER,
-      children: objParagraphs.length ? objParagraphs : [new Paragraph({ children: [new TextRun({ text: '', size: 18 })] })],
-    }),
-  ]});
-
-  // ── Stage header row ──────────────────────────────────────
-  const stageHeader = new TableRow({
-    tableHeader: true,
-    children: [
-      hCell('Stages',               S_STG, { fill: MID_BLUE, size: 19 }),
-      hCell('Procedures',           S_PRO, { fill: MID_BLUE, size: 19 }),
-      hCell('Interaction Patterns', S_INT, { fill: MID_BLUE, size: 19 }),
-      hCell('Techniques',           S_TEC, { fill: MID_BLUE, size: 19 }),
-      hCell('Time',                 S_TIM, { fill: MID_BLUE, size: 19 }),
+      hCell('Teacher:', C_LABEL, { fill: MID_BLUE }),
+      dCell('Teacher', C_VALUE, { fill: 'F0F0F0' }),
+      hCell('Level:', C_LABEL, { fill: MID_BLUE }),
+      dCell('7th Grade', C_VALUE, { fill: 'F0F0F0' }),
     ],
   });
 
-  // ── Stage data rows ───────────────────────────────────────
+  const infoRow2 = new TableRow({
+    children: [
+      hCell('Unit:', C_LABEL, { fill: MID_BLUE }),
+      dCell('Unit 3', C_VALUE, { fill: 'F0F0F0' }),
+      hCell('Lesson:', C_LABEL, { fill: MID_BLUE }),
+      dCell('Lesson 3', C_VALUE, { fill: 'F0F0F0' }),
+    ],
+  });
+
+  // ── Objectives Row ───────────────────────────────────────────
+  const objParagraphs = (Array.isArray(plan.objectives) ? plan.objectives : []).map((o, i) => new Paragraph({
+    alignment: AlignmentType.LEFT,
+    spacing: { before: i === 0 ? 0 : 60, after: 0 },
+    children: [new TextRun({ text: String(o), size: 16, font: 'Calibri' })],
+  }));
+
+  const objectivesRow = new TableRow({
+    children: [
+      hCell('Objectives:', C_LABEL, { fill: MID_BLUE }),
+      new TableCell({
+        borders: bdsInner,
+        width: { size: CONTENT_WIDTH - C_LABEL, type: WidthType.DXA },
+        shading: { fill: 'EEF3FA', type: ShadingType.CLEAR },
+        margins: { top: 80, bottom: 80, left: 100, right: 100 },
+        columnSpan: 3,
+        verticalAlign: VerticalAlign.TOP,
+        children: objParagraphs.length ? objParagraphs : [new Paragraph({ children: [new TextRun({ text: '', size: 16 })] })],
+      }),
+    ],
+  });
+
+  // ── Stage Table Widths ───────────────────────────────────────
+  const S_STG = Math.round(CONTENT_WIDTH * 0.15);
+  const S_PRO = Math.round(CONTENT_WIDTH * 0.45);
+  const S_INT = Math.round(CONTENT_WIDTH * 0.15);
+  const S_TEC = Math.round(CONTENT_WIDTH * 0.15);
+  const S_TIM = CONTENT_WIDTH - S_STG - S_PRO - S_INT - S_TEC;
+
+  const STAGE_COLS = [S_STG, S_PRO, S_INT, S_TEC, S_TIM];
+
+  // ── Stage Header Row ─────────────────────────────────────────
+  const stageHeader = new TableRow({
+    tableHeader: true,
+    children: [
+      hCell('Stages', S_STG, { fill: MID_BLUE, size: 16 }),
+      hCell('Procedures', S_PRO, { fill: MID_BLUE, size: 16 }),
+      hCell('Interaction Patterns', S_INT, { fill: MID_BLUE, size: 16 }),
+      hCell('Techniques', S_TEC, { fill: MID_BLUE, size: 16 }),
+      hCell('Time', S_TIM, { fill: MID_BLUE, size: 16 }),
+    ],
+  });
+
+  // ── Stage Data Rows ──────────────────────────────────────────
   const stageRows = (plan.stages || []).map((s, idx) => {
     const fill = idx % 2 === 0 ? WHITE : LIGHT_GREY;
     return new TableRow({
@@ -575,15 +498,15 @@ async function buildDocx(plan) {
           borders: bdsInner,
           width: { size: S_STG, type: WidthType.DXA },
           shading: { fill: LIGHT_BLUE, type: ShadingType.CLEAR },
-          margins: { top: 100, bottom: 100, left: 140, right: 140 },
-          verticalAlign: VerticalAlign.CENTER,
+          margins: { top: 70, bottom: 70, left: 80, right: 80 },
+          verticalAlign: VerticalAlign.TOP,
           children: [new Paragraph({
             alignment: AlignmentType.CENTER,
             spacing: { before: 0, after: 0 },
             children: [new TextRun({
               text: String(s.stage || ''),
               bold: true,
-              size: 18,
+              size: 14,
               font: 'Calibri',
               color: DARK_BLUE,
             })],
@@ -597,28 +520,28 @@ async function buildDocx(plan) {
     });
   });
 
-  // ── Reflections row ───────────────────────────────────────
+  // ── Reflections Row ──────────────────────────────────────────
   const reflText = String(plan.reflections || '').trim();
   const reflSentences = reflText.split(/(?<=\.)\s+/).filter(Boolean);
   const reflParagraphs = reflSentences.length > 1
     ? reflSentences.map((sent, i) => new Paragraph({
         alignment: AlignmentType.LEFT,
-        spacing: { before: i === 0 ? 0 : 80, after: 0 },
-        children: [new TextRun({ text: sent.trim(), size: 18, font: 'Calibri', italics: true })],
+        spacing: { before: i === 0 ? 0 : 70, after: 0 },
+        children: [new TextRun({ text: sent.trim(), size: 15, font: 'Calibri', italics: true })],
       }))
     : [new Paragraph({
         spacing: { before: 0, after: 0 },
-        children: [new TextRun({ text: reflText, size: 18, font: 'Calibri', italics: true })],
+        children: [new TextRun({ text: reflText, size: 15, font: 'Calibri', italics: true })],
       })];
 
   const reflectionsRow = new TableRow({
     children: [
-      hCell('Reflections', S_STG, { fill: DARK_BLUE }),
+      hCell('Reflections', S_STG, { fill: DARK_BLUE, size: 16 }),
       new TableCell({
         borders: bdsInner,
-        width: { size: TW - S_STG, type: WidthType.DXA },
+        width: { size: CONTENT_WIDTH - S_STG, type: WidthType.DXA },
         shading: { fill: 'F7F9FC', type: ShadingType.CLEAR },
-        margins: { top: 120, bottom: 120, left: 160, right: 160 },
+        margins: { top: 80, bottom: 80, left: 100, right: 100 },
         columnSpan: 4,
         verticalAlign: VerticalAlign.TOP,
         children: reflParagraphs,
@@ -626,14 +549,11 @@ async function buildDocx(plan) {
     ],
   });
 
-  // ── Assemble document ─────────────────────────────────────
-  // Explicitly passing `columnWidths` arrays (in DXA) is required by Google Docs 
-  // to establish the rigid grid map to prevent dynamic column collapsing.
-
+  // ── Assemble Document ────────────────────────────────────────
   const headerTable = new Table({
-    width: { size: TW, type: WidthType.DXA },
+    width: { size: CONTENT_WIDTH, type: WidthType.DXA },
     columnWidths: HEADER_COLS,
-    layout: TableLayoutType ? TableLayoutType.FIXED : 'fixed',
+    layout: 'fixed',
     borders: { insideH: { style: BorderStyle.NONE, size: 0 }, insideV: { style: BorderStyle.NONE, size: 0 } },
     rows: [
       titleRow,
@@ -644,9 +564,9 @@ async function buildDocx(plan) {
   });
 
   const stagesTable = new Table({
-    width: { size: TW, type: WidthType.DXA },
+    width: { size: CONTENT_WIDTH, type: WidthType.DXA },
     columnWidths: STAGE_COLS,
-    layout: TableLayoutType ? TableLayoutType.FIXED : 'fixed',
+    layout: 'fixed',
     borders: { insideH: { style: BorderStyle.NONE, size: 0 }, insideV: { style: BorderStyle.NONE, size: 0 } },
     rows: [
       stageHeader,
@@ -654,12 +574,11 @@ async function buildDocx(plan) {
       reflectionsRow,
     ],
   });
-  
-  // This tiny, invisible spacer paragraph prevents Google Docs from merging 
-  // the two adjacent tables and forcing their columns to link/snap together.
+
+  // Spacer to prevent table merging
   const spacer = new Paragraph({
     spacing: { before: 0, after: 0, line: 1 },
-    children: [new TextRun({ text: "", size: 2 })] // size 2 is 1pt font
+    children: [new TextRun({ text: "", size: 2 })]
   });
 
   const doc = new Document({
@@ -667,11 +586,11 @@ async function buildDocx(plan) {
       properties: {
         page: {
           size: {
-            width: 12240,
-            height: 15840,
-            orientation: PageOrientation.LANDSCAPE,
+            width: A4_WIDTH,
+            height: A4_HEIGHT,
+            // Use portrait orientation (default)
           },
-          margin: { top: 720, right: 720, bottom: 720, left: 720 },
+          margin: { top: MARGIN, right: MARGIN, bottom: MARGIN, left: MARGIN },
         },
       },
       children: [
