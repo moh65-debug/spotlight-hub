@@ -462,9 +462,9 @@ async function buildDocx(plan) {
   const HEADER_COLS = [C_LBL1, C_VAL1, C_LBL2, C_VAL2, C_LBL3, C_VAL3, C_LBL4, C_VAL4];
 
   // Stages Table Column Widths (Must perfectly sum to 10466)
-  const S_STG = 1256;
+  const S_STG = 1570;
   const S_PRO = 4604;
-  const S_INT = 1570;
+  const S_INT = 1256;
   const S_TEC = 2094;
   const S_TIM = 942;
   const STAGE_COLS = [S_STG, S_PRO, S_INT, S_TEC, S_TIM];
