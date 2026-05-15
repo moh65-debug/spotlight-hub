@@ -477,10 +477,10 @@ async function buildDocx(plan) {
   const TW = 10466; // A4 portrait content width: 11906 - 720 - 720 = 10466 DXA
 
   // Header Table Column Widths (Must perfectly sum to 10466)
-  const C_LBL1 = 1040;
+  const C_LBL1 = 1140;
   const C_VAL1 = 1264;
   const C_LBL2 = 1076;
-  const C_VAL2 = 1740;
+  const C_VAL2 = 1640;
   const C_LBL3 = 1256;
   const C_VAL3 = 1984;
   const C_LBL4 = 840;
@@ -490,8 +490,8 @@ async function buildDocx(plan) {
   // Stages Table Column Widths (Must perfectly sum to 10466)
   const S_STG = 1570;
   const S_PRO = 4604;
-  const S_INT = 1256;
-  const S_TEC = 2094;
+  const S_INT = 1456;
+  const S_TEC = 1894;
   const S_TIM = 942;
   const STAGE_COLS = [S_STG, S_PRO, S_INT, S_TEC, S_TIM];
 
