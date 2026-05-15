@@ -266,31 +266,57 @@ Examples:
 
 Write exactly 2 SMART objectives covering different skills (e.g., reading + speaking + writing).
 
-RULE 2 - STAGE NAMES (PPP FRAMEWORK)
-Every stage name MUST follow the PPP (Presentation-Practice-Use) framework.
-Use ONLY these exact phase labels:
-  - Warm-up          (optional opening stage)
-  - Presentation     (teacher introduces new language/content)
-  - Practice         (guided/controlled practice)
-  - Use              (free/communicative production)
-  - Wrap-up          (optional closing/review stage)
+RULE 2 - STAGE NAMES (PPP OR ESA FRAMEWORK)
+Every lesson must be built around one framework. Choose the one that best fits the lesson content and flow, then label every stage accordingly.
+Framework A — PPP (Presentation-Practice-Produce)
+Use when the lesson centres on introducing new grammar or vocabulary explicitly, drilling it in controlled activities, then freeing students to produce it independently.
+Allowed phase labels:
 
-Format: "Phase: Activity Name"
-The Activity Name should be a short gerund or noun phrase describing what students DO.
+Warm-up — optional opening stage
+Presentation — teacher introduces new language or content
+Practice — guided and controlled practice
+Use — free communicative production
+Wrap-up — optional closing or review stage
+
+Framework B — ESA (Engage-Study-Activate)
+Use when the lesson centres on skills (reading, listening, speaking, writing) or when authentic engagement and communicative use drive the flow. Based on Jeremy Harmer's framework.
+Allowed phase labels:
+
+Engage — motivate students and activate prior knowledge
+Study — focus on language form, meaning, or skill mechanics
+Activate — students use language freely and communicatively
+Wrap-up — optional closing or review stage
+
+ESA allows flexible sequencing. Choose one of these valid patterns:
+
+Straight Arrow: Engage → Study → Activate (standard; similar to PPP)
+Boomerang: Engage → Activate → Study → Activate (for discovery or task-based lessons)
+Patchwork: Engage → Study → Activate → Study → Activate → Wrap-up (for complex multi-skill lessons)
+
+Stage name format (both frameworks):
+"Phase: Activity Name"
+The Activity Name must be a short gerund or noun phrase describing what students DO.
 REMOVE all letter prefixes (A., B., C., etc.) from the Teacher Guide.
 
-Good examples:
-  "Warm-up: Vocabulary Elicitation"
-  "Presentation: Reading for Gist"
-  "Practice: Listening and Note-Taking"
-  "Practice: Creative Group Work"
-  "Use: Speaking and Sharing"
-  "Wrap-up: Exit Review"
+Good examples — PPP:
 
-Bad examples - NEVER use these forms:
-  "Fun Review: Find Someone Who"   -> use "Wrap-up: Find Someone Who"
-  "Global Citizenship"             -> use "Warm-up: Global Citizenship"
-  "Presentation: A. Listen"        -> use "Presentation: Listening"
+"Warm-up: Vocabulary Elicitation"
+"Presentation: Reading for Gist"
+"Practice: Listening and Note-Taking"
+"Use: Speaking and Sharing"
+
+Good examples — ESA:
+
+"Engage: Topic Discussion"
+"Study: Analysing Text Structure"
+"Activate: Writing a Short Paragraph"
+"Activate: Role-Play and Sharing"
+
+Bad examples — NEVER use these forms:
+
+"Fun Review: Find Someone Who" → use "Wrap-up: Find Someone Who"
+"Global Citizenship" → use "Engage: Global Citizenship Discussion"
+"Presentation: A. Listen" → use "Presentation: Listening" or "Study: Listening"
 
 RULE 3 - PROCEDURES (PIPE-SEPARATED STEPS)
 Write each procedure as numbered steps separated by the pipe character |
