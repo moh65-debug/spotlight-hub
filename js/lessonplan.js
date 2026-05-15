@@ -451,13 +451,13 @@ async function buildDocx(plan) {
   const TW = 10466; // A4 portrait content width: 11906 - 720 - 720 = 10466 DXA
 
   // Header Table Column Widths (Must perfectly sum to 10466)
-  const C_LBL1 = 1068;
-  const C_VAL1 = 1464;
-  const C_LBL2 = 784;
-  const C_VAL2 = 2144;
+  const C_LBL1 = 1040;
+  const C_VAL1 = 1264;
+  const C_LBL2 = 1076;
+  const C_VAL2 = 1740;
   const C_LBL3 = 1256;
-  const C_VAL3 = 1884;
-  const C_LBL4 = 500;
+  const C_VAL3 = 1984;
+  const C_LBL4 = 740;
   const C_VAL4 = 1366;
   const HEADER_COLS = [C_LBL1, C_VAL1, C_LBL2, C_VAL2, C_LBL3, C_VAL3, C_LBL4, C_VAL4];
 
@@ -560,24 +560,24 @@ async function buildDocx(plan) {
 
   // ── Info rows ─────────────────────────────────────────────
   const infoRow1 = new TableRow({ children: [
-    hCell('Teacher',  C_LBL1, { fill: ACCENT }),
+    hCell('Teacher:',  C_LBL1, { fill: ACCENT }),
     dCell(plan.teacher,  C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Level',    C_LBL2, { fill: ACCENT }),
+    hCell('Level:',    C_LBL2, { fill: ACCENT }),
     dCell(plan.level,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Textbook', C_LBL3, { fill: ACCENT }),
+    hCell('Textbook:', C_LBL3, { fill: ACCENT }),
     dCell(plan.textbook, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Time',     C_LBL4, { fill: ACCENT }),
+    hCell('Time:',     C_LBL4, { fill: ACCENT }),
     dCell(plan.time,     C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
   const infoRow2 = new TableRow({ children: [
-    hCell('Unit',              C_LBL1, { fill: ACCENT }),
+    hCell('Unit:',              C_LBL1, { fill: ACCENT }),
     dCell(plan.unit,            C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Lesson',            C_LBL2, { fill: ACCENT }),
+    hCell('Lesson:',            C_LBL2, { fill: ACCENT }),
     dCell(plan.lesson_title,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Tools & Materials', C_LBL3, { fill: ACCENT }),
+    hCell('Tools & Materials:', C_LBL3, { fill: ACCENT }),
     dCell(plan.tools_and_materials, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Skills',            C_LBL4, { fill: ACCENT }),
+    hCell('Skills:',            C_LBL4, { fill: ACCENT }),
     dCell(plan.integrated_skills,   C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
@@ -593,7 +593,7 @@ async function buildDocx(plan) {
   }));
 
   const objectivesRow = new TableRow({ children: [
-    hCell('Objectives', C_LBL1, { fill: MID_BLUE }),
+    hCell('Objectives:', C_LBL1, { fill: MID_BLUE }),
     new TableCell({
       borders: bdsInner,
       width: { size: TW - C_LBL1, type: WidthType.DXA },
