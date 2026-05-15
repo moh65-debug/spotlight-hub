@@ -396,13 +396,13 @@ async function buildDocx(plan) {
   const TW = 10466; // A4 portrait content width: 11906 - 720 - 720 = 10466 DXA
 
   // Header Table Column Widths (Must perfectly sum to 10466)
-  const C_LBL1 = 1040;
+  const C_LBL1 = 940;
   const C_VAL1 = 1464;
-  const C_LBL2 = 904;
-  const C_VAL2 = 1464;
+  const C_LBL2 = 784;
+  const C_VAL2 = 2144;
   const C_LBL3 = 1256;
   const C_VAL3 = 1884;
-  const C_LBL4 = 1088;
+  const C_LBL4 = 628;
   const C_VAL4 = 1366;
   const HEADER_COLS = [C_LBL1, C_VAL1, C_LBL2, C_VAL2, C_LBL3, C_VAL3, C_LBL4, C_VAL4];
 
