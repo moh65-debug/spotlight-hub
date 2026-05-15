@@ -242,7 +242,7 @@ Return EXACTLY this schema (all fields required):
   "lesson_title": "",
   "tools_and_materials": "Student Book, Audio recordings, Whiteboard/markers",
   "integrated_skills": "Listening, Speaking, Reading, Writing",
-  "objectives": ["SMART objective 1", "SMART objective 2", "SMART objective 3"],
+  "objectives": ["SMART objective 1", "SMART objective 2"],
   "stages": [
     {
       "stage": "PPP Phase: Activity Name",
@@ -264,7 +264,7 @@ Examples:
 - "By the end of this lesson, 75% of students will be able to use at least three new vocabulary words in original spoken sentences during the group discussion."
 - "By the end of this lesson, 80% of students will be able to write a short paragraph (5+ sentences) using the target grammar structure in the exit ticket."
 
-Write exactly 3 SMART objectives covering different skills (e.g., reading + speaking + writing).
+Write exactly 2 SMART objectives covering different skills (e.g., reading + speaking + writing).
 
 RULE 2 - STAGE NAMES (PPP FRAMEWORK)
 Every stage name MUST follow the PPP (Presentation-Practice-Use) framework.
@@ -457,8 +457,8 @@ async function buildDocx(plan) {
   const C_VAL2 = 1740;
   const C_LBL3 = 1256;
   const C_VAL3 = 1984;
-  const C_LBL4 = 740;
-  const C_VAL4 = 1366;
+  const C_LBL4 = 840;
+  const C_VAL4 = 1266;
   const HEADER_COLS = [C_LBL1, C_VAL1, C_LBL2, C_VAL2, C_LBL3, C_VAL3, C_LBL4, C_VAL4];
 
   // Stages Table Column Widths (Must perfectly sum to 10466)
@@ -560,24 +560,24 @@ async function buildDocx(plan) {
 
   // ── Info rows ─────────────────────────────────────────────
   const infoRow1 = new TableRow({ children: [
-    hCell('Teacher:',  C_LBL1, { fill: ACCENT }),
+    hCell('Teacher',  C_LBL1, { fill: ACCENT }),
     dCell(plan.teacher,  C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Level:',    C_LBL2, { fill: ACCENT }),
+    hCell('Level',    C_LBL2, { fill: ACCENT }),
     dCell(plan.level,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Textbook:', C_LBL3, { fill: ACCENT }),
+    hCell('Textbook', C_LBL3, { fill: ACCENT }),
     dCell(plan.textbook, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Time:',     C_LBL4, { fill: ACCENT }),
+    hCell('Time',     C_LBL4, { fill: ACCENT }),
     dCell(plan.time,     C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
   const infoRow2 = new TableRow({ children: [
-    hCell('Unit:',              C_LBL1, { fill: ACCENT }),
+    hCell('Unit',              C_LBL1, { fill: ACCENT }),
     dCell(plan.unit,            C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Lesson:',            C_LBL2, { fill: ACCENT }),
+    hCell('Lesson',            C_LBL2, { fill: ACCENT }),
     dCell(plan.lesson_title,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Tools & Materials:', C_LBL3, { fill: ACCENT }),
+    hCell('Tools & Materials', C_LBL3, { fill: ACCENT }),
     dCell(plan.tools_and_materials, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Skills:',            C_LBL4, { fill: ACCENT }),
+    hCell('Skills',            C_LBL4, { fill: ACCENT }),
     dCell(plan.integrated_skills,   C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
@@ -593,7 +593,7 @@ async function buildDocx(plan) {
   }));
 
   const objectivesRow = new TableRow({ children: [
-    hCell('Objectives:', C_LBL1, { fill: MID_BLUE }),
+    hCell('Objectives', C_LBL1, { fill: MID_BLUE }),
     new TableCell({
       borders: bdsInner,
       width: { size: TW - C_LBL1, type: WidthType.DXA },
