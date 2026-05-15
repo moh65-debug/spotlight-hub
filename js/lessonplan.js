@@ -236,31 +236,86 @@ Return EXACTLY this schema (all fields required):
 {
   "teacher": "",
   "level": "",
-  "textbook": "Spotlight 1" (or 2 or 3 — match the actual book),
+  "textbook": "Spotlight 1",
   "time": "55 min",
   "unit": "",
   "lesson_title": "",
   "tools_and_materials": "Student Book, Audio recordings, Whiteboard/markers",
   "integrated_skills": "Listening, Speaking, Reading, Writing",
-  "objectives": ["objective 1", "objective 2", "objective 3"],
+  "objectives": ["SMART objective 1", "SMART objective 2", "SMART objective 3"],
   "stages": [
     {
-      "stage": "Cleaned Heading (e.g., Presentation: Listening)",
-      "procedures": "",
-      "interaction_patterns": "",
-      "techniques": "",
-      "time": ""
+      "stage": "PPP Phase: Activity Name",
+      "procedures": "1. Step one action.|2. Step two action.|3. Step three action.",
+      "interaction_patterns": "T-Ss",
+      "techniques": "Technique name",
+      "time": "X min"
     }
   ],
   "reflections": ""
 }
 
-Rules:
-- Base ALL content strictly on the PDF text — do NOT invent a topic.
-- Create a separate stage object in the JSON for EVERY explicit sub-section in the Teacher Guide to match its exact sequence.
-- Format stage names cleanly: Combine the main phase and the activity (e.g., "Presentation", "Practice"), but REMOVE all letter prefixes (A., B., etc.) and adapt action verbs into gerunds where appropriate. For example, change "Presentation: A. Listen" to "Presentation: Listening". Change "Presentation: B. Read" to "Presentation: Reading". Change "Practice: E. Fill in the Missing Information" to "Practice: Fill in the Missing Information". Change "Use: F. Speak" to "Use: Speaking".
+RULE 1 - SMART OBJECTIVES
+Each objective MUST follow this exact pattern:
+"By the end of this lesson, [X]% of students will be able to [observable verb] [specific skill/content] [measurable condition]."
+
+Examples:
+- "By the end of this lesson, 80% of students will be able to correctly identify the main idea and two supporting details from the reading text during the pair-check activity."
+- "By the end of this lesson, 75% of students will be able to use at least three new vocabulary words in original spoken sentences during the group discussion."
+- "By the end of this lesson, 80% of students will be able to write a short paragraph (5+ sentences) using the target grammar structure in the exit ticket."
+
+Write exactly 3 SMART objectives covering different skills (e.g., reading + speaking + writing).
+
+RULE 2 - STAGE NAMES (PPP FRAMEWORK)
+Every stage name MUST follow the PPP (Presentation-Practice-Use) framework.
+Use ONLY these exact phase labels:
+  - Warm-up          (optional opening stage)
+  - Presentation     (teacher introduces new language/content)
+  - Practice         (guided/controlled practice)
+  - Use              (free/communicative production)
+  - Wrap-up          (optional closing/review stage)
+
+Format: "Phase: Activity Name"
+The Activity Name should be a short gerund or noun phrase describing what students DO.
+REMOVE all letter prefixes (A., B., C., etc.) from the Teacher Guide.
+
+Good examples:
+  "Warm-up: Vocabulary Elicitation"
+  "Presentation: Reading for Gist"
+  "Practice: Listening and Note-Taking"
+  "Practice: Creative Group Work"
+  "Use: Speaking and Sharing"
+  "Wrap-up: Exit Review"
+
+Bad examples - NEVER use these forms:
+  "Fun Review: Find Someone Who"   -> use "Wrap-up: Find Someone Who"
+  "Global Citizenship"             -> use "Warm-up: Global Citizenship"
+  "Presentation: A. Listen"        -> use "Presentation: Listening"
+
+RULE 3 - PROCEDURES (PIPE-SEPARATED STEPS)
+Write each procedure as numbered steps separated by the pipe character |
+Each step is ONE concrete, specific teacher or student action.
+Do NOT write a paragraph. Do NOT use commas to chain actions.
+
+Format: "1. Action one.|2. Action two.|3. Action three."
+
+Example:
+"1. Write global citizen on the board and elicit meanings.|2. Show a picture of a globe and ask: What countries can you name?|3. Pair students to discuss what they know about global citizenship (1 min).|4. Take whole-class feedback."
+
+RULE 4 - INTERACTION PATTERNS (SHORT CODES)
+Use ONLY these abbreviations - never write full words:
+  T-Ss   (Teacher to whole class)
+  T-S    (Teacher to individual student)
+  S-S    (Student pairs)
+  Ss-Ss  (Student groups)
+  Ind.   (Individual / independent work)
+
+You may combine with a slash: "T-Ss / S-S"
+
+RULE 5 - OTHER RULES
+- Base ALL content strictly on the PDF text - do NOT invent a topic.
+- Create a separate stage for EVERY explicit sub-section in the Teacher Guide.
 - Do NOT mention any page numbers anywhere.
-- Procedures: concrete teacher/student actions, concise but specific. Number the steps.
 - Stage times must add up to exactly 55 minutes.
 - Use the teacher name and grade/level provided by the user.`;
 
@@ -396,13 +451,13 @@ async function buildDocx(plan) {
   const TW = 10466; // A4 portrait content width: 11906 - 720 - 720 = 10466 DXA
 
   // Header Table Column Widths (Must perfectly sum to 10466)
-  const C_LBL1 = 940;
+  const C_LBL1 = 1068;
   const C_VAL1 = 1464;
   const C_LBL2 = 784;
   const C_VAL2 = 2144;
   const C_LBL3 = 1256;
   const C_VAL3 = 1884;
-  const C_LBL4 = 628;
+  const C_LBL4 = 500;
   const C_VAL4 = 1366;
   const HEADER_COLS = [C_LBL1, C_VAL1, C_LBL2, C_VAL2, C_LBL3, C_VAL3, C_LBL4, C_VAL4];
 
@@ -446,22 +501,18 @@ async function buildDocx(plan) {
     const sz = opts.size || 18;
 
     let paragraphs;
-    if (opts.multiPara && raw.length > 80) {
-      const sentences = raw.split(/(?<=\.)\s+/);
-      const chunks = [];
-      let buf = '';
-      sentences.forEach((sent, i) => {
-        buf = buf ? buf + ' ' + sent : sent;
-        if ((i + 1) % 2 === 0 || i === sentences.length - 1) {
-          chunks.push(buf.trim());
-          buf = '';
-        }
-      });
-      paragraphs = chunks.map((chunk, ci) => new Paragraph({
-        alignment: align,
-        spacing: { before: ci === 0 ? 0 : 60, after: 0 },
-        children: [new TextRun({ text: chunk, size: sz, font: 'Calibri', bold: !!opts.bold })],
+    if (opts.bullets) {
+      // Parse pipe-separated numbered steps into individual bullet paragraphs
+      const steps = raw.split('|').map(s => s.trim()).filter(Boolean);
+      paragraphs = steps.map((step, si) => new Paragraph({
+        alignment: AlignmentType.LEFT,
+        spacing: { before: si === 0 ? 0 : 60, after: 0 },
+        indent: { left: 0 },
+        children: [new TextRun({ text: step, size: sz, font: 'Calibri' })],
       }));
+      if (!paragraphs.length) {
+        paragraphs = [new Paragraph({ children: [new TextRun({ text: '', size: sz })] })];
+      }
     } else {
       paragraphs = [new Paragraph({
         alignment: align,
@@ -509,24 +560,24 @@ async function buildDocx(plan) {
 
   // ── Info rows ─────────────────────────────────────────────
   const infoRow1 = new TableRow({ children: [
-    hCell('Teacher:',  C_LBL1, { fill: ACCENT }),
+    hCell('Teacher',  C_LBL1, { fill: ACCENT }),
     dCell(plan.teacher,  C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Level:',    C_LBL2, { fill: ACCENT }),
+    hCell('Level',    C_LBL2, { fill: ACCENT }),
     dCell(plan.level,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Textbook:', C_LBL3, { fill: ACCENT }),
+    hCell('Textbook', C_LBL3, { fill: ACCENT }),
     dCell(plan.textbook, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Time:',     C_LBL4, { fill: ACCENT }),
+    hCell('Time',     C_LBL4, { fill: ACCENT }),
     dCell(plan.time,     C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
   const infoRow2 = new TableRow({ children: [
-    hCell('Unit:',              C_LBL1, { fill: ACCENT }),
+    hCell('Unit',              C_LBL1, { fill: ACCENT }),
     dCell(plan.unit,            C_VAL1, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Lesson:',            C_LBL2, { fill: ACCENT }),
+    hCell('Lesson',            C_LBL2, { fill: ACCENT }),
     dCell(plan.lesson_title,    C_VAL2, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Tools & Materials:', C_LBL3, { fill: ACCENT }),
+    hCell('Tools & Materials', C_LBL3, { fill: ACCENT }),
     dCell(plan.tools_and_materials, C_VAL3, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
-    hCell('Skills:',            C_LBL4, { fill: ACCENT }),
+    hCell('Skills',            C_LBL4, { fill: ACCENT }),
     dCell(plan.integrated_skills,   C_VAL4, { vAlign: VerticalAlign.CENTER, align: AlignmentType.CENTER }),
   ]});
 
@@ -542,7 +593,7 @@ async function buildDocx(plan) {
   }));
 
   const objectivesRow = new TableRow({ children: [
-    hCell('Objectives:', C_LBL1, { fill: MID_BLUE }),
+    hCell('Objectives', C_LBL1, { fill: MID_BLUE }),
     new TableCell({
       borders: bdsInner,
       width: { size: TW - C_LBL1, type: WidthType.DXA },
@@ -577,19 +628,28 @@ async function buildDocx(plan) {
           shading: { fill: LIGHT_BLUE, type: ShadingType.CLEAR },
           margins: { top: 100, bottom: 100, left: 140, right: 140 },
           verticalAlign: VerticalAlign.CENTER,
-          children: [new Paragraph({
-            alignment: AlignmentType.CENTER,
-            spacing: { before: 0, after: 0 },
-            children: [new TextRun({
-              text: String(s.stage || ''),
-              bold: true,
-              size: 18,
-              font: 'Calibri',
-              color: DARK_BLUE,
-            })],
-          })],
+          children: (() => {
+            // Split "Phase: Activity" into two lines for a cleaner stage cell
+            const stageFull = String(s.stage || '');
+            const colonIdx = stageFull.indexOf(':');
+            const phase    = colonIdx !== -1 ? stageFull.slice(0, colonIdx).trim() : stageFull;
+            const activity = colonIdx !== -1 ? stageFull.slice(colonIdx + 1).trim() : '';
+            const children = [new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 0, after: activity ? 40 : 0 },
+              children: [new TextRun({ text: phase, bold: true, size: 17, font: 'Calibri', color: DARK_BLUE })],
+            })];
+            if (activity) {
+              children.push(new Paragraph({
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 0, after: 0 },
+                children: [new TextRun({ text: activity, bold: false, size: 15, font: 'Calibri', color: ACCENT, italics: true })],
+              }));
+            }
+            return children;
+          })(),
         }),
-        dCell(s.procedures, S_PRO, { fill, multiPara: true }),
+        dCell(s.procedures, S_PRO, { fill, bullets: true }),
         dCell(s.interaction_patterns, S_INT, { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
         dCell(s.techniques, S_TEC, { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
         dCell(s.time, S_TIM, { fill, align: AlignmentType.CENTER, vAlign: VerticalAlign.CENTER }),
