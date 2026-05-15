@@ -251,7 +251,7 @@ Return ONLY valid JSON with this exact structure:
 
 // ── Call Groq via proxy ──────────────────────────────────────
 async function callGroq(tgText, sbText, code, teacher, level, unit, lesson, book) {
-  const messageContent = `Textbook: Spotlight ${book}
+  const userMessage = `Textbook: Spotlight ${book}
 Lesson Code: ${code}
 Teacher: ${teacher}
 Level: ${level}
@@ -266,24 +266,27 @@ ${sbText.slice(0, 3000)}
 
 Generate a comprehensive lesson plan.`;
 
-  const response = await fetch(GROQ_PROXY, {
+  const resp = await fetch(GROQ_PROXY, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'mixtral-8x7b-32768',
-      messages: [{ role: 'user', content: messageContent }],
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user',   content: userMessage },
+      ],
       temperature: 0.7,
-      max_tokens: 2500,
-      system: SYSTEM_PROMPT,
+      max_completion_tokens: 8192,
+      stream: false,
     }),
   });
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Groq API error: ${response.status} — ${err}`);
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Groq API error: ${resp.status} — ${err}`);
   }
 
-  const data = await response.json();
+  const data = await resp.json();
   const text = data.choices?.[0]?.message?.content || '';
 
   try {
