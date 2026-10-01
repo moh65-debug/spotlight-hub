@@ -361,7 +361,7 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'groq/compound',
+      model: '@cf/google/gemma-4-26b-a4b-it', // informational only: the worker chooses the real model
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user',   content: userMessage },
