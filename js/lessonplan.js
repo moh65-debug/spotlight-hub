@@ -369,6 +369,7 @@ async function callGroq(tgText, sbText, lessonCode, teacher, level, unit, lesson
       temperature: 0.7,
       max_completion_tokens: 8192,
       stream: false,
+      chat_template_kwargs: { enable_thinking: false },
     }),
   });
 
